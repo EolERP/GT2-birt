@@ -1,0 +1,23 @@
+parameters:
+- name: BUILD_STAGING_DIR
+  type: string
+  default: '$(System.DefaultWorkingDirectory)/build-staging-directory'
+
+steps:
+- checkout: self
+  persistCredentials: true
+  fetchDepth: 0 
+  clean: true
+  fetchTags: true
+
+# Calculate SemVer
+- task: gitversion/setup@0
+  displayName: Setup Gitversion
+  inputs:
+    versionSpec: '5.x'
+
+- task: gitversion/execute@0
+  displayName: Execute Gitversion
+  inputs:
+    useConfigFile: true
+    configFilePath: 'GitVersion.yml'
