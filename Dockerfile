@@ -37,9 +37,10 @@ RUN wget "https://download.eclipse.org/releases/2021-03/202103171000/plugins/org
 # VOLUME /opt/tomcat/webapps/birt
 
 ADD mundial.ttf /usr/share/fonts/truetype
-ADD op2detail.rptdesign /opt/tomcat/webapps/birt
-ADD creditshare_vypis.rptdesign /opt/tomcat/webapps/birt
+ADD creditshare_birt_version.rptdesign /opt/tomcat/webapps/birt
 ADD creditshare_komissmlouva.rptdesign /opt/tomcat/webapps/birt
+ADD creditshare_vypis.rptdesign /opt/tomcat/webapps/birt
+ADD op2detail.rptdesign /opt/tomcat/webapps/birt
 
 RUN rm /opt/tomcat/conf/logging.properties
 
