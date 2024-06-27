@@ -42,6 +42,9 @@ ADD creditshare_komissmlouva.rptdesign /opt/tomcat/webapps/birt
 ADD creditshare_vypis.rptdesign /opt/tomcat/webapps/birt
 ADD op2detail.rptdesign /opt/tomcat/webapps/birt
 
+ADD cert/*.cert /usr/local/share/ca-certificates/
+RUN update-ca-certificates
+
 RUN rm /opt/tomcat/conf/logging.properties
 
 # Modify birt viewer setting for reports path issue
