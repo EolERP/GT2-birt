@@ -42,7 +42,7 @@ ADD creditshare_komissmlouva.rptdesign /opt/tomcat/webapps/birt
 ADD creditshare_vypis.rptdesign /opt/tomcat/webapps/birt
 ADD op2detail.rptdesign /opt/tomcat/webapps/birt
 
-ADD /cert/*.cer /usr/local/share/ca-certificates/
+ADD /cert/*.cer /usr/share/ca-certificates/
 RUN update-ca-certificates
 
 RUN rm /opt/tomcat/conf/logging.properties
