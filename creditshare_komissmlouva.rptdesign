@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <report xmlns="http://www.eclipse.org/birt/2005/design" version="3.2.24" id="1">
-    <property name="author">Griff Team Technologies s.r.o.</property>
+    <property name="author">CreditShare s.r.o.</property>
     <property name="createdBy">Eclipse BIRT Designer Version 4.13.0.v202303021806</property>
-    <text-property name="title">Protokol o schválení skóringu klienta</text-property>
+    <text-property name="title">Komisionářská smlouva</text-property>
     <list-property name="propertyBindings">
         <structure>
             <property name="name">FILELIST</property>
@@ -32,7 +32,7 @@
     </parameters>
     <data-sources>
         <oda-data-source extensionID="org.eclipse.datatools.enablement.oda.xml" name="Data Source" id="76">
-            <property name="FILELIST">c:\Dokumenty\CROW\birt\komissmlouva.xml</property>
+            <property name="FILELIST">c:\Install\eclipse\workspace\komissmlouva.xml</property>
         </oda-data-source>
     </data-sources>
     <data-sets>
@@ -563,6 +563,7 @@
                     <property name="paddingBottom">0pt</property>
                     <property name="paddingRight">0pt</property>
                     <text id="6935">
+                        <property name="fontFamily">"Mundial"</property>
                         <property name="fontSize">12pt</property>
                         <property name="fontWeight">bold</property>
                         <property name="marginTop">5pt</property>
@@ -587,7 +588,7 @@
                     <property name="rowSpan">1</property>
                     <property name="paddingTop">0pt</property>
                     <property name="paddingLeft">0pt</property>
-                    <property name="paddingBottom">0pt</property>
+                    <property name="paddingBottom">10pt</property>
                     <property name="paddingRight">0pt</property>
                     <text id="7034">
                         <property name="paddingTop">0pt</property>
@@ -595,6 +596,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">center</property>
+                        <property name="lineHeight">140%</property>
                         <property name="dataSet">Contract</property>
                         <list-property name="boundDataColumns">
                             <structure>
@@ -703,7 +705,7 @@
                                         <property name="fontWeight">normal</property>
                                         <property name="textAlign">left</property>
                                         <property name="contentType">html</property>
-                                        <text-property name="content"><![CDATA[zastoupená Mgr. Magdalénou Tarcalovou, jednatelem a Mgr. Filipem Soukupem, jednatelem]]></text-property>
+                                        <text-property name="content"><![CDATA[zastoupená Mgr. Magdalénou Zavaďákovou, jednatelem a Mgr. Filipem Soukupem, jednatelem]]></text-property>
                                     </text>
                                 </cell>
                             </row>
@@ -1114,6 +1116,7 @@
                     <text id="7022">
                         <property name="fontWeight">normal</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[(Komisionář a Komitent společně jen „<B>Smluvní strany</B>“)]]></text-property>
                     </text>
@@ -1181,6 +1184,7 @@
                     <text id="7023">
                         <property name="fontWeight">normal</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[uzavřely níže uvedeného dne, měsíce a roku v souladu s ustanovením § 2455 a násl. zákona č. 89/2012 Sb., občanský zákoník, v účinném znění, tuto komisionářskou smlouvu (dále jen „<B>Smlouva</B>“)]]></text-property>
                     </text>
@@ -1457,6 +1461,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[1.1.]]></text-property>
                     </text>
@@ -1520,6 +1525,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Komisionář je poskytovatelem služeb skupinového financování dle Nařízení, který se zejména zabývá zprostředkováním investic Investorů ve formě poskytování Úvěrů poptávaných Vlastníky projektů na realizaci Projektů, přičemž Komisionář zřídil a provozuje za tímto účelem Platformu, prostřednictvím které mohou Investoři vyhledávat a činit Pokyny k investici do Nabídek Vlastníků projektů na poskytnutí Úvěrů na realizaci Projektů.]]></text-property>
                     </text>
@@ -1588,6 +1594,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[1.2.]]></text-property>
                     </text>
@@ -1651,6 +1658,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Komitent má zájem investovat své finanční prostředky prostřednictvím Komisionáře, resp. Platformy a poskytnout investici do Úvěru Vlastníkům projektů na Projekty dle výběru Komitenta. ]]></text-property>
                     </text>
@@ -1719,6 +1727,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[1.3.]]></text-property>
                     </text>
@@ -1782,6 +1791,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="dataSet">creditshare</property>
                         <list-property name="boundDataColumns">
                             <structure>
@@ -1792,7 +1802,7 @@
                             </structure>
                         </list-property>
                         <property name="contentType">html</property>
-                        <text-property name="content"><![CDATA[Smluvní strany se dohodli na uzavření této Smlouvy s cílem realizovat zájmy Komitenta. Tato Smlouva stanoví obecná pravidla pro jejich vzájemná práva a povinnosti v souvislosti s poskytováním Úvěrů Komitenta. Vzájemné vztahy mezi Smluvními stranami jsou dále upraveny ve Všeobecných obchodních podmínek (dále jen „VOP“) a v Sazebníku, které jsou umístěny na webových stránkách Platformy (odkaz: <VALUE-OF>row["urlVOP"]</VALUE-OF>) a Komitent prohlašuje a svým podpisem potvrzuje, že se s VOP a se Sazebníkem seznámil před uzavřením této Smlouvy. VOP a Sazebník tvoří součást této Smlouvy. V případě rozporu této Smlouvy s VOP a Sazebníkem mají ujednání této Smlouvy před VOP a Sazebníkem přednost.]]></text-property>
+                        <text-property name="content"><![CDATA[Smluvní strany se dohodly na uzavření této Smlouvy s cílem realizovat zájmy Komitenta. Tato Smlouva stanoví obecná pravidla pro jejich vzájemná práva a povinnosti v souvislosti s poskytováním Úvěrů Komitenta. Vzájemné vztahy mezi Smluvními stranami jsou dále upraveny ve Všeobecných obchodních podmínkách (dále jen „VOP“) a v Sazebníku, které jsou umístěny na webových stránkách Platformy (odkaz: <VALUE-OF>row["urlVOP"]</VALUE-OF>) a Komitent prohlašuje a svým podpisem potvrzuje, že se s VOP a se Sazebníkem seznámil před uzavřením této Smlouvy. VOP a Sazebník tvoří součást této Smlouvy. V případě rozporu této Smlouvy s VOP a Sazebníkem mají ujednání této Smlouvy před VOP a Sazebníkem přednost.]]></text-property>
                     </text>
                 </cell>
             </row>
@@ -1859,6 +1869,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[1.4.]]></text-property>
                     </text>
@@ -1922,6 +1933,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Pojmy použité v této Smlouvě a VOP s velkými počátečními písmeny mají význam uvedený ve VOP.  ]]></text-property>
                     </text>
@@ -2198,6 +2210,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[2.1.]]></text-property>
                     </text>
@@ -2261,6 +2274,8 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
+                        <property name="orphans">0</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Komisionář se zavazuje jednat svým jménem na účet Komitenta podle pokynů Komitenta, a to při poskytování investic do Úvěrů ze strany Komitenta Vlastníkům projektů na realizaci Projektů, a to prostřednictvím Platformy. Poskytováním investic do Úvěrů Vlastníkům projektů se rozumí vyřízení všech potřebných kroků spojených s uzavřením úvěrové smlouvy, včetně případné zajišťovací dokumentace s Vlastníkem projektu, poskytnutí Úvěru, sledování plnění úvěrové smlouvy ze strany Vlastníka projektu a výkon práv a povinností stanovených v úvěrové smlouvě, včetně vymáhání pohledávek za Vlastníkem projektu v případě jeho neplnění, kdy všechna tato právní jednání a úkony jsou prováděny jménem Komisionáře, ale na účet Komitenta. Kromě výše uvedeného, je také součástí služby poskytování úvěrů správa Platformy a správa uživatelského účtu Komitenta. Komisionář je oprávněn činit i jakékoliv jiné vhodné právní jednání a úkony vlastním jménem na účet Komitenta v případě, že budou zapotřebí ke splnění výše uvedeného a v případě, že budou činěny ve prospěch Komitenta.]]></text-property>
                     </text>
@@ -2329,6 +2344,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[2.2.]]></text-property>
                     </text>
@@ -2392,6 +2408,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Komitent souhlasí s tím, že Komisionář pro něj bude vykonávat činnosti podle předchozího odstavce na základě jeho pokynů. Komitent se zavazuje za tyto činnosti uhradit Komisionáři v souladu s čl. III. této Smlouvy sjednanou odměnu. ]]></text-property>
                     </text>
@@ -2668,6 +2685,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[3.1.]]></text-property>
                     </text>
@@ -2731,6 +2749,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Za umožnění realizace každého jednotlivého Neodvolatelného pokynu k investici do Úvěru Vlastníka projektu pro příslušný Projekt náleží Komisionáři poplatek, který bude ze strany Komitenta uhrazen v souladu s touto Smlouvou a Sazebníkem. Tento poplatek je stanoven ve výši uvedené v Sazebníku. Poplatek se hradí z úrokových výnosů z Úvěru Vlastníku projektu na příslušný Projekt, do kterého bylo Komitentem a ostatními Investory investováno (dále jen „<B>Poplatek</B>“).]]></text-property>
                     </text>
@@ -2799,6 +2818,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[3.2.]]></text-property>
                     </text>
@@ -2862,6 +2882,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Komisionář má právo samostatně upravovat svůj Sazebník, které si účtuje za své služby, bez potřeby souhlasu Komitenta nebo jiných stran. Komisionář bude informovat Komitenta o změnách v Sazebníku poplatků prostřednictvím Platformy a zároveň mu pošle oznámení na jeho elektronickou adresu. Změny Sazebníku poplatků se vztahují pouze na nové Pokyny k investici, které budou podány po datu účinnosti aktualizovaného Sazebníku. Starší Pokyny k investici, resp. Neodvolatelné pokyny k investici zůstávají platné dle Sazebníku platného v době jejich podání. Pokud Komitent nesouhlasí se změnou Sazebníku, nemá právo podávat žádné další Pokyny k investici v souladu s touto Smlouvou.]]></text-property>
                     </text>
@@ -3138,6 +3159,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[4.1.]]></text-property>
                     </text>
@@ -3201,6 +3223,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Komisionář se jakožto správce osobních údajů, které mu budou na základě této smlouvy Komitentem poskytnuty, zavazuje, že bude tyto osobní údaje zpracovávat v souladu s právními předpisy, především s Nařízením Evropského parlamentu a Rady (EU) 2016/679 ze dne 27. dubna 2016 o ochraně fyzických osob v souvislosti se zpracováním osobních údajů a o volném pohybu těchto údajů a o zrušení směrnice 95/46/ES, v platném znění a zákonem č. 110/2019 Sb., o zpracování osobních údajů v platném znění.]]></text-property>
                     </text>
@@ -3269,6 +3292,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[4.2.]]></text-property>
                     </text>
@@ -3332,6 +3356,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Informace související se zpracováním osobních údajů Komitenta jsou uvedeny na webových stránkách Platformy www.creditshare.cz. Komitent prohlašuje, že se seznámil s těmito Informacemi souvisejícími se zpracováním osobních údajů Komitenta.]]></text-property>
                     </text>
@@ -3608,6 +3633,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[5.1.]]></text-property>
                     </text>
@@ -3671,6 +3697,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Vzhledem ke skutečnosti, že tato Smlouva naplňuje znaky „Smlouvy o finanční službě“ ve smyslu ustanovení § 1841 ObčZ, je Komisionář povinen sdělit Komitentovi, který je spotřebitelem ve smyslu ustanovení § 419 ObčZ informace a jeho práva uvedená mimo jiné v ustanovení § 1843 ObčZ.]]></text-property>
                     </text>
@@ -3739,6 +3766,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[5.2.]]></text-property>
                     </text>
@@ -3802,6 +3830,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Komitent, který je spotřebitelem ve smyslu ustanovení § 419 ObčZ prohlašuje, že se před uzavřením této Smlouvy seznámil s obsahem dokumentu s názvem „Sdělení spotřebitelům před uzavřením smlouvy“, který je umístěný na webových stránkách Platformy www.creditshare.cz.]]></text-property>
                     </text>
@@ -4078,6 +4107,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[6.1.]]></text-property>
                     </text>
@@ -4141,6 +4171,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Komisionář poskytne Komitentovi základní informace ke každému Projektu uveřejněnému na Platformě, a to zejména v rozsahu Nařízení. Vzhledem ke skutečnosti, že tyto informace získal převážně od Vlastníka Projektu, Komisionář negarantuje Komitentovi správnost a úplnost těchto informací.]]></text-property>
                     </text>
@@ -4209,6 +4240,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[6.2.]]></text-property>
                     </text>
@@ -4272,6 +4304,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Komitent souhlasí se skutečností, že Komisionář v žádném případě neodpovídá za dobytnost pohledávek vyplývajících z Úvěru, a nijak neručí za splnění dluhů Vlastníka projektu z úvěrové smlouvy, na základě které byl Úvěr poskytnut. Komitent jednoznačně potvrzuje, že rozumí tomu, že investování do Úvěrů prostřednictvím Platformy je rizikem a může vést ke ztrátě části nebo všech finančních prostředků, které byly Komitentem investovány. Komitent rovněž potvrzuje, že bude Pokyny k investici poskytovat pouze tehdy, pokud bude mít dostatek informací k posouzení rizika takové investice. V okamžiku, kdy Komitent podá pokyn k investici, potvrzuje, že mu byly všechny nezbytné informace k posouzení rizikovosti investice Komisionářem poskytnuty. V případě takových investic nese Komitent veškerá rizika svých investic do Úvěrů.]]></text-property>
                     </text>
@@ -4548,6 +4581,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[7.1.]]></text-property>
                     </text>
@@ -4611,6 +4645,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Tato Smlouva se uzavírá na dobu neurčitou. Výpověď této Smlouvy nabývá účinnosti jejím doručením druhé Smluvní straně a současně dnem, kdy budou vypořádány veškeré investice Komitenta na Platformě (tj. splacením Úvěru, na kterém se Komitent účastní, jeho jiným zánikem, či postoupením veškerých pohledávek Komitenta dle této Smlouvy na jiného Investora). Podmínky výpovědi a její následky jsou podrobně upraveny ve VOP.]]></text-property>
                     </text>
@@ -4887,6 +4922,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[8.1.]]></text-property>
                     </text>
@@ -4950,6 +4986,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Tato Smlouva nabývá platnosti a účinnosti okamžikem stisknutí tlačítka <B><I>Potvrdit</I></B> při registraci Komitenta na Platformě. Zpřístupněním této Smlouvy na Platformě činí Komisionář Komitentovi návrh na uzavření této Smlouvy.]]></text-property>
                     </text>
@@ -5018,6 +5055,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[8.2.]]></text-property>
                     </text>
@@ -5081,6 +5119,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Tato Smlouva a všechny právní vztahy, které z ní vyplývají, jsou podřízeny právnímu řádu České republiky, zejména občanskému zákoníku v platném znění. Všechny případné spory vyplývající z této Smlouvy budou řešeny výlučně českými soudy. ]]></text-property>
                     </text>
@@ -5149,6 +5188,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[8.3.]]></text-property>
                     </text>
@@ -5212,6 +5252,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Komitent nemá právo převádět svá práva a povinnosti z této Smlouvy na žádnou třetí osobu, ani nemůže postoupit tuto Smlouvu či její část. ]]></text-property>
                     </text>
@@ -5280,6 +5321,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[8.4.]]></text-property>
                     </text>
@@ -5343,6 +5385,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Pokud by některá část této Smlouvy byla shledána neplatnou nebo nevynutitelnou, bude se považovat za samostatnou a oddělitelnou od ostatních částí a neovlivní platnost Smlouvy jako celku. Pokud se takto stane, Smluvní strany se zavazují nahradit neplatné ujednání jiným, které bude co nejvíce respektovat smysl a účel původního ustanovení.]]></text-property>
                     </text>
@@ -5411,6 +5454,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">left</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[8.5.]]></text-property>
                     </text>
@@ -5474,6 +5518,7 @@
                         <property name="paddingBottom">0pt</property>
                         <property name="paddingRight">0pt</property>
                         <property name="textAlign">justify</property>
+                        <property name="lineHeight">140%</property>
                         <property name="contentType">html</property>
                         <text-property name="content"><![CDATA[Smluvní strany prohlašují, že si tuto Smlouvu přečetly, že s jejím obsahem souhlasí a že mu rozumí. Tato Smlouva je tak projevem jejich pravé, vážné a svobodné vůle, když žádná ze Smluvních stran neuzavřela tuto Smlouvu v tísni za nápadně nevýhodných podmínek. Tato Smlouva byla uzavřena na dálku elektronickými prostředky, kdy vlastnoruční podpis Komitenta byl nahrazen elektronickým podpisem, kterým je stisknutí tlačítka <B><I>Potvrdit</I></B> umístěného na Platformě.]]></text-property>
                     </text>
