@@ -939,7 +939,7 @@
                                         <property name="fontWeight">normal</property>
                                         <property name="textAlign">left</property>
                                         <property name="contentType">html</property>
-                                        <text-property name="content"><![CDATA[zapsaná v obchodním rejstříku SubjORText]]></text-property>
+                                        <text-property name="content"><![CDATA[zapsaná v obchodním rejstříku<VALUE-OF>row["SubjORText"]</VALUE-OF>]]></text-property>
                                     </text>
                                 </cell>
                             </row>
