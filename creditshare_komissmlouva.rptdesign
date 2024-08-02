@@ -1257,6 +1257,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">auto</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7149">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
@@ -1330,6 +1333,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7150">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
@@ -1403,6 +1409,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7151">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -1536,6 +1545,7 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7152">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -1669,6 +1679,7 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7157">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -1811,6 +1822,7 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7668">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -2006,6 +2018,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">auto</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7163">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
@@ -2079,6 +2094,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7174">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
@@ -2152,6 +2170,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7171">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -2286,6 +2307,7 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7181">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -2481,6 +2503,8 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7229">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
@@ -2554,6 +2578,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7189">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
@@ -2627,6 +2654,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7232">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -2760,6 +2790,7 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7192">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -2955,6 +2986,8 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7241">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
@@ -3028,6 +3061,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7198">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
@@ -3101,6 +3137,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7201">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -3234,6 +3273,7 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7204">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -3429,6 +3469,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">auto</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7267">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
@@ -3502,6 +3545,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7276">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
@@ -3575,6 +3621,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7279">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -3708,6 +3757,7 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7288">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -3903,6 +3953,8 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7313">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
@@ -3976,6 +4028,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7316">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
@@ -4049,6 +4104,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7328">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -4182,6 +4240,7 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7331">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -4377,6 +4436,8 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7346">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
@@ -4450,6 +4511,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7379">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
@@ -4523,6 +4587,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7373">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -4718,6 +4785,8 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7399">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
@@ -4791,6 +4860,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7414">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
@@ -4864,6 +4936,9 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakAfter">avoid</property>
+                <property name="pageBreakBefore">avoid</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7396">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -4997,6 +5072,7 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7402">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -5130,6 +5206,7 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7405">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -5263,6 +5340,7 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7408">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -5396,6 +5474,7 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7411">
                     <property name="backgroundAttachment">scroll</property>
                     <property name="backgroundImageType">url</property>
@@ -5591,6 +5670,7 @@
                 <property name="borderLeftStyle">none</property>
                 <property name="borderRightStyle">none</property>
                 <property name="borderTopStyle">none</property>
+                <property name="pageBreakInside">avoid</property>
                 <cell id="7210">
                     <property name="colSpan">2</property>
                     <property name="rowSpan">1</property>
