@@ -3922,14 +3922,14 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                         </column>
                         <header>
                             <row id="6995">
-                                <property name="borderBottomColor">#0000FF</property>
+                                <property name="borderBottomColor">#000000</property>
                                 <property name="borderBottomStyle">solid</property>
                                 <property name="borderBottomWidth">medium</property>
                                 <cell id="6996">
                                     <label id="7109">
                                         <property name="fontFamily">"Mundial"</property>
                                         <property name="fontSize">8pt</property>
-                                        <property name="color">blue</property>
+                                        <property name="color">#000000</property>
                                         <property name="textAlign">left</property>
                                         <text-property name="text">Název položky</text-property>
                                     </label>
@@ -3945,13 +3945,10 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                         <property name="fontWeight">normal</property>
                                         <property name="fontStyle">normal</property>
                                         <property name="fontVariant">normal</property>
-                                        <property name="color">blue</property>
+                                        <property name="color">#000000</property>
                                         <property name="textLineThrough">none</property>
                                         <property name="textOverline">none</property>
                                         <property name="textUnderline">none</property>
-                                        <property name="borderBottomColor">black</property>
-                                        <property name="borderBottomStyle">none</property>
-                                        <property name="borderBottomWidth">medium</property>
                                         <property name="borderLeftColor">black</property>
                                         <property name="borderLeftStyle">none</property>
                                         <property name="borderLeftWidth">medium</property>
@@ -3998,13 +3995,10 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                         <property name="fontWeight">normal</property>
                                         <property name="fontStyle">normal</property>
                                         <property name="fontVariant">normal</property>
-                                        <property name="color">blue</property>
+                                        <property name="color">#000000</property>
                                         <property name="textLineThrough">none</property>
                                         <property name="textOverline">none</property>
                                         <property name="textUnderline">none</property>
-                                        <property name="borderBottomColor">black</property>
-                                        <property name="borderBottomStyle">none</property>
-                                        <property name="borderBottomWidth">medium</property>
                                         <property name="borderLeftColor">black</property>
                                         <property name="borderLeftStyle">none</property>
                                         <property name="borderLeftWidth">medium</property>
@@ -4051,13 +4045,10 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                         <property name="fontWeight">normal</property>
                                         <property name="fontStyle">normal</property>
                                         <property name="fontVariant">normal</property>
-                                        <property name="color">blue</property>
+                                        <property name="color">#000000</property>
                                         <property name="textLineThrough">none</property>
                                         <property name="textOverline">none</property>
                                         <property name="textUnderline">none</property>
-                                        <property name="borderBottomColor">black</property>
-                                        <property name="borderBottomStyle">none</property>
-                                        <property name="borderBottomWidth">medium</property>
                                         <property name="borderLeftColor">black</property>
                                         <property name="borderLeftStyle">none</property>
                                         <property name="borderLeftWidth">medium</property>
@@ -4104,13 +4095,10 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                         <property name="fontWeight">normal</property>
                                         <property name="fontStyle">normal</property>
                                         <property name="fontVariant">normal</property>
-                                        <property name="color">blue</property>
+                                        <property name="color">#000000</property>
                                         <property name="textLineThrough">none</property>
                                         <property name="textOverline">none</property>
                                         <property name="textUnderline">none</property>
-                                        <property name="borderBottomColor">black</property>
-                                        <property name="borderBottomStyle">none</property>
-                                        <property name="borderBottomWidth">medium</property>
                                         <property name="borderLeftColor">black</property>
                                         <property name="borderLeftStyle">none</property>
                                         <property name="borderLeftWidth">medium</property>
@@ -4157,13 +4145,10 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                         <property name="fontWeight">normal</property>
                                         <property name="fontStyle">normal</property>
                                         <property name="fontVariant">normal</property>
-                                        <property name="color">blue</property>
+                                        <property name="color">#000000</property>
                                         <property name="textLineThrough">none</property>
                                         <property name="textOverline">none</property>
                                         <property name="textUnderline">none</property>
-                                        <property name="borderBottomColor">black</property>
-                                        <property name="borderBottomStyle">none</property>
-                                        <property name="borderBottomWidth">medium</property>
                                         <property name="borderLeftColor">black</property>
                                         <property name="borderLeftStyle">none</property>
                                         <property name="borderLeftWidth">medium</property>
@@ -4210,13 +4195,10 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                         <property name="fontWeight">normal</property>
                                         <property name="fontStyle">normal</property>
                                         <property name="fontVariant">normal</property>
-                                        <property name="color">blue</property>
+                                        <property name="color">#000000</property>
                                         <property name="textLineThrough">none</property>
                                         <property name="textOverline">none</property>
                                         <property name="textUnderline">none</property>
-                                        <property name="borderBottomColor">black</property>
-                                        <property name="borderBottomStyle">none</property>
-                                        <property name="borderBottomWidth">medium</property>
                                         <property name="borderLeftColor">black</property>
                                         <property name="borderLeftStyle">none</property>
                                         <property name="borderLeftWidth">medium</property>
@@ -4263,13 +4245,10 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                         <property name="fontWeight">normal</property>
                                         <property name="fontStyle">normal</property>
                                         <property name="fontVariant">normal</property>
-                                        <property name="color">blue</property>
+                                        <property name="color">#000000</property>
                                         <property name="textLineThrough">none</property>
                                         <property name="textOverline">none</property>
                                         <property name="textUnderline">none</property>
-                                        <property name="borderBottomColor">black</property>
-                                        <property name="borderBottomStyle">none</property>
-                                        <property name="borderBottomWidth">medium</property>
                                         <property name="borderLeftColor">black</property>
                                         <property name="borderLeftStyle">none</property>
                                         <property name="borderLeftWidth">medium</property>
@@ -5055,7 +5034,7 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                 <label id="7157">
                                     <property name="fontFamily">"Mundial"</property>
                                     <property name="fontSize">8pt</property>
-                                    <property name="color">blue</property>
+                                    <property name="color">#000000</property>
                                     <text-property name="text">Rekapitulace DPH v Kč</text-property>
                                 </label>
                             </cell>
