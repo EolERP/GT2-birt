@@ -38,6 +38,7 @@ RUN wget "https://download.eclipse.org/releases/2021-03/202103171000/plugins/org
 
 ADD mundial.ttf /usr/share/fonts/truetype
 ADD creditshare_birt_version.rptdesign /opt/tomcat/webapps/birt
+ADD creditshare_faktura.rptdesign /opt/tomcat/webapps/birt
 ADD creditshare_komissmlouva.rptdesign /opt/tomcat/webapps/birt
 ADD creditshare_vypis.rptdesign /opt/tomcat/webapps/birt
 ADD op2detail.rptdesign /opt/tomcat/webapps/birt
