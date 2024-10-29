@@ -65,6 +65,16 @@
                     <text-property name="heading">cena</text-property>
                 </structure>
                 <structure>
+                    <property name="columnName">dphProc</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">dphProc</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">dph</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">dph</text-property>
+                </structure>
+                <structure>
                     <property name="columnName">celkem</property>
                     <property name="analysis">dimension</property>
                     <text-property name="heading">celkem</text-property>
@@ -105,11 +115,21 @@
                     </structure>
                     <structure>
                         <property name="position">6</property>
-                        <property name="name">celkem</property>
+                        <property name="name">dphProc</property>
                         <property name="dataType">string</property>
                     </structure>
                     <structure>
                         <property name="position">7</property>
+                        <property name="name">dph</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">8</property>
+                        <property name="name">celkem</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">9</property>
                         <property name="name">qrCode</property>
                         <property name="dataType">string</property>
                     </structure>
@@ -154,20 +174,34 @@
                 </structure>
                 <structure>
                     <property name="position">6</property>
+                    <property name="name">dphProc</property>
+                    <property name="nativeName">dphProc</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">7</property>
+                    <property name="name">dph</property>
+                    <property name="nativeName">dph</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">8</property>
                     <property name="name">celkem</property>
                     <property name="nativeName">celkem</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
                 <structure>
-                    <property name="position">7</property>
+                    <property name="position">9</property>
                     <property name="name">qrCode</property>
                     <property name="nativeName">qrCode</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
             </list-property>
-            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/Faktura/Info]#:#{DEAL_VS;STRING;/DEAL_VS},{datumVystaveni;STRING;/datumVystaveni},{datumUskutecneni;STRING;/datumUskutecneni},{datumSplatnosti;STRING;/datumSplatnosti},{cena;STRING;/cena},{celkem;STRING;/celkem},{qrCode;STRING;/qrCode}]]></xml-property>
+            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/Faktura/Info]#:#{DEAL_VS;STRING;/DEAL_VS},{datumVystaveni;STRING;/datumVystaveni},{datumUskutecneni;STRING;/datumUskutecneni},{datumSplatnosti;STRING;/datumSplatnosti},{cena;STRING;/cena},{dphProc;STRING;/dphProc},{dph;STRING;/dph},{celkem;STRING;/celkem},{qrCode;STRING;/qrCode}]]></xml-property>
             <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
   <Version>2.0</Version>
@@ -593,17 +627,26 @@
             <list-property name="columnHints">
                 <structure>
                     <property name="columnName">BACCT_Num</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">BACCT_Num</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">Number</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">Number</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">Swift</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">Swift</text-property>
                 </structure>
+                <structure>
+                    <property name="columnName">dphProc</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">dphProc</text-property>
+                </structure>
             </list-property>
+            <list-property name="parameters"/>
             <structure name="cachedMetaData">
                 <list-property name="resultSet">
                     <structure>
@@ -619,6 +662,11 @@
                     <structure>
                         <property name="position">3</property>
                         <property name="name">Swift</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">4</property>
+                        <property name="name">dphProc</property>
                         <property name="dataType">string</property>
                     </structure>
                 </list-property>
@@ -646,8 +694,15 @@
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
+                <structure>
+                    <property name="position">4</property>
+                    <property name="name">dphProc</property>
+                    <property name="nativeName">dphProc</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
             </list-property>
-            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/Faktura/AcctDlz]#:#{BACCT_Num;STRING;/BACCT_Num},{Number;STRING;/Number},{Swift;STRING;/Swift}]]></xml-property>
+            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/Faktura/AcctDlz]#:#{BACCT_Num;STRING;/BACCT_Num},{Number;STRING;/Number},{Swift;STRING;/Swift},{dphProc;STRING;../Info/dphProc}]]></xml-property>
             <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
   <Version>2.0</Version>
@@ -1279,6 +1334,81 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                     <expression name="expression" type="javascript">dataSetRow["qrCode"]</expression>
                     <property name="dataType">string</property>
                 </structure>
+                <structure>
+                    <property name="name">dphProc</property>
+                    <text-property name="displayName">dphProc</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["dphProc"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">dph</property>
+                    <text-property name="displayName">dph</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["dph"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">dph12</property>
+                    <expression name="expression" type="javascript">if (row["dphProc"] == "12") &#13;
+	row["dph"]&#13;
+else &#13;
+	"0,00"</expression>
+                    <property name="dataType">string</property>
+                    <property name="allowExport">true</property>
+                </structure>
+                <structure>
+                    <property name="name">dph21</property>
+                    <expression name="expression" type="javascript">if (row["dphProc"] == "21") &#13;
+	row["dph"]&#13;
+else &#13;
+	"0,00"</expression>
+                    <property name="dataType">string</property>
+                    <property name="allowExport">true</property>
+                </structure>
+                <structure>
+                    <property name="name">zaklad12</property>
+                    <expression name="expression" type="javascript">if (row["dphProc"] == "12") &#13;
+	row["cena"]&#13;
+else &#13;
+	"0,00"</expression>
+                    <property name="dataType">string</property>
+                    <property name="allowExport">true</property>
+                </structure>
+                <structure>
+                    <property name="name">zaklad21</property>
+                    <expression name="expression" type="javascript">if (row["dphProc"] == "21") &#13;
+	row["cena"]&#13;
+else &#13;
+	"0,00"</expression>
+                    <property name="dataType">string</property>
+                    <property name="allowExport">true</property>
+                </structure>
+                <structure>
+                    <property name="name">celkem12</property>
+                    <expression name="expression" type="javascript">if (row["dphProc"] == "12") &#13;
+	row["celkem"]&#13;
+else &#13;
+	"0,00"</expression>
+                    <property name="dataType">string</property>
+                    <property name="allowExport">true</property>
+                </structure>
+                <structure>
+                    <property name="name">celkem21</property>
+                    <expression name="expression" type="javascript">if (row["dphProc"] == "21") &#13;
+	row["celkem"]&#13;
+else &#13;
+	"0,00"</expression>
+                    <property name="dataType">string</property>
+                    <property name="allowExport">true</property>
+                </structure>
+                <structure>
+                    <property name="name">celkem0</property>
+                    <expression name="expression" type="javascript">if (row["dphProc"] == "0") &#13;
+	row["cena"]&#13;
+else &#13;
+	"0,00"</expression>
+                    <property name="dataType">string</property>
+                    <property name="allowExport">true</property>
+                </structure>
             </list-property>
             <column id="54"/>
             <row id="6710">
@@ -1453,6 +1583,12 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                             <property name="name">Swift</property>
                                             <text-property name="displayName">Swift</text-property>
                                             <expression name="expression" type="javascript">dataSetRow["Swift"]</expression>
+                                            <property name="dataType">string</property>
+                                        </structure>
+                                        <structure>
+                                            <property name="name">dphProc</property>
+                                            <text-property name="displayName">dphProc</text-property>
+                                            <expression name="expression" type="javascript">dataSetRow["dphProc"]</expression>
                                             <property name="dataType">string</property>
                                         </structure>
                                     </list-property>
@@ -1685,6 +1821,12 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                         </cell>
                                     </row>
                                     <row id="7296">
+                                        <list-property name="visibility">
+                                            <structure>
+                                                <property name="format">all</property>
+                                                <expression name="valueExpr" type="javascript">row["dphProc"] != "0"</expression>
+                                            </structure>
+                                        </list-property>
                                         <cell id="7297">
                                             <property name="colSpan">2</property>
                                             <property name="rowSpan">1</property>
@@ -1737,6 +1879,68 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                                 <property name="canShrink">false</property>
                                                 <property name="overflow">hidden</property>
                                                 <text-property name="text">IČ: 24185299     Neplátce DPH</text-property>
+                                            </label>
+                                        </cell>
+                                    </row>
+                                    <row id="7412">
+                                        <list-property name="visibility">
+                                            <structure>
+                                                <property name="format">all</property>
+                                                <expression name="valueExpr" type="javascript">row["dphProc"] == "0"</expression>
+                                            </structure>
+                                        </list-property>
+                                        <cell id="7413">
+                                            <property name="colSpan">2</property>
+                                            <property name="rowSpan">1</property>
+                                            <label id="7415">
+                                                <property name="backgroundAttachment">scroll</property>
+                                                <property name="backgroundPositionX">0%</property>
+                                                <property name="backgroundPositionY">0%</property>
+                                                <property name="backgroundRepeat">repeat</property>
+                                                <property name="fontFamily">"Mundial"</property>
+                                                <property name="fontSize">8pt</property>
+                                                <property name="fontWeight">normal</property>
+                                                <property name="fontStyle">normal</property>
+                                                <property name="fontVariant">normal</property>
+                                                <property name="color">black</property>
+                                                <property name="textLineThrough">none</property>
+                                                <property name="textOverline">none</property>
+                                                <property name="textUnderline">none</property>
+                                                <property name="borderBottomColor">black</property>
+                                                <property name="borderBottomStyle">none</property>
+                                                <property name="borderBottomWidth">medium</property>
+                                                <property name="borderLeftColor">black</property>
+                                                <property name="borderLeftStyle">none</property>
+                                                <property name="borderLeftWidth">medium</property>
+                                                <property name="borderRightColor">black</property>
+                                                <property name="borderRightStyle">none</property>
+                                                <property name="borderRightWidth">medium</property>
+                                                <property name="borderTopColor">black</property>
+                                                <property name="borderTopStyle">none</property>
+                                                <property name="borderTopWidth">medium</property>
+                                                <property name="marginTop">0pt</property>
+                                                <property name="marginLeft">0pt</property>
+                                                <property name="marginBottom">0pt</property>
+                                                <property name="marginRight">0pt</property>
+                                                <property name="paddingTop">1pt</property>
+                                                <property name="paddingLeft">1pt</property>
+                                                <property name="paddingBottom">1pt</property>
+                                                <property name="paddingRight">1pt</property>
+                                                <property name="letterSpacing">normal</property>
+                                                <property name="lineHeight">normal</property>
+                                                <property name="orphans">2</property>
+                                                <property name="textTransform">none</property>
+                                                <property name="whiteSpace">normal</property>
+                                                <property name="widows">2</property>
+                                                <property name="wordSpacing">normal</property>
+                                                <property name="display">block</property>
+                                                <property name="pageBreakAfter">auto</property>
+                                                <property name="pageBreakBefore">auto</property>
+                                                <property name="pageBreakInside">auto</property>
+                                                <property name="showIfBlank">false</property>
+                                                <property name="canShrink">false</property>
+                                                <property name="overflow">hidden</property>
+                                                <text-property name="text">IČ: 24185299     Plátce DPH</text-property>
                                             </label>
                                         </cell>
                                     </row>
@@ -3897,6 +4101,12 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                 <property name="dataType">string</property>
                                 <property name="allowExport">true</property>
                             </structure>
+                            <structure>
+                                <property name="name">outer_dph</property>
+                                <expression name="expression" type="javascript">row._outer["dph"]</expression>
+                                <property name="dataType">string</property>
+                                <property name="allowExport">true</property>
+                            </structure>
                         </list-property>
                         <column id="7022"/>
                         <column id="7023">
@@ -4788,7 +4998,7 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                     </data>
                                 </cell>
                                 <cell id="7020">
-                                    <text id="7125">
+                                    <data id="7427">
                                         <property name="backgroundAttachment">scroll</property>
                                         <property name="backgroundPositionX">0%</property>
                                         <property name="backgroundPositionY">0%</property>
@@ -4837,9 +5047,8 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                         <property name="showIfBlank">false</property>
                                         <property name="canShrink">false</property>
                                         <property name="overflow">hidden</property>
-                                        <property name="contentType">auto</property>
-                                        <text-property name="content"><![CDATA[0,00]]></text-property>
-                                    </text>
+                                        <property name="resultSetColumn">outer_dph</property>
+                                    </data>
                                 </cell>
                                 <cell id="7021">
                                     <data id="7131">
@@ -5204,7 +5413,7 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                             </label>
                                         </cell>
                                         <cell id="7170">
-                                            <data id="7199">
+                                            <data id="7422">
                                                 <property name="backgroundAttachment">scroll</property>
                                                 <property name="backgroundPositionX">0%</property>
                                                 <property name="backgroundPositionY">0%</property>
@@ -5253,7 +5462,7 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                                 <property name="showIfBlank">false</property>
                                                 <property name="canShrink">false</property>
                                                 <property name="overflow">hidden</property>
-                                                <property name="resultSetColumn">celkem</property>
+                                                <property name="resultSetColumn">celkem0</property>
                                             </data>
                                         </cell>
                                         <cell id="7171">
@@ -5282,28 +5491,163 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                             </label>
                                         </cell>
                                         <cell id="7175">
-                                            <label id="7193">
+                                            <data id="7418">
+                                                <property name="backgroundAttachment">scroll</property>
+                                                <property name="backgroundPositionX">0%</property>
+                                                <property name="backgroundPositionY">0%</property>
+                                                <property name="backgroundRepeat">repeat</property>
                                                 <property name="fontFamily">"Mundial"</property>
                                                 <property name="fontSize">8pt</property>
+                                                <property name="fontWeight">normal</property>
+                                                <property name="fontStyle">normal</property>
+                                                <property name="fontVariant">normal</property>
+                                                <property name="color">black</property>
+                                                <property name="textLineThrough">none</property>
+                                                <property name="textOverline">none</property>
+                                                <property name="textUnderline">none</property>
+                                                <property name="borderBottomColor">black</property>
+                                                <property name="borderBottomStyle">none</property>
+                                                <property name="borderBottomWidth">medium</property>
+                                                <property name="borderLeftColor">black</property>
+                                                <property name="borderLeftStyle">none</property>
+                                                <property name="borderLeftWidth">medium</property>
+                                                <property name="borderRightColor">black</property>
+                                                <property name="borderRightStyle">none</property>
+                                                <property name="borderRightWidth">medium</property>
+                                                <property name="borderTopColor">black</property>
+                                                <property name="borderTopStyle">none</property>
+                                                <property name="borderTopWidth">medium</property>
+                                                <property name="marginTop">0pt</property>
+                                                <property name="marginLeft">0pt</property>
+                                                <property name="marginBottom">0pt</property>
+                                                <property name="marginRight">0pt</property>
+                                                <property name="paddingTop">1pt</property>
+                                                <property name="paddingLeft">1pt</property>
+                                                <property name="paddingBottom">1pt</property>
+                                                <property name="paddingRight">1pt</property>
                                                 <property name="textAlign">right</property>
-                                                <text-property name="text">0,00</text-property>
-                                            </label>
+                                                <property name="letterSpacing">normal</property>
+                                                <property name="lineHeight">normal</property>
+                                                <property name="orphans">2</property>
+                                                <property name="textTransform">none</property>
+                                                <property name="whiteSpace">normal</property>
+                                                <property name="widows">2</property>
+                                                <property name="wordSpacing">normal</property>
+                                                <property name="display">block</property>
+                                                <property name="pageBreakAfter">auto</property>
+                                                <property name="pageBreakBefore">auto</property>
+                                                <property name="pageBreakInside">auto</property>
+                                                <property name="showIfBlank">false</property>
+                                                <property name="canShrink">false</property>
+                                                <property name="overflow">hidden</property>
+                                                <property name="resultSetColumn">zaklad12</property>
+                                            </data>
                                         </cell>
                                         <cell id="7176">
-                                            <label id="7190">
+                                            <data id="7416">
+                                                <property name="backgroundAttachment">scroll</property>
+                                                <property name="backgroundPositionX">0%</property>
+                                                <property name="backgroundPositionY">0%</property>
+                                                <property name="backgroundRepeat">repeat</property>
                                                 <property name="fontFamily">"Mundial"</property>
                                                 <property name="fontSize">8pt</property>
+                                                <property name="fontWeight">normal</property>
+                                                <property name="fontStyle">normal</property>
+                                                <property name="fontVariant">normal</property>
+                                                <property name="color">black</property>
+                                                <property name="textLineThrough">none</property>
+                                                <property name="textOverline">none</property>
+                                                <property name="textUnderline">none</property>
+                                                <property name="borderBottomColor">black</property>
+                                                <property name="borderBottomStyle">none</property>
+                                                <property name="borderBottomWidth">medium</property>
+                                                <property name="borderLeftColor">black</property>
+                                                <property name="borderLeftStyle">none</property>
+                                                <property name="borderLeftWidth">medium</property>
+                                                <property name="borderRightColor">black</property>
+                                                <property name="borderRightStyle">none</property>
+                                                <property name="borderRightWidth">medium</property>
+                                                <property name="borderTopColor">black</property>
+                                                <property name="borderTopStyle">none</property>
+                                                <property name="borderTopWidth">medium</property>
+                                                <property name="marginTop">0pt</property>
+                                                <property name="marginLeft">0pt</property>
+                                                <property name="marginBottom">0pt</property>
+                                                <property name="marginRight">0pt</property>
+                                                <property name="paddingTop">1pt</property>
+                                                <property name="paddingLeft">1pt</property>
+                                                <property name="paddingBottom">1pt</property>
+                                                <property name="paddingRight">1pt</property>
                                                 <property name="textAlign">right</property>
-                                                <text-property name="text">0,00</text-property>
-                                            </label>
+                                                <property name="letterSpacing">normal</property>
+                                                <property name="lineHeight">normal</property>
+                                                <property name="orphans">2</property>
+                                                <property name="textTransform">none</property>
+                                                <property name="whiteSpace">normal</property>
+                                                <property name="widows">2</property>
+                                                <property name="wordSpacing">normal</property>
+                                                <property name="display">block</property>
+                                                <property name="pageBreakAfter">auto</property>
+                                                <property name="pageBreakBefore">auto</property>
+                                                <property name="pageBreakInside">auto</property>
+                                                <property name="showIfBlank">false</property>
+                                                <property name="canShrink">false</property>
+                                                <property name="overflow">hidden</property>
+                                                <property name="resultSetColumn">dph12</property>
+                                            </data>
                                         </cell>
                                         <cell id="7177">
-                                            <label id="7189">
+                                            <data id="7420">
+                                                <property name="backgroundAttachment">scroll</property>
+                                                <property name="backgroundPositionX">0%</property>
+                                                <property name="backgroundPositionY">0%</property>
+                                                <property name="backgroundRepeat">repeat</property>
                                                 <property name="fontFamily">"Mundial"</property>
                                                 <property name="fontSize">8pt</property>
+                                                <property name="fontWeight">normal</property>
+                                                <property name="fontStyle">normal</property>
+                                                <property name="fontVariant">normal</property>
+                                                <property name="color">black</property>
+                                                <property name="textLineThrough">none</property>
+                                                <property name="textOverline">none</property>
+                                                <property name="textUnderline">none</property>
+                                                <property name="borderBottomColor">black</property>
+                                                <property name="borderBottomStyle">none</property>
+                                                <property name="borderBottomWidth">medium</property>
+                                                <property name="borderLeftColor">black</property>
+                                                <property name="borderLeftStyle">none</property>
+                                                <property name="borderLeftWidth">medium</property>
+                                                <property name="borderRightColor">black</property>
+                                                <property name="borderRightStyle">none</property>
+                                                <property name="borderRightWidth">medium</property>
+                                                <property name="borderTopColor">black</property>
+                                                <property name="borderTopStyle">none</property>
+                                                <property name="borderTopWidth">medium</property>
+                                                <property name="marginTop">0pt</property>
+                                                <property name="marginLeft">0pt</property>
+                                                <property name="marginBottom">0pt</property>
+                                                <property name="marginRight">0pt</property>
+                                                <property name="paddingTop">1pt</property>
+                                                <property name="paddingLeft">1pt</property>
+                                                <property name="paddingBottom">1pt</property>
+                                                <property name="paddingRight">1pt</property>
                                                 <property name="textAlign">right</property>
-                                                <text-property name="text">0,00</text-property>
-                                            </label>
+                                                <property name="letterSpacing">normal</property>
+                                                <property name="lineHeight">normal</property>
+                                                <property name="orphans">2</property>
+                                                <property name="textTransform">none</property>
+                                                <property name="whiteSpace">normal</property>
+                                                <property name="widows">2</property>
+                                                <property name="wordSpacing">normal</property>
+                                                <property name="display">block</property>
+                                                <property name="pageBreakAfter">auto</property>
+                                                <property name="pageBreakBefore">auto</property>
+                                                <property name="pageBreakInside">auto</property>
+                                                <property name="showIfBlank">false</property>
+                                                <property name="canShrink">false</property>
+                                                <property name="overflow">hidden</property>
+                                                <property name="resultSetColumn">celkem12</property>
+                                            </data>
                                         </cell>
                                     </row>
                                     <row id="7178">
@@ -5315,28 +5659,163 @@ Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
                                             </label>
                                         </cell>
                                         <cell id="7180">
-                                            <label id="7195">
+                                            <data id="7419">
+                                                <property name="backgroundAttachment">scroll</property>
+                                                <property name="backgroundPositionX">0%</property>
+                                                <property name="backgroundPositionY">0%</property>
+                                                <property name="backgroundRepeat">repeat</property>
                                                 <property name="fontFamily">"Mundial"</property>
                                                 <property name="fontSize">8pt</property>
+                                                <property name="fontWeight">normal</property>
+                                                <property name="fontStyle">normal</property>
+                                                <property name="fontVariant">normal</property>
+                                                <property name="color">black</property>
+                                                <property name="textLineThrough">none</property>
+                                                <property name="textOverline">none</property>
+                                                <property name="textUnderline">none</property>
+                                                <property name="borderBottomColor">black</property>
+                                                <property name="borderBottomStyle">none</property>
+                                                <property name="borderBottomWidth">medium</property>
+                                                <property name="borderLeftColor">black</property>
+                                                <property name="borderLeftStyle">none</property>
+                                                <property name="borderLeftWidth">medium</property>
+                                                <property name="borderRightColor">black</property>
+                                                <property name="borderRightStyle">none</property>
+                                                <property name="borderRightWidth">medium</property>
+                                                <property name="borderTopColor">black</property>
+                                                <property name="borderTopStyle">none</property>
+                                                <property name="borderTopWidth">medium</property>
+                                                <property name="marginTop">0pt</property>
+                                                <property name="marginLeft">0pt</property>
+                                                <property name="marginBottom">0pt</property>
+                                                <property name="marginRight">0pt</property>
+                                                <property name="paddingTop">1pt</property>
+                                                <property name="paddingLeft">1pt</property>
+                                                <property name="paddingBottom">1pt</property>
+                                                <property name="paddingRight">1pt</property>
                                                 <property name="textAlign">right</property>
-                                                <text-property name="text">0,00</text-property>
-                                            </label>
+                                                <property name="letterSpacing">normal</property>
+                                                <property name="lineHeight">normal</property>
+                                                <property name="orphans">2</property>
+                                                <property name="textTransform">none</property>
+                                                <property name="whiteSpace">normal</property>
+                                                <property name="widows">2</property>
+                                                <property name="wordSpacing">normal</property>
+                                                <property name="display">block</property>
+                                                <property name="pageBreakAfter">auto</property>
+                                                <property name="pageBreakBefore">auto</property>
+                                                <property name="pageBreakInside">auto</property>
+                                                <property name="showIfBlank">false</property>
+                                                <property name="canShrink">false</property>
+                                                <property name="overflow">hidden</property>
+                                                <property name="resultSetColumn">zaklad21</property>
+                                            </data>
                                         </cell>
                                         <cell id="7181">
-                                            <label id="7192">
+                                            <data id="7417">
+                                                <property name="backgroundAttachment">scroll</property>
+                                                <property name="backgroundPositionX">0%</property>
+                                                <property name="backgroundPositionY">0%</property>
+                                                <property name="backgroundRepeat">repeat</property>
                                                 <property name="fontFamily">"Mundial"</property>
                                                 <property name="fontSize">8pt</property>
+                                                <property name="fontWeight">normal</property>
+                                                <property name="fontStyle">normal</property>
+                                                <property name="fontVariant">normal</property>
+                                                <property name="color">black</property>
+                                                <property name="textLineThrough">none</property>
+                                                <property name="textOverline">none</property>
+                                                <property name="textUnderline">none</property>
+                                                <property name="borderBottomColor">black</property>
+                                                <property name="borderBottomStyle">none</property>
+                                                <property name="borderBottomWidth">medium</property>
+                                                <property name="borderLeftColor">black</property>
+                                                <property name="borderLeftStyle">none</property>
+                                                <property name="borderLeftWidth">medium</property>
+                                                <property name="borderRightColor">black</property>
+                                                <property name="borderRightStyle">none</property>
+                                                <property name="borderRightWidth">medium</property>
+                                                <property name="borderTopColor">black</property>
+                                                <property name="borderTopStyle">none</property>
+                                                <property name="borderTopWidth">medium</property>
+                                                <property name="marginTop">0pt</property>
+                                                <property name="marginLeft">0pt</property>
+                                                <property name="marginBottom">0pt</property>
+                                                <property name="marginRight">0pt</property>
+                                                <property name="paddingTop">1pt</property>
+                                                <property name="paddingLeft">1pt</property>
+                                                <property name="paddingBottom">1pt</property>
+                                                <property name="paddingRight">1pt</property>
                                                 <property name="textAlign">right</property>
-                                                <text-property name="text">0,00</text-property>
-                                            </label>
+                                                <property name="letterSpacing">normal</property>
+                                                <property name="lineHeight">normal</property>
+                                                <property name="orphans">2</property>
+                                                <property name="textTransform">none</property>
+                                                <property name="whiteSpace">normal</property>
+                                                <property name="widows">2</property>
+                                                <property name="wordSpacing">normal</property>
+                                                <property name="display">block</property>
+                                                <property name="pageBreakAfter">auto</property>
+                                                <property name="pageBreakBefore">auto</property>
+                                                <property name="pageBreakInside">auto</property>
+                                                <property name="showIfBlank">false</property>
+                                                <property name="canShrink">false</property>
+                                                <property name="overflow">hidden</property>
+                                                <property name="resultSetColumn">dph21</property>
+                                            </data>
                                         </cell>
                                         <cell id="7182">
-                                            <label id="7191">
+                                            <data id="7421">
+                                                <property name="backgroundAttachment">scroll</property>
+                                                <property name="backgroundPositionX">0%</property>
+                                                <property name="backgroundPositionY">0%</property>
+                                                <property name="backgroundRepeat">repeat</property>
                                                 <property name="fontFamily">"Mundial"</property>
                                                 <property name="fontSize">8pt</property>
+                                                <property name="fontWeight">normal</property>
+                                                <property name="fontStyle">normal</property>
+                                                <property name="fontVariant">normal</property>
+                                                <property name="color">black</property>
+                                                <property name="textLineThrough">none</property>
+                                                <property name="textOverline">none</property>
+                                                <property name="textUnderline">none</property>
+                                                <property name="borderBottomColor">black</property>
+                                                <property name="borderBottomStyle">none</property>
+                                                <property name="borderBottomWidth">medium</property>
+                                                <property name="borderLeftColor">black</property>
+                                                <property name="borderLeftStyle">none</property>
+                                                <property name="borderLeftWidth">medium</property>
+                                                <property name="borderRightColor">black</property>
+                                                <property name="borderRightStyle">none</property>
+                                                <property name="borderRightWidth">medium</property>
+                                                <property name="borderTopColor">black</property>
+                                                <property name="borderTopStyle">none</property>
+                                                <property name="borderTopWidth">medium</property>
+                                                <property name="marginTop">0pt</property>
+                                                <property name="marginLeft">0pt</property>
+                                                <property name="marginBottom">0pt</property>
+                                                <property name="marginRight">0pt</property>
+                                                <property name="paddingTop">1pt</property>
+                                                <property name="paddingLeft">1pt</property>
+                                                <property name="paddingBottom">1pt</property>
+                                                <property name="paddingRight">1pt</property>
                                                 <property name="textAlign">right</property>
-                                                <text-property name="text">0,00</text-property>
-                                            </label>
+                                                <property name="letterSpacing">normal</property>
+                                                <property name="lineHeight">normal</property>
+                                                <property name="orphans">2</property>
+                                                <property name="textTransform">none</property>
+                                                <property name="whiteSpace">normal</property>
+                                                <property name="widows">2</property>
+                                                <property name="wordSpacing">normal</property>
+                                                <property name="display">block</property>
+                                                <property name="pageBreakAfter">auto</property>
+                                                <property name="pageBreakBefore">auto</property>
+                                                <property name="pageBreakInside">auto</property>
+                                                <property name="showIfBlank">false</property>
+                                                <property name="canShrink">false</property>
+                                                <property name="overflow">hidden</property>
+                                                <property name="resultSetColumn">celkem21</property>
+                                            </data>
                                         </cell>
                                     </row>
                                 </grid>
