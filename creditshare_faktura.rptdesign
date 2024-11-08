@@ -1146,8 +1146,7 @@
                                             <property name="fontFamily">"Mundial"</property>
                                             <property name="fontSize">8pt</property>
                                             <property name="contentType">auto</property>
-                                            <text-property name="content"><![CDATA[Fakturu vystavil/a:
-Tel.: 724090365/ e-mail: alena.marousova@creditasgroup.cz]]></text-property>
+                                            <text-property name="content"><![CDATA[e-mail: provoz@creditshare.cz]]></text-property>
                                         </text>
                                     </cell>
                                     <cell id="7056">
