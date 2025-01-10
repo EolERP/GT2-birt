@@ -54,7 +54,7 @@
     </page-setup>
     <body>
         <label id="6924">
-            <text-property name="text">Birt Version: 1.3.2</text-property>
+            <text-property name="text">Birt Version: 1.3.3</text-property>
         </label>
     </body>
     <list-property name="images">
