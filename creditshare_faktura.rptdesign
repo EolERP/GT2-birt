@@ -1707,7 +1707,7 @@ else &#13;
                                                 <property name="showIfBlank">false</property>
                                                 <property name="canShrink">false</property>
                                                 <property name="overflow">hidden</property>
-                                                <text-property name="text">Sokolovská 675/9</text-property>
+                                                <text-property name="text">Pobřežní 297/14</text-property>
                                             </label>
                                         </cell>
                                     </row>
