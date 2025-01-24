@@ -1,0 +1,1635 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report xmlns="http://www.eclipse.org/birt/2005/design" version="3.2.24" id="1">
+    <property name="createdBy">Eclipse BIRT Designer Version 4.13.0.v202303021806</property>
+    <property name="units">in</property>
+    <property name="iconFile">/templates/blank_report.gif</property>
+    <property name="bidiLayoutOrientation">ltr</property>
+    <property name="imageDPI">120</property>
+    <data-sources>
+        <oda-data-source extensionID="org.eclipse.datatools.enablement.oda.xml" name="Data Source" id="118">
+            <property name="FILELIST">tax_report_sample_data.xml</property>
+        </oda-data-source>
+    </data-sources>
+    <data-sets>
+        <oda-data-set extensionID="org.eclipse.datatools.enablement.oda.xml.dataSet" name="investor" id="119">
+            <list-property name="columnHints">
+                <structure>
+                    <property name="columnName">SUBJ_FullName</property>
+                    <text-property name="heading">SUBJ_FullName</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">SADDR_Line1</property>
+                    <text-property name="heading">SADDR_Line1</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">SADDR_Line2</property>
+                    <text-property name="heading">SADDR_Line2</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">SADDR_Line3</property>
+                    <text-property name="heading">SADDR_Line3</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">SADDR_Line4</property>
+                    <text-property name="heading">SADDR_Line4</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">SADDR_Line5</property>
+                    <text-property name="heading">SADDR_Line5</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">ContractNum</property>
+                    <text-property name="heading">ContractNum</text-property>
+                </structure>
+            </list-property>
+            <structure name="cachedMetaData">
+                <list-property name="resultSet">
+                    <structure>
+                        <property name="position">1</property>
+                        <property name="name">SUBJ_FullName</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">2</property>
+                        <property name="name">SADDR_Line1</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">3</property>
+                        <property name="name">SADDR_Line2</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">4</property>
+                        <property name="name">SADDR_Line3</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">5</property>
+                        <property name="name">SADDR_Line4</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">6</property>
+                        <property name="name">SADDR_Line5</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">7</property>
+                        <property name="name">ContractNum</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                </list-property>
+            </structure>
+            <property name="dataSource">Data Source</property>
+            <list-property name="resultSet">
+                <structure>
+                    <property name="position">1</property>
+                    <property name="name">SUBJ_FullName</property>
+                    <property name="nativeName">SUBJ_FullName</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">2</property>
+                    <property name="name">SADDR_Line1</property>
+                    <property name="nativeName">SADDR_Line1</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">3</property>
+                    <property name="name">SADDR_Line2</property>
+                    <property name="nativeName">SADDR_Line2</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">4</property>
+                    <property name="name">SADDR_Line3</property>
+                    <property name="nativeName">SADDR_Line3</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">5</property>
+                    <property name="name">SADDR_Line4</property>
+                    <property name="nativeName">SADDR_Line4</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">6</property>
+                    <property name="name">SADDR_Line5</property>
+                    <property name="nativeName">SADDR_Line5</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">7</property>
+                    <property name="name">ContractNum</property>
+                    <property name="nativeName">ContractNum</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+            </list-property>
+            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/Faktura/Subj]#:#{SUBJ_FullName;STRING;/SUBJ_FullName},{SADDR_Line1;STRING;/SADDR_Line1},{SADDR_Line2;STRING;/SADDR_Line2},{SADDR_Line3;STRING;/SADDR_Line3},{SADDR_Line4;STRING;/SADDR_Line4},{SADDR_Line5;STRING;/SADDR_Line5},{ContractNum;STRING;/ContractNum}]]></xml-property>
+            <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
+  <Version>2.0</Version>
+  <design:ResultSets derivedMetaData="true">
+    <design:resultSetDefinitions>
+      <design:resultSetColumns>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>SUBJ_FullName</design:name>
+              <design:position>1</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>SUBJ_FullName</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>SADDR_Line1</design:name>
+              <design:position>2</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>SADDR_Line1</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>SADDR_Line2</design:name>
+              <design:position>3</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>SADDR_Line2</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>SADDR_Line3</design:name>
+              <design:position>4</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>SADDR_Line3</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>SADDR_Line4</design:name>
+              <design:position>5</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>SADDR_Line4</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>SADDR_Line5</design:name>
+              <design:position>6</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>SADDR_Line5</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>ContractNum</design:name>
+              <design:position>7</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>ContractNum</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+      </design:resultSetColumns>
+      <design:criteria/>
+    </design:resultSetDefinitions>
+  </design:ResultSets>
+</model:DesignValues>]]></xml-property>
+            <list-property name="privateDriverProperties">
+                <ex-property>
+                    <name>MAX_ROW</name>
+                    <value>-1</value>
+                </ex-property>
+                <ex-property>
+                    <name>XML_FILE</name>
+                </ex-property>
+            </list-property>
+        </oda-data-set>
+        <oda-data-set extensionID="org.eclipse.datatools.enablement.oda.xml.dataSet" name="info" id="120">
+            <list-property name="columnHints">
+                <structure>
+                    <property name="columnName">datumVystaveni</property>
+                    <text-property name="heading">datumVystaveni</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">year</property>
+                    <text-property name="heading">year</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">sumaPrijmy</property>
+                    <text-property name="heading">sumaPrijmy</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">sumaUrok</property>
+                    <text-property name="heading">sumaUrok</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">sumaJistina</property>
+                    <text-property name="heading">sumaJistina</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">sumaVydaje</property>
+                    <text-property name="heading">sumaVydaje</text-property>
+                </structure>
+            </list-property>
+            <structure name="cachedMetaData">
+                <list-property name="resultSet">
+                    <structure>
+                        <property name="position">1</property>
+                        <property name="name">datumVystaveni</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">2</property>
+                        <property name="name">year</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">3</property>
+                        <property name="name">sumaPrijmy</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">4</property>
+                        <property name="name">sumaUrok</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">5</property>
+                        <property name="name">sumaJistina</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">6</property>
+                        <property name="name">sumaVydaje</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                </list-property>
+            </structure>
+            <property name="dataSource">Data Source</property>
+            <list-property name="resultSet">
+                <structure>
+                    <property name="position">1</property>
+                    <property name="name">datumVystaveni</property>
+                    <property name="nativeName">datumVystaveni</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">2</property>
+                    <property name="name">year</property>
+                    <property name="nativeName">year</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">3</property>
+                    <property name="name">sumaPrijmy</property>
+                    <property name="nativeName">sumaPrijmy</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">4</property>
+                    <property name="name">sumaUrok</property>
+                    <property name="nativeName">sumaUrok</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">5</property>
+                    <property name="name">sumaJistina</property>
+                    <property name="nativeName">sumaJistina</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">6</property>
+                    <property name="name">sumaVydaje</property>
+                    <property name="nativeName">sumaVydaje</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+            </list-property>
+            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/Faktura/Info]#:#{datumVystaveni;STRING;/datumVystaveni},{year;STRING;/year},{sumaPrijmy;STRING;/sumaPrijmy},{sumaUrok;STRING;/sumaUrok},{sumaJistina;STRING;/sumaJistina},{sumaVydaje;STRING;/sumaVydaje}]]></xml-property>
+            <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
+  <Version>2.0</Version>
+  <design:ResultSets derivedMetaData="true">
+    <design:resultSetDefinitions>
+      <design:resultSetColumns>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>datumVystaveni</design:name>
+              <design:position>1</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>datumVystaveni</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>year</design:name>
+              <design:position>2</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>year</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>sumaPrijmy</design:name>
+              <design:position>3</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>sumaPrijmy</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>sumaUrok</design:name>
+              <design:position>4</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>sumaUrok</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>sumaJistina</design:name>
+              <design:position>5</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>sumaJistina</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>sumaVydaje</design:name>
+              <design:position>6</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>sumaVydaje</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+      </design:resultSetColumns>
+      <design:criteria/>
+    </design:resultSetDefinitions>
+  </design:ResultSets>
+</model:DesignValues>]]></xml-property>
+            <list-property name="privateDriverProperties">
+                <ex-property>
+                    <name>MAX_ROW</name>
+                    <value>-1</value>
+                </ex-property>
+                <ex-property>
+                    <name>XML_FILE</name>
+                </ex-property>
+            </list-property>
+        </oda-data-set>
+        <oda-data-set extensionID="org.eclipse.datatools.enablement.oda.xml.dataSet" name="Prijmy" id="128">
+            <list-property name="columnHints">
+                <structure>
+                    <property name="columnName">datum</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">datum</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">popis</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">popis</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">castka</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">castka</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">urok</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">urok</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">jistina</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">jistina</text-property>
+                </structure>
+            </list-property>
+            <list-property name="parameters"/>
+            <structure name="cachedMetaData">
+                <list-property name="resultSet">
+                    <structure>
+                        <property name="position">1</property>
+                        <property name="name">datum</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">2</property>
+                        <property name="name">popis</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">3</property>
+                        <property name="name">castka</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">4</property>
+                        <property name="name">urok</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">5</property>
+                        <property name="name">jistina</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                </list-property>
+            </structure>
+            <property name="dataSource">Data Source</property>
+            <list-property name="resultSet">
+                <structure>
+                    <property name="position">1</property>
+                    <property name="name">datum</property>
+                    <property name="nativeName">datum</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">2</property>
+                    <property name="name">popis</property>
+                    <property name="nativeName">popis</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">3</property>
+                    <property name="name">castka</property>
+                    <property name="nativeName">castka</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">4</property>
+                    <property name="name">urok</property>
+                    <property name="nativeName">urok</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">5</property>
+                    <property name="name">jistina</property>
+                    <property name="nativeName">jistina</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+            </list-property>
+            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/Faktura/Prijmy/Prijem]#:#{datum;STRING;/datum},{popis;STRING;/popis},{castka;STRING;/castka},{urok;STRING;/urok},{jistina;STRING;/jistina}]]></xml-property>
+            <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
+  <Version>2.0</Version>
+  <design:ResultSets derivedMetaData="true">
+    <design:resultSetDefinitions>
+      <design:resultSetColumns>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>datum</design:name>
+              <design:position>1</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>datum</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>popis</design:name>
+              <design:position>2</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>popis</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>castka</design:name>
+              <design:position>3</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>castka</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>urok</design:name>
+              <design:position>4</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>urok</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>jistina</design:name>
+              <design:position>5</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>jistina</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+      </design:resultSetColumns>
+      <design:criteria/>
+    </design:resultSetDefinitions>
+  </design:ResultSets>
+</model:DesignValues>]]></xml-property>
+            <list-property name="privateDriverProperties">
+                <ex-property>
+                    <name>MAX_ROW</name>
+                    <value>-1</value>
+                </ex-property>
+                <ex-property>
+                    <name>XML_FILE</name>
+                </ex-property>
+            </list-property>
+        </oda-data-set>
+        <oda-data-set extensionID="org.eclipse.datatools.enablement.oda.xml.dataSet" name="Vydaje" id="157">
+            <list-property name="columnHints">
+                <structure>
+                    <property name="columnName">datum</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">datum</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">popis</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">popis</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">castka</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">castka</text-property>
+                </structure>
+            </list-property>
+            <list-property name="parameters"/>
+            <structure name="cachedMetaData">
+                <list-property name="resultSet">
+                    <structure>
+                        <property name="position">1</property>
+                        <property name="name">datum</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">2</property>
+                        <property name="name">popis</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">3</property>
+                        <property name="name">castka</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                </list-property>
+            </structure>
+            <property name="dataSource">Data Source</property>
+            <list-property name="resultSet">
+                <structure>
+                    <property name="position">1</property>
+                    <property name="name">datum</property>
+                    <property name="nativeName">datum</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">2</property>
+                    <property name="name">popis</property>
+                    <property name="nativeName">popis</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">3</property>
+                    <property name="name">castka</property>
+                    <property name="nativeName">castka</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+            </list-property>
+            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/Faktura/Vydaje/Vydaj]#:#{datum;STRING;/datum},{popis;STRING;/popis},{castka;STRING;/castka}]]></xml-property>
+            <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
+  <Version>2.0</Version>
+  <design:ResultSets derivedMetaData="true">
+    <design:resultSetDefinitions>
+      <design:resultSetColumns>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>datum</design:name>
+              <design:position>1</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>datum</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>popis</design:name>
+              <design:position>2</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>popis</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>castka</design:name>
+              <design:position>3</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>castka</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+      </design:resultSetColumns>
+      <design:criteria/>
+    </design:resultSetDefinitions>
+  </design:ResultSets>
+</model:DesignValues>]]></xml-property>
+            <list-property name="privateDriverProperties">
+                <ex-property>
+                    <name>MAX_ROW</name>
+                    <value>-1</value>
+                </ex-property>
+                <ex-property>
+                    <name>XML_FILE</name>
+                </ex-property>
+            </list-property>
+        </oda-data-set>
+    </data-sets>
+    <styles>
+        <style name="CS" id="81">
+            <property name="fontFamily">"Mundial"</property>
+        </style>
+        <style name="text_cr" id="133">
+            <property name="marginTop">1pt</property>
+            <property name="marginLeft">1pt</property>
+            <property name="marginBottom">1pt</property>
+            <property name="marginRight">1pt</property>
+        </style>
+    </styles>
+    <page-setup>
+        <simple-master-page name="Simple MasterPage" id="2">
+            <property name="leftMargin">0.5in</property>
+            <property name="bottomMargin">0.25in</property>
+            <property name="rightMargin">0.5in</property>
+            <property name="fontFamily">"Mundial"</property>
+            <property name="lineHeight">1.5em</property>
+            <property name="footerHeight">0.5in</property>
+            <page-footer>
+                <text id="3">
+                    <property name="fontFamily">"Mundial"</property>
+                    <property name="paddingTop">1pt</property>
+                    <property name="contentType">html</property>
+                    <text-property name="content"><![CDATA[CREDITSHARE s.r.o. , Pobřežní 297/14, 186 00 Praha 8, IČ: 241 85 299]]></text-property>
+                </text>
+            </page-footer>
+        </simple-master-page>
+    </page-setup>
+    <body>
+        <grid name="styl" id="84">
+            <column id="85"/>
+            <row id="86">
+                <cell id="87">
+                    <text-data id="88">
+                        <expression name="valueExpr">"&lt;style>    body {font-family: \"Mundial\";}&lt;/style>"</expression>
+                        <property name="contentType">html</property>
+                    </text-data>
+                </cell>
+            </row>
+        </grid>
+        <grid name="Titulek" id="5">
+            <property name="style">CS</property>
+            <property name="marginLeft">0pt</property>
+            <property name="height">1.4083333333333334in</property>
+            <list-property name="boundDataColumns">
+                <structure>
+                    <property name="name">from</property>
+                    <text-property name="displayName">from</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["from"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">to</property>
+                    <text-property name="displayName">to</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["to"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+            </list-property>
+            <column id="6"/>
+            <row id="7">
+                <property name="height">0.8666666666666667in</property>
+                <cell id="8">
+                    <grid name="Grid titulek" id="14">
+                        <property name="lineHeight">1.5em</property>
+                        <property name="height">0.7583333333333333in</property>
+                        <column id="15"/>
+                        <column id="16"/>
+                        <row id="17">
+                            <property name="height">0.7583333333333333in</property>
+                            <cell id="18">
+                                <image id="13">
+                                    <property name="height">0.5333333333333333in</property>
+                                    <property name="width">2in</property>
+                                    <property name="source">file</property>
+                                    <expression name="uri" type="constant">creditshare_blue_logo.png</expression>
+                                </image>
+                            </cell>
+                            <cell id="19">
+                                <label id="93">
+                                    <property name="fontSize">1%</property>
+                                </label>
+                            </cell>
+                        </row>
+                    </grid>
+                </cell>
+            </row>
+            <row id="99">
+                <property name="height">0.5416666666666666in</property>
+                <cell id="100">
+                    <text-data id="143">
+                        <property name="fontSize">14pt</property>
+                        <property name="fontWeight">bold</property>
+                        <property name="textAlign">center</property>
+                        <property name="dataSet">info</property>
+                        <list-property name="boundDataColumns">
+                            <structure>
+                                <property name="name">year</property>
+                                <text-property name="displayName">year</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["year"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                        </list-property>
+                        <expression name="valueExpr">"VÝPIS PŘÍJMŮ A VÝDAJŮ ÚČTU CREDITSHARE ZA ROK " + row["year"]</expression>
+                        <property name="contentType">html</property>
+                    </text-data>
+                </cell>
+            </row>
+        </grid>
+        <grid name="Investor" id="144">
+            <property name="dataSet">investor</property>
+            <list-property name="boundDataColumns">
+                <structure>
+                    <property name="name">SUBJ_FullName</property>
+                    <text-property name="displayName">SUBJ_FullName</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["SUBJ_FullName"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">SADDR_Line1</property>
+                    <text-property name="displayName">SADDR_Line1</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["SADDR_Line1"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">SADDR_Line2</property>
+                    <text-property name="displayName">SADDR_Line2</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["SADDR_Line2"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">SADDR_Line3</property>
+                    <text-property name="displayName">SADDR_Line3</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["SADDR_Line3"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">SADDR_Line4</property>
+                    <text-property name="displayName">SADDR_Line4</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["SADDR_Line4"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">SADDR_Line5</property>
+                    <text-property name="displayName">SADDR_Line5</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["SADDR_Line5"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">ContractNum</property>
+                    <text-property name="displayName">ContractNum</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["ContractNum"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+            </list-property>
+            <column id="145"/>
+            <row id="146">
+                <cell id="147">
+                    <property name="fontFamily">"Mundial"</property>
+                    <text-data id="109">
+                        <property name="dataSet">info</property>
+                        <list-property name="boundDataColumns">
+                            <structure>
+                                <property name="name">datumVystaveni</property>
+                                <text-property name="displayName">datumVystaveni</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["datumVystaveni"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                            <structure>
+                                <property name="name">year</property>
+                                <text-property name="displayName">year</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["year"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                        </list-property>
+                        <expression name="valueExpr">"Vystaveno dne: "+row["datumVystaveni"]+"&lt;br>&lt;br>Investor:&lt;br>"</expression>
+                        <property name="contentType">html</property>
+                    </text-data>
+                </cell>
+            </row>
+            <row id="148">
+                <cell id="149">
+                    <property name="fontFamily">"Mundial"</property>
+                    <property name="paddingLeft">45pt</property>
+                    <property name="lineHeight">120%</property>
+                    <data id="121">
+                        <property name="fontWeight">bold</property>
+                        <property name="dataSet">investor</property>
+                        <list-property name="boundDataColumns">
+                            <structure>
+                                <property name="name">SUBJ_FullName</property>
+                                <text-property name="displayName">SUBJ_FullName</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["SUBJ_FullName"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                        </list-property>
+                        <property name="resultSetColumn">SUBJ_FullName</property>
+                    </data>
+                    <data id="122">
+                        <property name="dataSet">investor</property>
+                        <list-property name="visibility">
+                            <structure>
+                                <property name="format">all</property>
+                                <expression name="valueExpr" type="javascript">true</expression>
+                            </structure>
+                        </list-property>
+                        <list-property name="boundDataColumns">
+                            <structure>
+                                <property name="name">SADDR_Line1</property>
+                                <text-property name="displayName">SADDR_Line1</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["SADDR_Line1"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                        </list-property>
+                        <property name="resultSetColumn">SADDR_Line1</property>
+                    </data>
+                    <data id="123">
+                        <property name="style">text_cr</property>
+                        <property name="dataSet">investor</property>
+                        <list-property name="visibility">
+                            <structure>
+                                <property name="format">all</property>
+                                <expression name="valueExpr" type="javascript">row["SADDR_Line2"]==""</expression>
+                            </structure>
+                        </list-property>
+                        <list-property name="boundDataColumns">
+                            <structure>
+                                <property name="name">SADDR_Line2</property>
+                                <text-property name="displayName">SADDR_Line2</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["SADDR_Line2"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                        </list-property>
+                        <property name="resultSetColumn">SADDR_Line2</property>
+                    </data>
+                    <data id="124">
+                        <property name="dataSet">investor</property>
+                        <list-property name="visibility">
+                            <structure>
+                                <property name="format">all</property>
+                                <expression name="valueExpr" type="javascript">row["SADDR_Line3"]==""</expression>
+                            </structure>
+                        </list-property>
+                        <list-property name="boundDataColumns">
+                            <structure>
+                                <property name="name">SADDR_Line3</property>
+                                <text-property name="displayName">SADDR_Line3</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["SADDR_Line3"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                        </list-property>
+                        <property name="resultSetColumn">SADDR_Line3</property>
+                    </data>
+                    <data id="125">
+                        <property name="dataSet">investor</property>
+                        <list-property name="visibility">
+                            <structure>
+                                <property name="format">all</property>
+                                <expression name="valueExpr" type="javascript">row["SADDR_Line4"]==""</expression>
+                            </structure>
+                        </list-property>
+                        <list-property name="boundDataColumns">
+                            <structure>
+                                <property name="name">SADDR_Line4</property>
+                                <text-property name="displayName">SADDR_Line4</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["SADDR_Line4"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                        </list-property>
+                        <property name="resultSetColumn">SADDR_Line4</property>
+                    </data>
+                    <data id="126">
+                        <property name="dataSet">investor</property>
+                        <list-property name="visibility">
+                            <structure>
+                                <property name="format">all</property>
+                                <expression name="valueExpr" type="javascript">row["SADDR_Line2"]==""</expression>
+                            </structure>
+                        </list-property>
+                        <list-property name="boundDataColumns">
+                            <structure>
+                                <property name="name">SADDR_Line5</property>
+                                <text-property name="displayName">SADDR_Line5</text-property>
+                                <expression name="expression" type="javascript">row["SADDR_Line5"]=="" || row["SADDR_Line5"] == "Česká republika"</expression>
+                                <property name="dataType">string</property>
+                                <property name="allowExport">true</property>
+                            </structure>
+                        </list-property>
+                        <property name="resultSetColumn">SADDR_Line5</property>
+                    </data>
+                </cell>
+            </row>
+            <row id="150">
+                <cell id="151">
+                    <property name="fontFamily">"Mundial"</property>
+                    <text id="131">
+                        <property name="contentType">auto</property>
+                        <text-property name="content"><![CDATA[ ]]></text-property>
+                    </text>
+                </cell>
+            </row>
+            <row id="152">
+                <cell id="153">
+                    <property name="fontFamily">"Mundial"</property>
+                    <text-data id="127">
+                        <expression name="valueExpr">"Číslo smlouvy: "+row["ContractNum"]</expression>
+                        <property name="contentType">html</property>
+                    </text-data>
+                </cell>
+            </row>
+            <row id="154">
+                <cell id="155">
+                    <property name="fontFamily">"Mundial"</property>
+                    <text id="156">
+                        <property name="contentType">auto</property>
+                        <text-property name="content"><![CDATA[ ]]></text-property>
+                    </text>
+                </cell>
+            </row>
+        </grid>
+        <grid name="Souhrn" id="136">
+            <property name="fontFamily">"Mundial"</property>
+            <property name="dataSet">info</property>
+            <list-property name="boundDataColumns">
+                <structure>
+                    <property name="name">datumVystaveni</property>
+                    <text-property name="displayName">datumVystaveni</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["datumVystaveni"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">year</property>
+                    <text-property name="displayName">year</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["year"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">sumaPrijmy</property>
+                    <text-property name="displayName">sumaPrijmy</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["sumaPrijmy"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">sumaUrok</property>
+                    <text-property name="displayName">sumaUrok</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["sumaUrok"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">sumaJistina</property>
+                    <text-property name="displayName">sumaJistina</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["sumaJistina"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">sumaVydaje</property>
+                    <text-property name="displayName">sumaVydaje</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["sumaVydaje"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+            </list-property>
+            <column id="137"/>
+            <row id="138">
+                <cell id="139">
+                    <property name="lineHeight">120%</property>
+                    <text-data id="140">
+                        <expression name="valueExpr">"&lt;b>Souhrn příjmů: " + row["sumaPrijmy"] + " Kč&lt;/b>&lt;br>" + "Z toho úroky: " +row["sumaUrok"] + "Kč&lt;br>" + "Z toho jistina: " + row["sumaJistina"] + "Kč" + "&lt;br>&lt;br>" +  "&lt;b>Souhrn výdajů: " + row["sumaVydaje"] + " Kč&lt;/b>&lt;br>"</expression>
+                        <property name="contentType">html</property>
+                    </text-data>
+                </cell>
+            </row>
+            <row id="141">
+                <cell id="142"/>
+            </row>
+        </grid>
+        <grid name="report prijmy" id="54">
+            <property name="marginLeft">8%</property>
+            <property name="marginRight">8%</property>
+            <property name="textAlign">left</property>
+            <property name="width">6.391666666666667in</property>
+            <property name="dataSet">Prijmy</property>
+            <list-property name="boundDataColumns">
+                <structure>
+                    <property name="name">datum</property>
+                    <text-property name="displayName">datum</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["datum"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">popis</property>
+                    <text-property name="displayName">popis</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["popis"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">castka</property>
+                    <text-property name="displayName">castka</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["castka"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">urok</property>
+                    <text-property name="displayName">urok</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["urok"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">jistina</property>
+                    <text-property name="displayName">jistina</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["jistina"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+            </list-property>
+            <column id="55">
+                <property name="width">6.391666666666667in</property>
+            </column>
+            <row id="102">
+                <property name="textLineThrough">none</property>
+                <property name="marginLeft">0pt</property>
+                <property name="textAlign">left</property>
+                <cell id="103">
+                    <label id="104">
+                        <property name="fontFamily">"Mundial"</property>
+                        <property name="fontWeight">bold</property>
+                        <text-property name="text">PŘÍJMY</text-property>
+                    </label>
+                </cell>
+            </row>
+            <row id="56">
+                <property name="textLineThrough">none</property>
+                <property name="marginLeft">0pt</property>
+                <property name="textAlign">left</property>
+                <cell id="57">
+                    <table id="58">
+                        <property name="marginLeft">0pt</property>
+                        <property name="textAlign">left</property>
+                        <property name="width">6.341666666666667in</property>
+                        <column id="71">
+                            <property name="width">0.8in</property>
+                        </column>
+                        <column id="72">
+                            <property name="width">3.775in</property>
+                        </column>
+                        <column id="73">
+                            <property name="width">1.7666666666666666in</property>
+                        </column>
+                        <header>
+                            <row id="59">
+                                <property name="fontWeight">bold</property>
+                                <property name="lineHeight">1em</property>
+                                <property name="height">0.2916666666666667in</property>
+                                <cell id="60">
+                                    <property name="borderBottomStyle">solid</property>
+                                    <property name="borderBottomWidth">thin</property>
+                                    <property name="borderLeftStyle">solid</property>
+                                    <property name="borderLeftWidth">thin</property>
+                                    <property name="borderRightStyle">solid</property>
+                                    <property name="borderRightWidth">thin</property>
+                                    <property name="borderTopStyle">solid</property>
+                                    <property name="borderTopWidth">thin</property>
+                                    <label id="74">
+                                        <property name="fontFamily">"Mundial"</property>
+                                        <property name="fontWeight">normal</property>
+                                        <property name="textAlign">left</property>
+                                        <text-property name="text">Datum</text-property>
+                                    </label>
+                                </cell>
+                                <cell id="61">
+                                    <property name="borderBottomStyle">solid</property>
+                                    <property name="borderBottomWidth">thin</property>
+                                    <property name="borderLeftStyle">solid</property>
+                                    <property name="borderLeftWidth">thin</property>
+                                    <property name="borderRightStyle">solid</property>
+                                    <property name="borderRightWidth">thin</property>
+                                    <property name="borderTopStyle">solid</property>
+                                    <property name="borderTopWidth">thin</property>
+                                    <label id="75">
+                                        <property name="fontFamily">"Mundial"</property>
+                                        <property name="fontWeight">normal</property>
+                                        <property name="textAlign">left</property>
+                                        <text-property name="text">Popis</text-property>
+                                    </label>
+                                </cell>
+                                <cell id="62">
+                                    <property name="borderBottomStyle">solid</property>
+                                    <property name="borderBottomWidth">thin</property>
+                                    <property name="borderLeftStyle">solid</property>
+                                    <property name="borderLeftWidth">thin</property>
+                                    <property name="borderRightStyle">solid</property>
+                                    <property name="borderRightWidth">thin</property>
+                                    <property name="borderTopStyle">solid</property>
+                                    <property name="borderTopWidth">thin</property>
+                                    <label id="76">
+                                        <property name="fontFamily">"Mundial"</property>
+                                        <property name="fontWeight">normal</property>
+                                        <property name="textAlign">left</property>
+                                        <text-property name="text">Částka</text-property>
+                                    </label>
+                                </cell>
+                            </row>
+                        </header>
+                        <detail>
+                            <row id="63">
+                                <cell id="64">
+                                    <property name="fontFamily">"Mundial"</property>
+                                    <property name="borderBottomStyle">solid</property>
+                                    <property name="borderBottomWidth">thin</property>
+                                    <property name="borderLeftStyle">solid</property>
+                                    <property name="borderLeftWidth">thin</property>
+                                    <property name="borderRightStyle">solid</property>
+                                    <property name="borderRightWidth">thin</property>
+                                    <property name="borderTopStyle">solid</property>
+                                    <property name="borderTopWidth">thin</property>
+                                    <data id="129">
+                                        <property name="resultSetColumn">datum</property>
+                                    </data>
+                                </cell>
+                                <cell id="65">
+                                    <property name="fontFamily">"Mundial"</property>
+                                    <property name="borderBottomStyle">solid</property>
+                                    <property name="borderBottomWidth">thin</property>
+                                    <property name="borderLeftStyle">solid</property>
+                                    <property name="borderLeftWidth">thin</property>
+                                    <property name="borderRightStyle">solid</property>
+                                    <property name="borderRightWidth">thin</property>
+                                    <property name="borderTopStyle">solid</property>
+                                    <property name="borderTopWidth">thin</property>
+                                    <data id="130">
+                                        <property name="resultSetColumn">popis</property>
+                                    </data>
+                                </cell>
+                                <cell id="66">
+                                    <property name="borderBottomStyle">solid</property>
+                                    <property name="borderBottomWidth">thin</property>
+                                    <property name="borderLeftStyle">solid</property>
+                                    <property name="borderLeftWidth">thin</property>
+                                    <property name="borderRightStyle">solid</property>
+                                    <property name="borderRightWidth">thin</property>
+                                    <property name="borderTopStyle">solid</property>
+                                    <property name="borderTopWidth">thin</property>
+                                    <text-data id="80">
+                                        <property name="fontFamily">"Mundial"</property>
+                                        <property name="textAlign">right</property>
+                                        <expression name="valueExpr">row["castka"]+" Kč"</expression>
+                                        <property name="contentType">html</property>
+                                    </text-data>
+                                    <text-data id="105">
+                                        <property name="fontFamily">"Mundial"</property>
+                                        <property name="fontSize">9pt</property>
+                                        <list-property name="visibility">
+                                            <structure>
+                                                <property name="format">all</property>
+                                                <expression name="valueExpr" type="javascript">row["urok"]==null  &amp;&amp; row["jistina"]==null</expression>
+                                            </structure>
+                                        </list-property>
+                                        <expression name="valueExpr">"z toho úrok: " +row["urok"] + " Kč"</expression>
+                                        <property name="contentType">html</property>
+                                    </text-data>
+                                    <text-data id="132">
+                                        <property name="fontFamily">"Mundial"</property>
+                                        <property name="fontSize">9pt</property>
+                                        <list-property name="visibility">
+                                            <structure>
+                                                <property name="format">all</property>
+                                                <expression name="valueExpr" type="javascript">row["urok"]==null  &amp;&amp; row["jistina"]==null</expression>
+                                            </structure>
+                                        </list-property>
+                                        <expression name="valueExpr">"z toho jistina: " +row["jistina"] + " Kč"</expression>
+                                        <property name="contentType">html</property>
+                                    </text-data>
+                                </cell>
+                            </row>
+                        </detail>
+                        <footer>
+                            <row id="67">
+                                <property name="height">0.13333333333333333in</property>
+                                <cell id="68"/>
+                                <cell id="69"/>
+                                <cell id="70"/>
+                            </row>
+                        </footer>
+                    </table>
+                </cell>
+            </row>
+        </grid>
+        <grid name="report Vydaje" id="158">
+            <property name="marginLeft">8%</property>
+            <property name="marginRight">8%</property>
+            <property name="textAlign">left</property>
+            <property name="width">6.391666666666667in</property>
+            <property name="dataSet">Vydaje</property>
+            <list-property name="boundDataColumns">
+                <structure>
+                    <property name="name">datum</property>
+                    <text-property name="displayName">datum</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["datum"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">popis</property>
+                    <text-property name="displayName">popis</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["popis"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+                <structure>
+                    <property name="name">castka</property>
+                    <text-property name="displayName">castka</text-property>
+                    <expression name="expression" type="javascript">dataSetRow["castka"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+            </list-property>
+            <column id="159">
+                <property name="width">6.391666666666667in</property>
+            </column>
+            <row id="160">
+                <property name="textLineThrough">none</property>
+                <property name="marginLeft">0pt</property>
+                <property name="textAlign">left</property>
+                <cell id="161">
+                    <label id="162">
+                        <property name="fontFamily">"Mundial"</property>
+                        <property name="fontWeight">bold</property>
+                        <text-property name="text">VÝDAJE</text-property>
+                    </label>
+                </cell>
+            </row>
+            <row id="163">
+                <property name="textLineThrough">none</property>
+                <property name="marginLeft">0pt</property>
+                <property name="textAlign">left</property>
+                <cell id="164">
+                    <table id="165">
+                        <property name="marginLeft">0pt</property>
+                        <property name="textAlign">left</property>
+                        <property name="width">6.341666666666667in</property>
+                        <property name="dataSet">Vydaje</property>
+                        <list-property name="boundDataColumns">
+                            <structure>
+                                <property name="name">datum</property>
+                                <text-property name="displayName">datum</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["datum"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                            <structure>
+                                <property name="name">popis</property>
+                                <text-property name="displayName">popis</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["popis"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                            <structure>
+                                <property name="name">castka</property>
+                                <text-property name="displayName">castka</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["castka"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                        </list-property>
+                        <column id="186">
+                            <property name="width">0.8in</property>
+                        </column>
+                        <column id="187">
+                            <property name="width">3.775in</property>
+                        </column>
+                        <column id="188">
+                            <property name="width">1.7666666666666666in</property>
+                        </column>
+                        <header>
+                            <row id="166">
+                                <property name="fontWeight">bold</property>
+                                <property name="lineHeight">1em</property>
+                                <property name="height">0.2916666666666667in</property>
+                                <cell id="167">
+                                    <property name="borderBottomStyle">solid</property>
+                                    <property name="borderBottomWidth">thin</property>
+                                    <property name="borderLeftStyle">solid</property>
+                                    <property name="borderLeftWidth">thin</property>
+                                    <property name="borderRightStyle">solid</property>
+                                    <property name="borderRightWidth">thin</property>
+                                    <property name="borderTopStyle">solid</property>
+                                    <property name="borderTopWidth">thin</property>
+                                    <label id="168">
+                                        <property name="fontFamily">"Mundial"</property>
+                                        <property name="fontWeight">normal</property>
+                                        <property name="textAlign">left</property>
+                                        <text-property name="text">Datum</text-property>
+                                    </label>
+                                </cell>
+                                <cell id="169">
+                                    <property name="borderBottomStyle">solid</property>
+                                    <property name="borderBottomWidth">thin</property>
+                                    <property name="borderLeftStyle">solid</property>
+                                    <property name="borderLeftWidth">thin</property>
+                                    <property name="borderRightStyle">solid</property>
+                                    <property name="borderRightWidth">thin</property>
+                                    <property name="borderTopStyle">solid</property>
+                                    <property name="borderTopWidth">thin</property>
+                                    <label id="170">
+                                        <property name="fontFamily">"Mundial"</property>
+                                        <property name="fontWeight">normal</property>
+                                        <property name="textAlign">left</property>
+                                        <text-property name="text">Popis</text-property>
+                                    </label>
+                                </cell>
+                                <cell id="171">
+                                    <property name="borderBottomStyle">solid</property>
+                                    <property name="borderBottomWidth">thin</property>
+                                    <property name="borderLeftStyle">solid</property>
+                                    <property name="borderLeftWidth">thin</property>
+                                    <property name="borderRightStyle">solid</property>
+                                    <property name="borderRightWidth">thin</property>
+                                    <property name="borderTopStyle">solid</property>
+                                    <property name="borderTopWidth">thin</property>
+                                    <label id="172">
+                                        <property name="fontFamily">"Mundial"</property>
+                                        <property name="fontWeight">normal</property>
+                                        <property name="textAlign">left</property>
+                                        <text-property name="text">Částka</text-property>
+                                    </label>
+                                </cell>
+                            </row>
+                        </header>
+                        <detail>
+                            <row id="173">
+                                <cell id="174">
+                                    <property name="fontFamily">"Mundial"</property>
+                                    <property name="borderBottomStyle">solid</property>
+                                    <property name="borderBottomWidth">thin</property>
+                                    <property name="borderLeftStyle">solid</property>
+                                    <property name="borderLeftWidth">thin</property>
+                                    <property name="borderRightStyle">solid</property>
+                                    <property name="borderRightWidth">thin</property>
+                                    <property name="borderTopStyle">solid</property>
+                                    <property name="borderTopWidth">thin</property>
+                                    <data id="189">
+                                        <property name="resultSetColumn">datum</property>
+                                    </data>
+                                </cell>
+                                <cell id="176">
+                                    <property name="fontFamily">"Mundial"</property>
+                                    <property name="borderBottomStyle">solid</property>
+                                    <property name="borderBottomWidth">thin</property>
+                                    <property name="borderLeftStyle">solid</property>
+                                    <property name="borderLeftWidth">thin</property>
+                                    <property name="borderRightStyle">solid</property>
+                                    <property name="borderRightWidth">thin</property>
+                                    <property name="borderTopStyle">solid</property>
+                                    <property name="borderTopWidth">thin</property>
+                                    <data id="190">
+                                        <property name="resultSetColumn">popis</property>
+                                    </data>
+                                </cell>
+                                <cell id="178">
+                                    <property name="borderBottomStyle">solid</property>
+                                    <property name="borderBottomWidth">thin</property>
+                                    <property name="borderLeftStyle">solid</property>
+                                    <property name="borderLeftWidth">thin</property>
+                                    <property name="borderRightStyle">solid</property>
+                                    <property name="borderRightWidth">thin</property>
+                                    <property name="borderTopStyle">solid</property>
+                                    <property name="borderTopWidth">thin</property>
+                                    <text-data id="191">
+                                        <property name="fontFamily">"Mundial"</property>
+                                        <property name="textAlign">right</property>
+                                        <expression name="valueExpr">row["castka"]</expression>
+                                        <property name="contentType">html</property>
+                                    </text-data>
+                                </cell>
+                            </row>
+                        </detail>
+                        <footer>
+                            <row id="182">
+                                <property name="height">0.13333333333333333in</property>
+                                <cell id="183"/>
+                                <cell id="184"/>
+                                <cell id="185"/>
+                            </row>
+                        </footer>
+                    </table>
+                </cell>
+            </row>
+        </grid>
+        <grid name="Poznámka" id="94">
+            <property name="height">3.0833333333333335in</property>
+            <column id="95"/>
+            <row id="106">
+                <property name="height">0.4083333333333333in</property>
+                <cell id="107"/>
+            </row>
+            <row id="96">
+                <property name="height">2.675in</property>
+                <cell id="97">
+                    <property name="lineHeight">120%</property>
+                    <text id="98">
+                        <property name="fontFamily">"Mundial"</property>
+                        <property name="fontSize">9pt</property>
+                        <property name="lineHeight">1.5em</property>
+                        <property name="contentType">html</property>
+                        <text-property name="content"><![CDATA[    <STRONG>Poznámka k daňovým povinnostem</STRONG><br>Příjem získaný prostřednictvím platformy CreditShare podléhá daňovým zákonům platným v zemi, kde jste daňovým rezidentem.
+    <ul>
+        <li>Povinnost vykázání: Tento příjem by měl být řádně vykázán a zdaněn v souladu s příslušnými daňovými předpisy.</li>
+        <li>Informativní charakter: Údaje uvedené v tomto výkazu příjmů neslouží jako daňové přiznání.</li>
+        <li>Vaše odpovědnost: Jste plně odpovědní za správné vykázání svého příjmu a výpočet daně, stejně jako za její úhradu příslušným úřadům.</li>
+    </ul>
+
+    <p>Informace uvedené v tomto výkazu příjmů mají pouze informační charakter a nelze je považovat za daňové, právní ani jiné odborné poradenství.
+    </ul>]]></text-property>
+                    </text>
+                </cell>
+            </row>
+        </grid>
+    </body>
+</report>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Faktura>
+  <Info>
+    <datumVystaveni>24.01.2025</datumVystaveni>
+    <year>2024</year>
+    <sumaPrijmy>9 587,50</sumaPrijmy>
+    <sumaUrok>8 587,50</sumaUrok>
+    <sumaJistina>1 000,00</sumaJistina>
+    <sumaVydaje>50 000,00</sumaVydaje>
+  </Info>
+  <Subj>
+    <SUBJ_FullName>Griff Team Technologies s.r.o.</SUBJ_FullName>
+    <SADDR_Line1>Griff Team Technologies s.r.o.</SADDR_Line1>
+    <SADDR_Line2 />
+    <SADDR_Line3>Jičínská 29/11</SADDR_Line3>
+    <SADDR_Line4>13000 Praha</SADDR_Line4>
+    <SADDR_Line5>Česká republika</SADDR_Line5>
+    <ContractNum>2250066512</ContractNum>
+  </Subj>
+  <AcctDlz>
+    <BACCT_Num>CZ2222500000000111111117</BACCT_Num>
+    <Number>000000-0111111117/2250</Number>
+    <Swift>CTASCZ22</Swift>
+  </AcctDlz>
+  <Prijmy>
+    <Prijem>
+      <datum>30.09.2024</datum>
+      <popis>úročení příslibů investic/vkladů v investorské peněžence</popis>
+      <castka>2 021,87</castka>
+    </Prijem>
+    <Prijem>
+      <datum>31.12.2024</datum>
+      <popis>Investice OMNIS Písek</popis>
+      <castka>1 500,00</castka>
+      <urok>500,00</urok>
+      <jistina>1 000,00</jistina>
+    </Prijem>
+  </Prijmy>
+  <Vydaje>
+    <Vydaj>
+      <datum>12.09.2024</datum>
+      <popis>Investice OMNIS Písek</popis>
+      <castka>50 000,00</castka>
+    </Vydaj>
+  </Vydaje>
+</Faktura>
