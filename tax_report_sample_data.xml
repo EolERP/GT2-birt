@@ -25,7 +25,7 @@
   <Prijmy>
     <Prijem>
       <datum>30.09.2024</datum>
-      <popis>úročení příslibů investic/vkladů v investorské peněžence</popis>
+      <popis>Úročení příslibů investic/vkladů v investorské peněžence</popis>
       <castka>2 021,87</castka>
     </Prijem>
     <Prijem>
@@ -41,6 +41,11 @@
       <datum>12.09.2024</datum>
       <popis>Investice OMNIS Písek</popis>
       <castka>50 000,00</castka>
+    </Vydaj>
+    <Vydaj>
+      <datum>13.09.2024</datum>
+      <popis>Investice OMNIS Písek</popis>
+      <castka>14 000,00</castka>
     </Vydaj>
   </Vydaje>
 </Faktura>
