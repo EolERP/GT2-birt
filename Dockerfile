@@ -40,6 +40,7 @@ ADD mundial.ttf /usr/share/fonts/truetype
 ADD creditshare_birt_version.rptdesign /opt/tomcat/webapps/birt
 ADD creditshare_faktura.rptdesign /opt/tomcat/webapps/birt
 ADD creditshare_komissmlouva.rptdesign /opt/tomcat/webapps/birt
+ADD creditshare_tax_report.rptdesign /opt/tomcat/webapps/birt
 ADD creditshare_vypis.rptdesign /opt/tomcat/webapps/birt
 ADD op2detail.rptdesign /opt/tomcat/webapps/birt
 
