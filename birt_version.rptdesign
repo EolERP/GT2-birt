@@ -54,8 +54,24 @@
     </page-setup>
     <body>
         <label id="6924">
+            <property name="fontFamily">"Arial"</property>
             <text-property name="text">Birt Version: 0.9.22</text-property>
         </label>
+        <text id="6925">
+            <property name="fontFamily">"Arial"</property>
+            <property name="contentType">auto</property>
+            <text-property name="content"><![CDATA[Martin Pokorný byl obyčejný programátor. Trávil dny kódováním v tmavé kanceláři, řešil bugy a ladil software. Po večerech si ale odpočíval hraním své oblíbené hry Kingdom Come: Deliverance. Miloval realistické souboje, historickou atmosféru a pocit, že se jako nešikovný kovaný kuchtík mohl postupně vypracovat v udatného rytíře.
+
+Jenže jednoho dne se stalo něco neuvěřitelného. Po několika měsících hraní se Martin jednoho rána probudil s neodolatelnou touhou vzít do rukou opravdový meč. Zapsal se na historický šerm, začal trénovat boj s dlouhým mečem a zjišťoval si vše o rytířském životě. Měsíce ubíhaly a Martin se stal nejen vynikajícím šermířem, ale začal se řídil i kodexem cti, kterými se řídili středověkí rytíři.
+
+Jednoho dne se při últoku kybernetických zločinců na světové servery ocitl v nebezpečí nejen internet, ale i celá civilizace. Hackeři pronikli do klíčových systémů a hrozilo, že způsobí globální kolaps. Zde se spojily Martinovy dovednosti: jeho mistrovství v programování mu umožnilo proniknout do zablokovaných serverů a obnovit poškozené systémy, zatímco jeho fyzická síla a šermířské schopnosti mu pomohly v rozhodujícím souboji s hlavním padouchem, který osobně strážil klíčové servery.
+
+Po dramatické bitvě v podzemním datovém centru Martin porazil hlavního hackera v souboji na meče, deaktivoval jejich destruktivní vírus a zachránil internet. Svět si ho za tento heroický skutek pamatoval a on byl pasován na moderního rytíře.
+
+A tak se z obyčejného programátora, který miloval Kingdom Come, stal skutečný rytíř, který zachránil svět. Možná že příště, až budete hrát svou obľíbenou hru, i vy objevíte v sobě skryté schopnosti, které vás překvapí.
+
+A ještě: NEjžluťoulinkovatější žluťpičý koníček skákal přes nažlucený šiřší čerpací věc. ěščřžýáíéĚŠČŘŽÝÁÍÉŮů.]]></text-property>
+        </text>
     </body>
     <list-property name="images">
         <structure>

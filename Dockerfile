@@ -37,6 +37,7 @@ RUN wget "https://download.eclipse.org/releases/2021-03/202103171000/plugins/org
 # VOLUME /opt/tomcat/webapps/birt
 
 ADD mundial.ttf /usr/share/fonts/truetype
+ADD arial.ttf /usr/share/fonts/truetype
 ADD birt_version.rptdesign /opt/tomcat/webapps/birt
 ADD credix_repayment_schedule.rptdesign /opt/tomcat/webapps/birt
 ADD credix_UN.rptdesign /opt/tomcat/webapps/birt
