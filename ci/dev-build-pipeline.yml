@@ -2,25 +2,15 @@ variables:
 - name: BUILD_STAGING_DIR
   value: '$(System.DefaultWorkingDirectory)/build-staging-directory'
 - name: SERVICE_CONNECTION
-<<<<<<< HEAD
   value: 'SC_CRX_APP_INT_PRO_GWC_ARM'
 - name: REGISTRY_NAME
   value: 'crdprointcrxgwcacr01'
-=======
-  value: 'SC_CWF_APP_INT_PRO_GWC_ARM'
-- name: REGISTRY_NAME
-  value: 'crdprointcwfgwcacr01'
->>>>>>> master
 
 resources:
   repositories:
   - repository: helm-charts
     type: git
-<<<<<<< HEAD
     name: "CreditasGroup.CRX-helm-charts"
-=======
-    name: "CreditasGroup.CWF-helm-charts"
->>>>>>> master
 
 trigger:
   branches:
@@ -30,11 +20,7 @@ trigger:
     exclude:
       - ci/*
 
-<<<<<<< HEAD
 pool: POOL_CRX_APP_GWC_BUILD
-=======
-pool: POOL_CWF_APP_GWC_BUILD
->>>>>>> master
 
 stages:
 - stage: ApplicationBuild
@@ -83,8 +69,4 @@ stages:
     - template: templates/update-helm-chart.yml
       parameters:
         chartName: "gt2birt"
-<<<<<<< HEAD
         targetValuesFile: "values.yaml"
-=======
-        targetValuesFile: "values.yaml"
->>>>>>> master
