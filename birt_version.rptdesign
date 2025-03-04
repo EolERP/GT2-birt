@@ -55,7 +55,7 @@
     <body>
         <label id="6924">
             <property name="fontFamily">"Arial"</property>
-            <text-property name="text">Birt Version: 1.0.0</text-property>
+            <text-property name="text">Birt Version: 1.0.4</text-property>
         </label>
     </body>
     <list-property name="images">
