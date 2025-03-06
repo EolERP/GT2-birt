@@ -8,22 +8,6 @@
             <property name="id">38</property>
             <expression name="value" type="javascript">params["xml_file"].value</expression>
         </structure>
-        <structure>
-            <property name="name">ENCODINGLIST</property>
-            <property name="id">38</property>
-        </structure>
-        <structure>
-            <property name="name">SCHEMAFILELIST</property>
-            <property name="id">38</property>
-        </structure>
-        <structure>
-            <property name="name">OdaConnProfileName</property>
-            <property name="id">38</property>
-        </structure>
-        <structure>
-            <property name="name">OdaConnProfileStorePath</property>
-            <property name="id">38</property>
-        </structure>
     </list-property>
     <property name="units">in</property>
     <property name="iconFile">/templates/blank_report.gif</property>
@@ -34,9 +18,6 @@
             <property name="valueType">static</property>
             <property name="dataType">string</property>
             <property name="distinct">true</property>
-            <simple-property-list name="defaultValue">
-                <value type="constant">c:\Users\Pavel Fuksa\Documents\Eclipse-work\credix-rep\uverovyNavrh.xml</value>
-            </simple-property-list>
             <list-property name="selectionList"/>
             <property name="paramType">simple</property>
             <property name="controlType">text-box</property>
@@ -47,7 +28,7 @@
     </parameters>
     <data-sources>
         <oda-data-source extensionID="org.eclipse.datatools.enablement.oda.xml" name="Data Source" id="38">
-            <property name="FILELIST">uverovyNavrh.xml</property>
+            <property name="FILELIST">data.xml</property>
         </oda-data-source>
     </data-sources>
     <data-sets>
@@ -55,61 +36,86 @@
             <list-property name="columnHints">
                 <structure>
                     <property name="columnName">DREQ_Desc</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">DREQ_Desc</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">lBGHT_Name</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">lBGHT_Name</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">DREQ_StartValue</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">DREQ_StartValue</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">DREQ_AdminOp</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">DREQ_AdminOp</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">DREQ_SpecOp</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">DREQ_SpecOp</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">RiskOp</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">RiskOp</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">ReferrerOp</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">ReferrerOp</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">DREQ_AcctNo</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">DREQ_AcctNo</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">DREQ_DateDue</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">DREQ_DateDue</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">DREQ_Type</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">DREQ_Type</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">lDDRA_Name</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">lDDRA_Name</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">DREQ_CharId</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">DREQ_CharId</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">Stage</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">Stage</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">lDRPR_Description</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">lDRPR_Description</text-property>
                 </structure>
+                <structure>
+                    <property name="columnName">CLTR_ValueSum</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CLTR_ValueSum</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">CLTR_ValueRealSum</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CLTR_ValueRealSum</text-property>
+                </structure>
             </list-property>
+            <list-property name="parameters"/>
             <structure name="cachedMetaData">
                 <list-property name="resultSet">
                     <structure>
@@ -180,6 +186,16 @@
                     <structure>
                         <property name="position">14</property>
                         <property name="name">lDRPR_Description</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">15</property>
+                        <property name="name">CLTR_ValueSum</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">16</property>
+                        <property name="name">CLTR_ValueRealSum</property>
                         <property name="dataType">string</property>
                     </structure>
                 </list-property>
@@ -284,8 +300,22 @@
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
+                <structure>
+                    <property name="position">15</property>
+                    <property name="name">CLTR_ValueSum</property>
+                    <property name="nativeName">CLTR_ValueSum</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">16</property>
+                    <property name="name">CLTR_ValueRealSum</property>
+                    <property name="nativeName">CLTR_ValueRealSum</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
             </list-property>
-            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/DealRequest/Info]#:#{DREQ_Desc;STRING;/DREQ_Desc},{lBGHT_Name;STRING;/lBGHT_Name},{DREQ_StartValue;STRING;/DREQ_StartValue},{DREQ_AdminOp;STRING;/DREQ_AdminOp},{DREQ_SpecOp;STRING;/DREQ_SpecOp},{RiskOp;STRING;/RiskOp},{ReferrerOp;STRING;/ReferrerOp},{DREQ_AcctNo;STRING;/DREQ_AcctNo},{DREQ_DateDue;STRING;/DREQ_DateDue},{DREQ_Type;STRING;/DREQ_Type},{lDDRA_Name;STRING;/lDDRA_Name},{DREQ_CharId;STRING;/DREQ_CharId},{Stage;STRING;/Stage},{lDRPR_Description;STRING;/lDRPR_Description}]]></xml-property>
+            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/DealRequest/Info]#:#{DREQ_Desc;STRING;/DREQ_Desc},{lBGHT_Name;STRING;/lBGHT_Name},{DREQ_StartValue;STRING;/DREQ_StartValue},{DREQ_AdminOp;STRING;/DREQ_AdminOp},{DREQ_SpecOp;STRING;/DREQ_SpecOp},{RiskOp;STRING;/RiskOp},{ReferrerOp;STRING;/ReferrerOp},{DREQ_AcctNo;STRING;/DREQ_AcctNo},{DREQ_DateDue;STRING;/DREQ_DateDue},{DREQ_Type;STRING;/DREQ_Type},{lDDRA_Name;STRING;/lDDRA_Name},{DREQ_CharId;STRING;/DREQ_CharId},{Stage;STRING;/Stage},{lDRPR_Description;STRING;/lDRPR_Description},{CLTR_ValueSum;STRING;/CLTR_ValueSum},{CLTR_ValueRealSum;STRING;/CLTR_ValueRealSum}]]></xml-property>
             <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
   <Version>2.0</Version>
@@ -1265,42 +1295,77 @@
         <oda-data-set extensionID="org.eclipse.datatools.enablement.oda.xml.dataSet" name="Col" id="752">
             <list-property name="columnHints">
                 <structure>
+                    <property name="columnName">CLTR_ID</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CLTR_ID</text-property>
+                </structure>
+                <structure>
                     <property name="columnName">CLTR_Order</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">CLTR_Order</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">lCtype_Name</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">lCtype_Name</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">CLTR_Name</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">CLTR_Name</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">CLTR_Value</property>
+                    <property name="analysis">dimension</property>
                     <text-property name="heading">CLTR_Value</text-property>
                 </structure>
+                <structure>
+                    <property name="columnName">CLTR_ValueReal</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CLTR_ValueReal</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">CLTR_Coef</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CLTR_Coef</text-property>
+                </structure>
             </list-property>
+            <list-property name="parameters"/>
             <structure name="cachedMetaData">
                 <list-property name="resultSet">
                     <structure>
                         <property name="position">1</property>
-                        <property name="name">CLTR_Order</property>
+                        <property name="name">CLTR_ID</property>
                         <property name="dataType">string</property>
                     </structure>
                     <structure>
                         <property name="position">2</property>
-                        <property name="name">lCtype_Name</property>
+                        <property name="name">CLTR_Order</property>
                         <property name="dataType">string</property>
                     </structure>
                     <structure>
                         <property name="position">3</property>
-                        <property name="name">CLTR_Name</property>
+                        <property name="name">lCtype_Name</property>
                         <property name="dataType">string</property>
                     </structure>
                     <structure>
                         <property name="position">4</property>
+                        <property name="name">CLTR_Name</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">5</property>
                         <property name="name">CLTR_Value</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">6</property>
+                        <property name="name">CLTR_ValueReal</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">7</property>
+                        <property name="name">CLTR_Coef</property>
                         <property name="dataType">string</property>
                     </structure>
                 </list-property>
@@ -1309,34 +1374,55 @@
             <list-property name="resultSet">
                 <structure>
                     <property name="position">1</property>
+                    <property name="name">CLTR_ID</property>
+                    <property name="nativeName">CLTR_ID</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">2</property>
                     <property name="name">CLTR_Order</property>
                     <property name="nativeName">CLTR_Order</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
                 <structure>
-                    <property name="position">2</property>
+                    <property name="position">3</property>
                     <property name="name">lCtype_Name</property>
                     <property name="nativeName">lCtype_Name</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
                 <structure>
-                    <property name="position">3</property>
+                    <property name="position">4</property>
                     <property name="name">CLTR_Name</property>
                     <property name="nativeName">CLTR_Name</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
                 <structure>
-                    <property name="position">4</property>
+                    <property name="position">5</property>
                     <property name="name">CLTR_Value</property>
                     <property name="nativeName">CLTR_Value</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
+                <structure>
+                    <property name="position">6</property>
+                    <property name="name">CLTR_ValueReal</property>
+                    <property name="nativeName">CLTR_ValueReal</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">7</property>
+                    <property name="name">CLTR_Coef</property>
+                    <property name="nativeName">CLTR_Coef</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
             </list-property>
-            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/DealRequest/Cltrs/Cltr]#:#{CLTR_Order;STRING;/CLTR_Order},{lCtype_Name;STRING;/lCtype_Name},{CLTR_Name;STRING;/CLTR_Name},{CLTR_Value;STRING;/CLTR_Value}]]></xml-property>
+            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/DealRequest/Cltrs/Cltr]#:#{CLTR_ID;STRING;/CLTR_ID},{CLTR_Order;STRING;/CLTR_Order},{lCtype_Name;STRING;/lCtype_Name},{CLTR_Name;STRING;/CLTR_Name},{CLTR_Value;STRING;/CLTR_Value},{CLTR_ValueReal;STRING;/CLTR_ValueReal},{CLTR_Coef;STRING;/CLTR_Coef}]]></xml-property>
             <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
   <Version>2.0</Version>
@@ -1432,9 +1518,19 @@
             </list-property>
             <list-property name="columnHints">
                 <structure>
-                    <property name="columnName">lEST_Desc</property>
+                    <property name="columnName">CLTR_ID</property>
                     <property name="analysis">dimension</property>
-                    <text-property name="heading">lEST_Desc</text-property>
+                    <text-property name="heading">CLTR_ID</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">CLTR_Name</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CLTR_Name</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">CLTR_Desc</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CLTR_Desc</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">KATUZ_KU_NAZEV</property>
@@ -1452,9 +1548,49 @@
                     <text-property name="heading">LV_Cislo</text-property>
                 </structure>
                 <structure>
-                    <property name="columnName">CltrDesc</property>
+                    <property name="columnName">CisloParcely</property>
                     <property name="analysis">dimension</property>
-                    <text-property name="heading">CltrDesc</text-property>
+                    <text-property name="heading">CisloParcely</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">CLTR_Value</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CLTR_Value</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">CLPR_Number</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CLPR_Number</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">AppraiserSubjName</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">AppraiserSubjName</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">CLPR_DateStart</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CLPR_DateStart</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">CLPR_Price</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CLPR_Price</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">CLPR_PriceReproduction</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CLPR_PriceReproduction</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">CLPR_SupervisionDate</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CLPR_SupervisionDate</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">COBC_NAZEV</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">COBC_NAZEV</text-property>
                 </structure>
                 <structure>
                     <property name="columnName">ESTT_CisloDomovni</property>
@@ -1466,77 +1602,97 @@
                     <property name="analysis">dimension</property>
                     <text-property name="heading">ESTT_CisloJednotky</text-property>
                 </structure>
-                <structure>
-                    <property name="columnName">CisloParcely</property>
-                    <property name="analysis">dimension</property>
-                    <text-property name="heading">CisloParcely</text-property>
-                </structure>
-                <structure>
-                    <property name="columnName">CLTR_Value</property>
-                    <property name="analysis">dimension</property>
-                    <text-property name="heading">CLTR_Value</text-property>
-                </structure>
-                <structure>
-                    <property name="columnName">COBC_NAZEV</property>
-                    <property name="analysis">dimension</property>
-                    <text-property name="heading">COBC_NAZEV</text-property>
-                </structure>
             </list-property>
             <list-property name="parameters"/>
             <structure name="cachedMetaData">
                 <list-property name="resultSet">
                     <structure>
                         <property name="position">1</property>
-                        <property name="name">lEST_Desc</property>
+                        <property name="name">CLTR_ID</property>
                         <property name="dataType">string</property>
                     </structure>
                     <structure>
                         <property name="position">2</property>
-                        <property name="name">KATUZ_KU_NAZEV</property>
+                        <property name="name">CLTR_Name</property>
                         <property name="dataType">string</property>
                     </structure>
                     <structure>
                         <property name="position">3</property>
-                        <property name="name">OBEC_NAZEV</property>
+                        <property name="name">CLTR_Desc</property>
                         <property name="dataType">string</property>
                     </structure>
                     <structure>
                         <property name="position">4</property>
-                        <property name="name">LV_Cislo</property>
+                        <property name="name">KATUZ_KU_NAZEV</property>
                         <property name="dataType">string</property>
                     </structure>
                     <structure>
                         <property name="position">5</property>
-                        <property name="name">CltrDesc</property>
+                        <property name="name">OBEC_NAZEV</property>
                         <property name="dataType">string</property>
                     </structure>
                     <structure>
                         <property name="position">6</property>
-                        <property name="name">ESTT_CisloDomovni</property>
+                        <property name="name">LV_Cislo</property>
                         <property name="dataType">string</property>
                     </structure>
                     <structure>
                         <property name="position">7</property>
-                        <property name="name">ESTT_CisloJednotky</property>
-                        <property name="dataType">string</property>
-                    </structure>
-                    <structure>
-                        <property name="position">8</property>
                         <property name="name">CisloParcely</property>
                         <property name="dataType">string</property>
                     </structure>
                     <structure>
-                        <property name="position">9</property>
+                        <property name="position">8</property>
                         <property name="name">CLTR_Value</property>
                         <property name="dataType">string</property>
                     </structure>
                     <structure>
+                        <property name="position">9</property>
+                        <property name="name">CLPR_Number</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
                         <property name="position">10</property>
-                        <property name="name">COBC_NAZEV</property>
+                        <property name="name">AppraiserSubjName</property>
                         <property name="dataType">string</property>
                     </structure>
                     <structure>
                         <property name="position">11</property>
+                        <property name="name">CLPR_DateStart</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">12</property>
+                        <property name="name">CLPR_Price</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">13</property>
+                        <property name="name">CLPR_PriceReproduction</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">14</property>
+                        <property name="name">CLPR_SupervisionDate</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">15</property>
+                        <property name="name">COBC_NAZEV</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">16</property>
+                        <property name="name">ESTT_CisloDomovni</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">17</property>
+                        <property name="name">ESTT_CisloJednotky</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">18</property>
                         <property name="name">counter</property>
                         <property name="dataType">integer</property>
                     </structure>
@@ -1546,76 +1702,125 @@
             <list-property name="resultSet">
                 <structure>
                     <property name="position">1</property>
-                    <property name="name">lEST_Desc</property>
-                    <property name="nativeName">lEST_Desc</property>
+                    <property name="name">CLTR_ID</property>
+                    <property name="nativeName">CLTR_ID</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
                 <structure>
                     <property name="position">2</property>
+                    <property name="name">CLTR_Name</property>
+                    <property name="nativeName">CLTR_Name</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">3</property>
+                    <property name="name">CLTR_Desc</property>
+                    <property name="nativeName">CLTR_Desc</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">4</property>
                     <property name="name">KATUZ_KU_NAZEV</property>
                     <property name="nativeName">KATUZ_KU_NAZEV</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
                 <structure>
-                    <property name="position">3</property>
+                    <property name="position">5</property>
                     <property name="name">OBEC_NAZEV</property>
                     <property name="nativeName">OBEC_NAZEV</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
                 <structure>
-                    <property name="position">4</property>
+                    <property name="position">6</property>
                     <property name="name">LV_Cislo</property>
                     <property name="nativeName">LV_Cislo</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
                 <structure>
-                    <property name="position">5</property>
-                    <property name="name">CltrDesc</property>
-                    <property name="nativeName">CltrDesc</property>
-                    <property name="dataType">string</property>
-                    <property name="nativeDataType">12</property>
-                </structure>
-                <structure>
-                    <property name="position">6</property>
-                    <property name="name">ESTT_CisloDomovni</property>
-                    <property name="nativeName">ESTT_CisloDomovni</property>
-                    <property name="dataType">string</property>
-                    <property name="nativeDataType">12</property>
-                </structure>
-                <structure>
                     <property name="position">7</property>
-                    <property name="name">ESTT_CisloJednotky</property>
-                    <property name="nativeName">ESTT_CisloJednotky</property>
-                    <property name="dataType">string</property>
-                    <property name="nativeDataType">12</property>
-                </structure>
-                <structure>
-                    <property name="position">8</property>
                     <property name="name">CisloParcely</property>
                     <property name="nativeName">CisloParcely</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
                 <structure>
-                    <property name="position">9</property>
+                    <property name="position">8</property>
                     <property name="name">CLTR_Value</property>
                     <property name="nativeName">CLTR_Value</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
                 <structure>
+                    <property name="position">9</property>
+                    <property name="name">CLPR_Number</property>
+                    <property name="nativeName">CLPR_Number</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
                     <property name="position">10</property>
+                    <property name="name">AppraiserSubjName</property>
+                    <property name="nativeName">AppraiserSubjName</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">11</property>
+                    <property name="name">CLPR_DateStart</property>
+                    <property name="nativeName">CLPR_DateStart</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">12</property>
+                    <property name="name">CLPR_Price</property>
+                    <property name="nativeName">CLPR_Price</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">13</property>
+                    <property name="name">CLPR_PriceReproduction</property>
+                    <property name="nativeName">CLPR_PriceReproduction</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">14</property>
+                    <property name="name">CLPR_SupervisionDate</property>
+                    <property name="nativeName">CLPR_SupervisionDate</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">15</property>
                     <property name="name">COBC_NAZEV</property>
                     <property name="nativeName">COBC_NAZEV</property>
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
+                <structure>
+                    <property name="position">16</property>
+                    <property name="name">ESTT_CisloDomovni</property>
+                    <property name="nativeName">ESTT_CisloDomovni</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">17</property>
+                    <property name="name">ESTT_CisloJednotky</property>
+                    <property name="nativeName">ESTT_CisloJednotky</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
             </list-property>
-            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/DealRequest/Estates/Estate]#:#{lEST_Desc;STRING;/lEST_Desc},{KATUZ_KU_NAZEV;STRING;/KATUZ_KU_NAZEV},{OBEC_NAZEV;STRING;/OBEC_NAZEV},{LV_Cislo;STRING;/LV_Cislo},{CltrDesc;STRING;/CltrDesc},{ESTT_CisloDomovni;STRING;/ESTT_CisloDomovni},{ESTT_CisloJednotky;STRING;/ESTT_CisloJednotky},{CisloParcely;STRING;/CisloParcely},{CLTR_Value;STRING;/CLTR_Value},{COBC_NAZEV;STRING;/COBC_NAZEV}]]></xml-property>
+            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/DealRequest/Estates/Estate]#:#{CLTR_ID;STRING;/CLTR_ID},{CLTR_Name;STRING;/CLTR_Name},{CLTR_Desc;STRING;/CLTR_Desc},{KATUZ_KU_NAZEV;STRING;/KATUZ_KU_NAZEV},{OBEC_NAZEV;STRING;/OBEC_NAZEV},{LV_Cislo;STRING;/LV_Cislo},{CisloParcely;STRING;/CisloParcely},{CLTR_Value;STRING;/CLTR_Value},{CLPR_Number;STRING;/CLPR_Number},{AppraiserSubjName;STRING;/AppraiserSubjName},{CLPR_DateStart;STRING;/CLPR_DateStart},{CLPR_Price;STRING;/CLPR_Price},{CLPR_PriceReproduction;STRING;/CLPR_PriceReproduction},{CLPR_SupervisionDate;STRING;/CLPR_SupervisionDate},{COBC_NAZEV;STRING;/COBC_NAZEV},{ESTT_CisloDomovni;STRING;/ESTT_CisloDomovni},{ESTT_CisloJednotky;STRING;/ESTT_CisloJednotky}]]></xml-property>
             <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
   <Version>2.0</Version>
@@ -1779,6 +1984,270 @@
           </design:attributes>
           <design:usageHints>
             <design:label>COBC_NAZEV</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+      </design:resultSetColumns>
+      <design:criteria/>
+    </design:resultSetDefinitions>
+  </design:ResultSets>
+</model:DesignValues>]]></xml-property>
+            <list-property name="privateDriverProperties">
+                <ex-property>
+                    <name>MAX_ROW</name>
+                    <value>-1</value>
+                </ex-property>
+                <ex-property>
+                    <name>XML_FILE</name>
+                </ex-property>
+            </list-property>
+        </oda-data-set>
+        <oda-data-set extensionID="org.eclipse.datatools.enablement.oda.xml.dataSet" name="DisbursementCond" id="1504">
+            <list-property name="columnHints">
+                <structure>
+                    <property name="columnName">rownum</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">rownum</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">CHLI_Name</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CHLI_Name</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">CHLI_Desc</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CHLI_Desc</text-property>
+                </structure>
+            </list-property>
+            <list-property name="parameters"/>
+            <structure name="cachedMetaData">
+                <list-property name="resultSet">
+                    <structure>
+                        <property name="position">1</property>
+                        <property name="name">rownum</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">2</property>
+                        <property name="name">CHLI_Name</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">3</property>
+                        <property name="name">CHLI_Desc</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                </list-property>
+            </structure>
+            <property name="dataSource">Data Source</property>
+            <list-property name="resultSet">
+                <structure>
+                    <property name="position">1</property>
+                    <property name="name">rownum</property>
+                    <property name="nativeName">rownum</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">2</property>
+                    <property name="name">CHLI_Name</property>
+                    <property name="nativeName">CHLI_Name</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">3</property>
+                    <property name="name">CHLI_Desc</property>
+                    <property name="nativeName">CHLI_Desc</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+            </list-property>
+            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/DealRequest/CheckListPCERs/CheckListPCER]#:#{rownum;STRING;/rownum},{CHLI_Name;STRING;/CHLI_Name},{CHLI_Desc;STRING;/CHLI_Desc}]]></xml-property>
+            <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
+  <Version>2.0</Version>
+  <design:ResultSets derivedMetaData="true">
+    <design:resultSetDefinitions>
+      <design:resultSetColumns>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>rownum</design:name>
+              <design:position>1</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>rownum</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>CHLI_Name</design:name>
+              <design:position>2</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>CHLI_Name</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>CHLI_Desc</design:name>
+              <design:position>3</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>CHLI_Desc</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+      </design:resultSetColumns>
+      <design:criteria/>
+    </design:resultSetDefinitions>
+  </design:ResultSets>
+</model:DesignValues>]]></xml-property>
+            <list-property name="privateDriverProperties">
+                <ex-property>
+                    <name>MAX_ROW</name>
+                    <value>-1</value>
+                </ex-property>
+                <ex-property>
+                    <name>XML_FILE</name>
+                </ex-property>
+            </list-property>
+        </oda-data-set>
+        <oda-data-set extensionID="org.eclipse.datatools.enablement.oda.xml.dataSet" name="PostDisbursementCond" id="1522">
+            <list-property name="columnHints">
+                <structure>
+                    <property name="columnName">rownum</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">rownum</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">CHLI_Name</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CHLI_Name</text-property>
+                </structure>
+                <structure>
+                    <property name="columnName">CHLI_Desc</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">CHLI_Desc</text-property>
+                </structure>
+            </list-property>
+            <list-property name="parameters"/>
+            <structure name="cachedMetaData">
+                <list-property name="resultSet">
+                    <structure>
+                        <property name="position">1</property>
+                        <property name="name">rownum</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">2</property>
+                        <property name="name">CHLI_Name</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">3</property>
+                        <property name="name">CHLI_Desc</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                </list-property>
+            </structure>
+            <property name="dataSource">Data Source</property>
+            <list-property name="resultSet">
+                <structure>
+                    <property name="position">1</property>
+                    <property name="name">rownum</property>
+                    <property name="nativeName">rownum</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">2</property>
+                    <property name="name">CHLI_Name</property>
+                    <property name="nativeName">CHLI_Name</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+                <structure>
+                    <property name="position">3</property>
+                    <property name="name">CHLI_Desc</property>
+                    <property name="nativeName">CHLI_Desc</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
+            </list-property>
+            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/DealRequest/CheckListPDOCERs/CheckListPDOCER]#:#{rownum;STRING;/rownum},{CHLI_Name;STRING;/CHLI_Name},{CHLI_Desc;STRING;/CHLI_Desc}]]></xml-property>
+            <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
+  <Version>2.0</Version>
+  <design:ResultSets derivedMetaData="true">
+    <design:resultSetDefinitions>
+      <design:resultSetColumns>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>rownum</design:name>
+              <design:position>1</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>rownum</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>CHLI_Name</design:name>
+              <design:position>2</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>CHLI_Name</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>CHLI_Desc</design:name>
+              <design:position>3</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>CHLI_Desc</design:label>
             <design:formattingHints/>
           </design:usageHints>
         </design:resultColumnDefinitions>
@@ -3307,9 +3776,10 @@ Společnost je zapsaná v obchodním rejstříku vedeném Městským soudem v Pr
                             </cell>
                             <cell id="333">
                                 <property name="style">Credix-databox</property>
-                                <data id="361">
-                                    <property name="resultSetColumn">DREQ_StartValue</property>
-                                </data>
+                                <text-data id="1590">
+                                    <expression name="valueExpr">row["DREQ_StartValue"] + " CZK"</expression>
+                                    <property name="contentType">html</property>
+                                </text-data>
                             </cell>
                         </row>
                         <row id="334">
@@ -3321,8 +3791,8 @@ Společnost je zapsaná v obchodním rejstříku vedeném Městským soudem v Pr
                             </cell>
                             <cell id="336">
                                 <property name="style">Credix-databox</property>
-                                <data id="725">
-                                    <property name="resultSetColumn">DREQ_Type</property>
+                                <data id="1591">
+                                    <property name="resultSetColumn">lBGHT_Name</property>
                                 </data>
                             </cell>
                         </row>
@@ -3895,18 +4365,23 @@ Komentář:
                                             </cell>
                                             <cell id="1391">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1557"/>
                                             </cell>
                                             <cell id="1392">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1567"/>
                                             </cell>
                                             <cell id="1393">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1568"/>
                                             </cell>
                                             <cell id="1394">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1578"/>
                                             </cell>
                                             <cell id="1395">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1579"/>
                                             </cell>
                                             <cell id="1396">
                                                 <property name="style">Credix-databox</property>
@@ -3922,18 +4397,23 @@ Komentář:
                                             </cell>
                                             <cell id="1400">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1558"/>
                                             </cell>
                                             <cell id="1401">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1566"/>
                                             </cell>
                                             <cell id="1402">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1570"/>
                                             </cell>
                                             <cell id="1403">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1577"/>
                                             </cell>
                                             <cell id="1404">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1580"/>
                                             </cell>
                                             <cell id="1405">
                                                 <property name="style">Credix-databox</property>
@@ -3949,18 +4429,23 @@ Komentář:
                                             </cell>
                                             <cell id="1408">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1559"/>
                                             </cell>
                                             <cell id="1409">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1565"/>
                                             </cell>
                                             <cell id="1410">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1571"/>
                                             </cell>
                                             <cell id="1411">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1576"/>
                                             </cell>
                                             <cell id="1412">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1569"/>
                                             </cell>
                                             <cell id="1413">
                                                 <property name="style">Credix-databox</property>
@@ -3981,18 +4466,23 @@ Komentář:
                                             </cell>
                                             <cell id="1347">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1560"/>
                                             </cell>
                                             <cell id="1348">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1564"/>
                                             </cell>
                                             <cell id="1349">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1572"/>
                                             </cell>
                                             <cell id="1350">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1575"/>
                                             </cell>
                                             <cell id="1351">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1581"/>
                                             </cell>
                                             <cell id="1352">
                                                 <property name="style">Credix-databox</property>
@@ -4007,18 +4497,23 @@ Komentář:
                                             </cell>
                                             <cell id="1382">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1562"/>
                                             </cell>
                                             <cell id="1383">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1563"/>
                                             </cell>
                                             <cell id="1384">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1573"/>
                                             </cell>
                                             <cell id="1385">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1574"/>
                                             </cell>
                                             <cell id="1386">
                                                 <property name="style">Credix-databox</property>
+                                                <label id="1582"/>
                                             </cell>
                                             <cell id="1387">
                                                 <property name="style">Credix-databox</property>
@@ -4028,14 +4523,27 @@ Komentář:
                                 </table>
                             </cell>
                         </row>
+                        <row id="1592">
+                            <cell id="1593">
+                                <property name="fontFamily">"Arial"</property>
+                                <label id="1594">
+                                    <property name="fontSize">9pt</property>
+                                    <property name="fontStyle">italic</property>
+                                    <text-property name="text">*U splátkových úvěrů je daná výše splátky, u nesplátkových (KK, KTK) 1/12 z limitu. &#13;
+*Vyplňuje se na základě CRÚ a NRKI. V případě absence výpisů vyplňujeme dle informace od klienta. </text-property>
+                                </label>
+                            </cell>
+                        </row>
                     </grid>
                     <grid name="body 9-10" id="489">
                         <property name="height">1.85in</property>
-                        <property name="width">100%</property>
+                        <property name="width">7.133333333333334in</property>
                         <column id="490">
-                            <property name="width">2.2333333333333334in</property>
+                            <property name="width">2.3916666666666666in</property>
                         </column>
-                        <column id="491"/>
+                        <column id="491">
+                            <property name="width">4.741666666666666in</property>
+                        </column>
                         <row id="492">
                             <cell id="493">
                                 <property name="colSpan">2</property>
@@ -4084,29 +4592,46 @@ Komentář:
                             </cell>
                             <cell id="503">
                                 <property name="style">Credix-databox</property>
-                                <text id="511">
-                                    <property name="contentType">html</property>
-                                    <text-property name="content"><![CDATA[    <ol>
-        <li>Byla předložena písemná žádost Dlužníka o čerpání Úvěru.</li>
-        <li>Vystavení blankosměnky s avalem ………………..;</li>
-        <li>Byl předložen notářský zápis (NZ) ohledně zúžení SJM, v případě, že NZ ohledně úpravy SJM neexistuje, bude doložen souhlas s právním jednáním manžela/ky avalisty/přistupitele;</li>
-        <li>Byly zaplaceny veškeré splatné poplatky stanovené Smlouvou o úvěru v dohodnutých dnech splatnosti;</li>
-        <li>Byl předložen výpis z rejstříku zástav, že závod úvěrovaného a zástavce není zastaven ve prospěch třetího subjektu;</li>
-        <li>Bylo předloženo rozhodnutí valné hromady (VH) nebo 100 % společníka úvěrovaného s přijetím úvěru a se zástavou nemovitého majetku úvěrovaného;</li>
-        <li>Byl předložen návrh na vklad zástavního práva dle smlouvy o zřízení zástavního práva k Nemovitostem s potvrzením o převzetí příslušným katastrálním úřadem a s prokázáním, že byl uhrazen správní poplatek za návrh na vklad nebo bylo prokázáno, že návrh na vklad zástavního práva byl odeslán prostřednictvím datové schránky Věřitele na příslušný katastrální úřad s tím, že Dlužník zajistí na běžném účtu vedeném u Věřitele částku ve výši 2.000,-Kč, a to na úhradu správního poplatku za návrh na vklad a zároveň bude Dlužníkem vystaven neodvolatelný pokyn Věřiteli k provedení úhrady tohoto správního poplatku a současně byl předložen výpis z katastru nemovitostí prokazující, že:
-            <ol>
-                <li>právní vztahy k příslušným nemovitostem jsou dotčeny jedinou změnou (plombou) vyznačenou v souvislosti se zápisem výše uvedeného zástavního práva ve prospěch Věřitele, vyjma zápisů, které jsou aktuálně zapsané na LV č. [LV], k.ú.: [Katastrální území],</li>
-                <li>neexistuje žádné zástavní právo s přednostním pořadím k pořadí zástavního práva zřizovaného ve prospěch Věřitele,</li>
-                <li>není vyhrazeno přednostní pořadí pro jiné zástavní právo než zástavní právo zřizované ve prospěch Věřitele,</li>
-                <li>vlastnická práva k příslušným nemovitostem nejsou jakkoli dotčena či omezena, (to vše vyjma zatížení či omezení předem odsouhlasených Věřitelem);</li>
-            </ol>
-        </li>
-        <li>Byla uzavřena zástavní smlouva k nemovitosti.</li>
-        <li>Byl předložen originál potvrzení o vyčíslení dluhu stávajícího věřitele, příslib vzdání se ZP a souhlas se zřízením zástavního práva s ověřeným podpisem stávajícího věřitele.</li>
-        <li>Byla předložena pojistná smlouva k předmětu zajištění vč. prokázání úhrady pojistného. Současně bude zřízeno zástavní právo k pohledávkám z poj. plnění.</li>
-    </ol>
-]]></text-property>
-                                </text>
+                                <table name="Disbursement conditions" id="1506">
+                                    <property name="width">4.808333333333334in</property>
+                                    <property name="dataSet">DisbursementCond</property>
+                                    <list-property name="boundDataColumns">
+                                        <structure>
+                                            <property name="name">rownum</property>
+                                            <text-property name="displayName">rownum</text-property>
+                                            <expression name="expression" type="javascript">dataSetRow["rownum"]</expression>
+                                            <property name="dataType">string</property>
+                                        </structure>
+                                        <structure>
+                                            <property name="name">CHLI_Desc</property>
+                                            <text-property name="displayName">CHLI_Desc</text-property>
+                                            <expression name="expression" type="javascript">dataSetRow["CHLI_Desc"]</expression>
+                                            <property name="dataType">string</property>
+                                        </structure>
+                                    </list-property>
+                                    <column id="1516">
+                                        <property name="width">0.3in</property>
+                                    </column>
+                                    <column id="1517">
+                                        <property name="width">4.333333333333333in</property>
+                                    </column>
+                                    <detail>
+                                        <row id="1510">
+                                            <cell id="1511">
+                                                <text-data id="1521">
+                                                    <property name="textAlign">right</property>
+                                                    <expression name="valueExpr">row["rownum"]+")&amp;nbsp;&amp;nbsp; "</expression>
+                                                    <property name="contentType">html</property>
+                                                </text-data>
+                                            </cell>
+                                            <cell id="1512">
+                                                <data id="1519">
+                                                    <property name="resultSetColumn">CHLI_Desc</property>
+                                                </data>
+                                            </cell>
+                                        </row>
+                                    </detail>
+                                </table>
                             </cell>
                         </row>
                         <row id="512">
@@ -4119,24 +4644,56 @@ Komentář:
                             </cell>
                             <cell id="514">
                                 <property name="style">Credix-databox</property>
-                                <text id="516">
-                                    <property name="contentType">html</property>
-                                    <text-property name="content"><![CDATA[<ol>
-    <li>Nejpozději do 15 dnů ode dne každého čerpání Úvěru předložit Věřiteli písemné potvrzení s úředně ověřeným podpisem prokazující vyčerpání Úvěru;</li>
-    <li>Došlo k uzavření dohody ve formě notářského zápisu s přímou vykonatelností mezi Věřitelem a Dlužníkem s přistoupením ………………., a to i se svolením k nařízení a provedení výkonu rozhodnutí ve smyslu ust. § 274 písm. e) o.s.ř. nebo exekuce ve smyslu ust. § 40 odst. 1 písm. d) exekučního řádu, a to nejpozději do 30 dní ode dne čerpání úvěru (pod ztrátou výhody splátek) a došlo k úhradě nákladů spojených s uzavřením NZ.</li>
-    <li>Předkládat pravidelně doklad (minimálně 1x ročně k datu výročí Smlouvy o úvěru a/nebo vždy v termínu splatnosti pojistného), kterým bude prokázáno, že pojistné k Nemovitostem je uhrazeno řádně a včas;</li>
-    <li>Nejpozději do … dnů ode dne vyčerpání Úvěru doložit Věřiteli, že došlo k podání návrhu na vklad výmazu zástavního práva k Nemovitostem, zapsaného pod č.j. V-……………, a to včetně prokázání, že byl uhrazen správní poplatek za návrh na vklad;</li>
-    <li>Nejpozději do … dnů ode dne vyčerpání Úvěru předložit výpis z katastru nemovitostí prokazující vklad zástavního práva k Nemovitostem ve prospěch Věřitele jako 1. v pořadí;</li>
-    <li>Roční předkládání konečných finančních výkazů vč. přílohy k účetní závěrce a kopie daňového přiznání Úvěrovaného do 180 dnů po skončení účetního období. Po případné fúzi předkládání účetních výkazů nástupnické společnosti.</li>
-    <li>Uzavření běžného účtu vedeného Bankou CREDITAS a.s. (bez povinnosti vést platební styk), to nejpozději do 30 dní od čerpání úvěru.</li>
-</ol>
-]]></text-property>
-                                </text>
+                                <table name="Post Disbursement conditions" id="1523">
+                                    <property name="width">4.808333333333334in</property>
+                                    <property name="dataSet">PostDisbursementCond</property>
+                                    <list-property name="boundDataColumns">
+                                        <structure>
+                                            <property name="name">rownum</property>
+                                            <text-property name="displayName">rownum</text-property>
+                                            <expression name="expression" type="javascript">dataSetRow["rownum"]</expression>
+                                            <property name="dataType">string</property>
+                                        </structure>
+                                        <structure>
+                                            <property name="name">CHLI_Name</property>
+                                            <text-property name="displayName">CHLI_Name</text-property>
+                                            <expression name="expression" type="javascript">dataSetRow["CHLI_Name"]</expression>
+                                            <property name="dataType">string</property>
+                                        </structure>
+                                        <structure>
+                                            <property name="name">CHLI_Desc</property>
+                                            <text-property name="displayName">CHLI_Desc</text-property>
+                                            <expression name="expression" type="javascript">dataSetRow["CHLI_Desc"]</expression>
+                                            <property name="dataType">string</property>
+                                        </structure>
+                                    </list-property>
+                                    <column id="1529">
+                                        <property name="width">0.3in</property>
+                                    </column>
+                                    <column id="1530">
+                                        <property name="width">4.333333333333333in</property>
+                                    </column>
+                                    <detail>
+                                        <row id="1524">
+                                            <cell id="1525">
+                                                <text-data id="1526">
+                                                    <property name="textAlign">right</property>
+                                                    <expression name="valueExpr">row["rownum"]+")&amp;nbsp;&amp;nbsp; "</expression>
+                                                    <property name="contentType">html</property>
+                                                </text-data>
+                                            </cell>
+                                            <cell id="1527">
+                                                <data id="1531">
+                                                    <property name="resultSetColumn">CHLI_Desc</property>
+                                                </data>
+                                            </cell>
+                                        </row>
+                                    </detail>
+                                </table>
                             </cell>
                         </row>
                     </grid>
                     <table name="col" id="1037">
-                        <property name="width">100%</property>
                         <property name="dataSet">Col</property>
                         <list-property name="boundDataColumns">
                             <structure>
@@ -4164,28 +4721,34 @@ Komentář:
                                 <expression name="expression" type="javascript">dataSetRow["CLTR_Value"]</expression>
                                 <property name="dataType">string</property>
                             </structure>
+                            <structure>
+                                <property name="name">CLTR_ValueReal</property>
+                                <text-property name="displayName">CLTR_ValueReal</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["CLTR_ValueReal"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
                         </list-property>
-                        <column id="1065"/>
+                        <column id="1065">
+                            <property name="width">0.58in</property>
+                        </column>
                         <column id="1066">
-                            <property name="width">1.25in</property>
+                            <property name="width">0.95in</property>
                         </column>
-                        <column id="1067">
-                            <property name="width">1.25in</property>
-                        </column>
+                        <column id="1067"/>
                         <column id="1068">
-                            <property name="width">0.8in</property>
+                            <property name="width">0.95in</property>
                         </column>
                         <column id="1069">
-                            <property name="width">0.8in</property>
+                            <property name="width">0.7in</property>
                         </column>
                         <column id="1070">
-                            <property name="width">0.8in</property>
+                            <property name="width">0.7in</property>
                         </column>
                         <column id="1071">
-                            <property name="width">0.8in</property>
+                            <property name="width">0.95in</property>
                         </column>
                         <column id="1072">
-                            <property name="width">0.8in</property>
+                            <property name="width">0.95in</property>
                         </column>
                         <header>
                             <row id="1073">
@@ -4273,24 +4836,28 @@ Komentář:
                                 <cell id="1048">
                                     <property name="style">Credix-databox</property>
                                     <data id="1085">
+                                        <property name="textAlign">center</property>
                                         <property name="resultSetColumn">CLTR_Order</property>
                                     </data>
                                 </cell>
                                 <cell id="1049">
                                     <property name="style">Credix-databox</property>
                                     <data id="1087">
+                                        <property name="fontSize">8pt</property>
                                         <property name="resultSetColumn">lCtype_Name</property>
                                     </data>
                                 </cell>
                                 <cell id="1050">
                                     <property name="style">Credix-databox</property>
                                     <data id="1086">
+                                        <property name="fontSize">8pt</property>
                                         <property name="resultSetColumn">CLTR_Name</property>
                                     </data>
                                 </cell>
                                 <cell id="1051">
                                     <property name="style">Credix-databox</property>
                                     <text-data id="1088">
+                                        <property name="fontSize">8pt</property>
                                         <property name="textAlign">right</property>
                                         <expression name="valueExpr">row["CLTR_Value"]</expression>
                                         <property name="contentType">html</property>
@@ -4299,24 +4866,29 @@ Komentář:
                                 <cell id="1052">
                                     <property name="style">Credix-databox</property>
                                     <label id="1097">
-                                        <property name="textAlign">center</property>
+                                        <property name="fontSize">8pt</property>
+                                        <property name="textAlign">right</property>
                                     </label>
                                 </cell>
                                 <cell id="1053">
                                     <property name="style">Credix-databox</property>
                                     <label id="1098">
-                                        <property name="textAlign">center</property>
+                                        <property name="fontSize">8pt</property>
+                                        <property name="textAlign">right</property>
                                     </label>
                                 </cell>
                                 <cell id="1054">
                                     <property name="style">Credix-databox</property>
-                                    <label id="1099">
+                                    <data id="1588">
+                                        <property name="fontSize">8pt</property>
                                         <property name="textAlign">right</property>
-                                    </label>
+                                        <property name="resultSetColumn">CLTR_ValueReal</property>
+                                    </data>
                                 </cell>
                                 <cell id="1055">
                                     <property name="style">Credix-databox</property>
                                     <label id="1100">
+                                        <property name="fontSize">8pt</property>
                                         <property name="textAlign">right</property>
                                     </label>
                                 </cell>
@@ -4336,27 +4908,68 @@ Komentář:
                                 </cell>
                                 <cell id="1059">
                                     <property name="style">Credix-databox</property>
-                                    <label id="1103"/>
+                                    <label id="1103">
+                                        <property name="fontSize">8pt</property>
+                                    </label>
                                 </cell>
                                 <cell id="1060">
                                     <property name="style">Credix-databox</property>
-                                    <label id="1104"/>
+                                    <property name="fontWeight">bold</property>
+                                    <text-data id="1534">
+                                        <property name="fontSize">8pt</property>
+                                        <property name="textAlign">right</property>
+                                        <property name="dataSet">Info</property>
+                                        <list-property name="boundDataColumns">
+                                            <structure>
+                                                <property name="name">CLTR_ValueSum</property>
+                                                <text-property name="displayName">CLTR_ValueSum</text-property>
+                                                <expression name="expression" type="javascript">dataSetRow["CLTR_ValueSum"]</expression>
+                                                <property name="dataType">string</property>
+                                            </structure>
+                                        </list-property>
+                                        <expression name="valueExpr">row["CLTR_ValueSum"]</expression>
+                                        <property name="contentType">html</property>
+                                    </text-data>
                                 </cell>
                                 <cell id="1061">
                                     <property name="style">Credix-databox</property>
-                                    <label id="1105"/>
+                                    <label id="1105">
+                                        <property name="fontSize">8pt</property>
+                                        <property name="textAlign">right</property>
+                                    </label>
                                 </cell>
                                 <cell id="1062">
                                     <property name="style">Credix-databox</property>
-                                    <label id="1106"/>
+                                    <label id="1106">
+                                        <property name="fontSize">8pt</property>
+                                        <property name="textAlign">right</property>
+                                    </label>
                                 </cell>
                                 <cell id="1063">
                                     <property name="style">Credix-databox</property>
-                                    <label id="1107"/>
+                                    <text-data id="1533">
+                                        <property name="fontSize">8pt</property>
+                                        <property name="fontWeight">bold</property>
+                                        <property name="textAlign">right</property>
+                                        <property name="dataSet">Info</property>
+                                        <list-property name="boundDataColumns">
+                                            <structure>
+                                                <property name="name">CLTR_ValueRealSum</property>
+                                                <text-property name="displayName">CLTR_ValueRealSum</text-property>
+                                                <expression name="expression" type="javascript">dataSetRow["CLTR_ValueRealSum"]</expression>
+                                                <property name="dataType">string</property>
+                                            </structure>
+                                        </list-property>
+                                        <expression name="valueExpr">row["CLTR_ValueRealSum"]</expression>
+                                        <property name="contentType">html</property>
+                                    </text-data>
                                 </cell>
                                 <cell id="1064">
                                     <property name="style">Credix-databox</property>
-                                    <label id="1108"/>
+                                    <label id="1108">
+                                        <property name="fontSize">8pt</property>
+                                        <property name="textAlign">right</property>
+                                    </label>
                                 </cell>
                             </row>
                             <row id="1432">
@@ -4372,21 +4985,57 @@ Komentář:
                                 </cell>
                                 <cell id="1435">
                                     <property name="style">Credix-databox</property>
+                                    <text-data id="1503">
+                                        <property name="fontSize">8pt</property>
+                                        <property name="textAlign">right</property>
+                                        <property name="dataSet">Info</property>
+                                        <list-property name="boundDataColumns">
+                                            <structure>
+                                                <property name="name">DREQ_StartValue</property>
+                                                <text-property name="displayName">DREQ_StartValue</text-property>
+                                                <expression name="expression" type="javascript">dataSetRow["DREQ_StartValue"]</expression>
+                                                <property name="dataType">string</property>
+                                            </structure>
+                                        </list-property>
+                                        <expression name="valueExpr">row["DREQ_StartValue"]</expression>
+                                        <property name="contentType">html</property>
+                                    </text-data>
                                 </cell>
                                 <cell id="1436">
                                     <property name="style">Credix-databox</property>
+                                    <label id="1589">
+                                        <property name="fontSize">8pt</property>
+                                        <property name="textAlign">right</property>
+                                    </label>
                                 </cell>
                                 <cell id="1437">
                                     <property name="style">Credix-databox</property>
+                                    <label id="1552">
+                                        <property name="fontSize">8pt</property>
+                                        <property name="textAlign">right</property>
+                                    </label>
                                 </cell>
                                 <cell id="1438">
                                     <property name="style">Credix-databox</property>
+                                    <label id="1553">
+                                        <property name="fontSize">8pt</property>
+                                        <property name="fontWeight">bold</property>
+                                        <property name="textAlign">right</property>
+                                    </label>
                                 </cell>
                                 <cell id="1439">
                                     <property name="style">Credix-databox</property>
+                                    <label id="1554">
+                                        <property name="fontSize">8pt</property>
+                                        <property name="textAlign">right</property>
+                                    </label>
                                 </cell>
                                 <cell id="1440">
                                     <property name="style">Credix-databox</property>
+                                    <label id="1555">
+                                        <property name="fontSize">8pt</property>
+                                        <property name="textAlign">right</property>
+                                    </label>
                                 </cell>
                             </row>
                         </footer>
@@ -4396,9 +5045,21 @@ Komentář:
                         <property name="dataSet">Estates</property>
                         <list-property name="boundDataColumns">
                             <structure>
-                                <property name="name">lEST_Desc</property>
-                                <text-property name="displayName">lEST_Desc</text-property>
-                                <expression name="expression" type="javascript">dataSetRow["lEST_Desc"]</expression>
+                                <property name="name">CLTR_ID</property>
+                                <text-property name="displayName">CLTR_ID</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["CLTR_ID"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                            <structure>
+                                <property name="name">CLTR_Name</property>
+                                <text-property name="displayName">CLTR_Name</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["CLTR_Name"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                            <structure>
+                                <property name="name">CLTR_Desc</property>
+                                <text-property name="displayName">CLTR_Desc</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["CLTR_Desc"]</expression>
                                 <property name="dataType">string</property>
                             </structure>
                             <structure>
@@ -4420,9 +5081,57 @@ Komentář:
                                 <property name="dataType">string</property>
                             </structure>
                             <structure>
-                                <property name="name">CltrDesc</property>
-                                <text-property name="displayName">CltrDesc</text-property>
-                                <expression name="expression" type="javascript">dataSetRow["CltrDesc"]</expression>
+                                <property name="name">CisloParcely</property>
+                                <text-property name="displayName">CisloParcely</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["CisloParcely"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                            <structure>
+                                <property name="name">CLTR_Value</property>
+                                <text-property name="displayName">CLTR_Value</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["CLTR_Value"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                            <structure>
+                                <property name="name">CLPR_Number</property>
+                                <text-property name="displayName">CLPR_Number</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["CLPR_Number"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                            <structure>
+                                <property name="name">AppraiserSubjName</property>
+                                <text-property name="displayName">AppraiserSubjName</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["AppraiserSubjName"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                            <structure>
+                                <property name="name">CLPR_DateStart</property>
+                                <text-property name="displayName">CLPR_DateStart</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["CLPR_DateStart"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                            <structure>
+                                <property name="name">CLPR_Price</property>
+                                <text-property name="displayName">CLPR_Price</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["CLPR_Price"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                            <structure>
+                                <property name="name">CLPR_PriceReproduction</property>
+                                <text-property name="displayName">CLPR_PriceReproduction</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["CLPR_PriceReproduction"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                            <structure>
+                                <property name="name">CLPR_SupervisionDate</property>
+                                <text-property name="displayName">CLPR_SupervisionDate</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["CLPR_SupervisionDate"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
+                            <structure>
+                                <property name="name">COBC_NAZEV</property>
+                                <text-property name="displayName">COBC_NAZEV</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["COBC_NAZEV"]</expression>
                                 <property name="dataType">string</property>
                             </structure>
                             <structure>
@@ -4435,25 +5144,6 @@ Komentář:
                                 <property name="name">ESTT_CisloJednotky</property>
                                 <text-property name="displayName">ESTT_CisloJednotky</text-property>
                                 <expression name="expression" type="javascript">dataSetRow["ESTT_CisloJednotky"]</expression>
-                                <property name="dataType">string</property>
-                            </structure>
-                            <structure>
-                                <property name="name">CisloParcely</property>
-                                <text-property name="displayName">CisloParcely</text-property>
-                                <expression name="expression" type="javascript">dataSetRow["CisloParcely"]</expression>
-                                <property name="dataType">string</property>
-                            </structure>
-                            <structure>
-                                <property name="name">CLTR_Value</property>
-                                <text-property name="displayName">CLTR_Value</text-property>
-                                <expression name="expression" type="javascript">dataSetRow["CLTR_Value"] + " CZK"</expression>
-                                <property name="dataType">string</property>
-                                <property name="allowExport">true</property>
-                            </structure>
-                            <structure>
-                                <property name="name">COBC_NAZEV</property>
-                                <text-property name="displayName">COBC_NAZEV</text-property>
-                                <expression name="expression" type="javascript">dataSetRow["COBC_NAZEV"]</expression>
                                 <property name="dataType">string</property>
                             </structure>
                             <structure>
@@ -4504,9 +5194,9 @@ Komentář:
                                 </cell>
                                 <cell id="813">
                                     <property name="style">Credix-databox</property>
-                                    <data id="848">
+                                    <data id="1585">
                                         <property name="fontWeight">bold</property>
-                                        <property name="resultSetColumn">lEST_Desc</property>
+                                        <property name="resultSetColumn">CLTR_Name</property>
                                     </data>
                                 </cell>
                             </row>
@@ -4576,8 +5266,8 @@ Komentář:
                                 </cell>
                                 <cell id="828">
                                     <property name="style">Credix-databox</property>
-                                    <data id="921">
-                                        <property name="resultSetColumn">CltrDesc</property>
+                                    <data id="1586">
+                                        <property name="resultSetColumn">CLTR_Desc</property>
                                     </data>
                                 </cell>
                             </row>
@@ -4646,9 +5336,9 @@ Komentář:
                                 </cell>
                                 <cell id="862">
                                     <property name="style">Credix-databox</property>
-                                    <label id="976">
-                                        <property name="style">credix-label-empty</property>
-                                    </label>
+                                    <data id="1535">
+                                        <property name="resultSetColumn">AppraiserSubjName</property>
+                                    </data>
                                 </cell>
                             </row>
                             <row id="863">
@@ -4660,9 +5350,9 @@ Komentář:
                                 </cell>
                                 <cell id="865">
                                     <property name="style">Credix-databox</property>
-                                    <label id="977">
-                                        <property name="style">credix-label-empty</property>
-                                    </label>
+                                    <data id="1537">
+                                        <property name="resultSetColumn">CLPR_Number</property>
+                                    </data>
                                 </cell>
                             </row>
                             <row id="866">
@@ -4674,9 +5364,9 @@ Komentář:
                                 </cell>
                                 <cell id="868">
                                     <property name="style">Credix-databox</property>
-                                    <label id="978">
-                                        <property name="style">credix-label-empty</property>
-                                    </label>
+                                    <data id="1536">
+                                        <property name="resultSetColumn">CLPR_SupervisionDate</property>
+                                    </data>
                                 </cell>
                             </row>
                             <row id="869">
@@ -4688,9 +5378,9 @@ Komentář:
                                 </cell>
                                 <cell id="871">
                                     <property name="style">Credix-databox</property>
-                                    <data id="925">
+                                    <data id="1542">
                                         <property name="fontWeight">bold</property>
-                                        <property name="resultSetColumn">CLTR_Value</property>
+                                        <property name="resultSetColumn">CLPR_Price</property>
                                     </data>
                                 </cell>
                             </row>
@@ -4703,10 +5393,10 @@ Komentář:
                                 </cell>
                                 <cell id="897">
                                     <property name="style">Credix-databox</property>
-                                    <label id="979">
-                                        <property name="style">credix-label-empty</property>
-                                        <property name="fontWeight">normal</property>
-                                    </label>
+                                    <data id="1587">
+                                        <property name="fontWeight">bold</property>
+                                        <property name="resultSetColumn">CLPR_PriceReproduction</property>
+                                    </data>
                                 </cell>
                             </row>
                             <row id="892">
@@ -4718,9 +5408,9 @@ Komentář:
                                 </cell>
                                 <cell id="894">
                                     <property name="style">Credix-databox</property>
-                                    <label id="980">
-                                        <property name="style">credix-label-empty</property>
-                                    </label>
+                                    <data id="1540">
+                                        <property name="resultSetColumn">CLPR_SupervisionDate</property>
+                                    </data>
                                 </cell>
                             </row>
                             <row id="889">
@@ -4732,9 +5422,7 @@ Komentář:
                                 </cell>
                                 <cell id="891">
                                     <property name="style">Credix-databox</property>
-                                    <label id="981">
-                                        <property name="style">credix-label-empty</property>
-                                    </label>
+                                    <label id="1583"/>
                                 </cell>
                             </row>
                             <row id="886">
@@ -4746,9 +5434,7 @@ Komentář:
                                 </cell>
                                 <cell id="888">
                                     <property name="style">Credix-databox</property>
-                                    <label id="982">
-                                        <property name="style">credix-label-empty</property>
-                                    </label>
+                                    <label id="1584"/>
                                 </cell>
                             </row>
                             <row id="883">
@@ -4779,7 +5465,7 @@ Komentář:
                                     <label id="984">
                                         <property name="style">credix-label-empty</property>
                                         <property name="fontWeight">bold</property>
-                                        <text-property name="text">🗹☐ ANO    🗹☐ NE     ☐ Bude řešen v rámci podmínek úvěru &#13;&#13;
+                                        <text-property name="text">🗹☐ ANO    🗹☐ NE    🗹☐ Bude řešen v rámci podmínek úvěru &#13;&#13;
 </text-property>
                                     </label>
                                 </cell>
