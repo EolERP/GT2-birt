@@ -18,6 +18,9 @@
             <property name="valueType">static</property>
             <property name="dataType">string</property>
             <property name="distinct">true</property>
+            <simple-property-list name="defaultValue">
+                <value type="constant">c:\Users\Pavel Fuksa\Documents\Eclipse-work\CREDIX\gt2birt\data2603.xml</value>
+            </simple-property-list>
             <list-property name="selectionList"/>
             <property name="paramType">simple</property>
             <property name="controlType">text-box</property>
@@ -28,7 +31,7 @@
     </parameters>
     <data-sources>
         <oda-data-source extensionID="org.eclipse.datatools.enablement.oda.xml" name="Data Source" id="38">
-            <property name="FILELIST">data.xml</property>
+            <property name="FILELIST">data2603.xml</property>
         </oda-data-source>
     </data-sources>
     <data-sets>
@@ -114,6 +117,11 @@
                     <property name="analysis">dimension</property>
                     <text-property name="heading">CLTR_ValueRealSum</text-property>
                 </structure>
+                <structure>
+                    <property name="columnName">DREQ_Interest</property>
+                    <property name="analysis">dimension</property>
+                    <text-property name="heading">DREQ_Interest</text-property>
+                </structure>
             </list-property>
             <list-property name="parameters"/>
             <structure name="cachedMetaData">
@@ -196,6 +204,11 @@
                     <structure>
                         <property name="position">16</property>
                         <property name="name">CLTR_ValueRealSum</property>
+                        <property name="dataType">string</property>
+                    </structure>
+                    <structure>
+                        <property name="position">17</property>
+                        <property name="name">DREQ_Interest</property>
                         <property name="dataType">string</property>
                     </structure>
                 </list-property>
@@ -314,8 +327,15 @@
                     <property name="dataType">string</property>
                     <property name="nativeDataType">12</property>
                 </structure>
+                <structure>
+                    <property name="position">17</property>
+                    <property name="name">DREQ_Interest</property>
+                    <property name="nativeName">DREQ_Interest</property>
+                    <property name="dataType">string</property>
+                    <property name="nativeDataType">12</property>
+                </structure>
             </list-property>
-            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/DealRequest/Info]#:#{DREQ_Desc;STRING;/DREQ_Desc},{lBGHT_Name;STRING;/lBGHT_Name},{DREQ_StartValue;STRING;/DREQ_StartValue},{DREQ_AdminOp;STRING;/DREQ_AdminOp},{DREQ_SpecOp;STRING;/DREQ_SpecOp},{RiskOp;STRING;/RiskOp},{ReferrerOp;STRING;/ReferrerOp},{DREQ_AcctNo;STRING;/DREQ_AcctNo},{DREQ_DateDue;STRING;/DREQ_DateDue},{DREQ_Type;STRING;/DREQ_Type},{lDDRA_Name;STRING;/lDDRA_Name},{DREQ_CharId;STRING;/DREQ_CharId},{Stage;STRING;/Stage},{lDRPR_Description;STRING;/lDRPR_Description},{CLTR_ValueSum;STRING;/CLTR_ValueSum},{CLTR_ValueRealSum;STRING;/CLTR_ValueRealSum}]]></xml-property>
+            <xml-property name="queryText"><![CDATA[table0#-TNAME-#table0#:#[/DealRequest/Info]#:#{DREQ_Desc;STRING;/DREQ_Desc},{lBGHT_Name;STRING;/lBGHT_Name},{DREQ_StartValue;STRING;/DREQ_StartValue},{DREQ_AdminOp;STRING;/DREQ_AdminOp},{DREQ_SpecOp;STRING;/DREQ_SpecOp},{RiskOp;STRING;/RiskOp},{ReferrerOp;STRING;/ReferrerOp},{DREQ_AcctNo;STRING;/DREQ_AcctNo},{DREQ_DateDue;STRING;/DREQ_DateDue},{DREQ_Type;STRING;/DREQ_Type},{lDDRA_Name;STRING;/lDDRA_Name},{DREQ_CharId;STRING;/DREQ_CharId},{Stage;STRING;/Stage},{lDRPR_Description;STRING;/lDRPR_Description},{CLTR_ValueSum;STRING;/CLTR_ValueSum},{CLTR_ValueRealSum;STRING;/CLTR_ValueRealSum},{DREQ_Interest;STRING;/DREQ_Interest}]]></xml-property>
             <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
   <Version>2.0</Version>
@@ -2625,8 +2645,8 @@ Společnost je zapsaná v obchodním rejstříku vedeném Městským soudem v Pr
                                 <property name="paddingLeft">5pt</property>
                                 <property name="paddingBottom">5pt</property>
                                 <property name="paddingRight">5pt</property>
-                                <data id="40">
-                                    <property name="resultSetColumn">DREQ_AcctNo</property>
+                                <data id="1595">
+                                    <property name="resultSetColumn">DREQ_CharId</property>
                                 </data>
                             </cell>
                             <cell id="19">
@@ -3750,6 +3770,12 @@ Společnost je zapsaná v obchodním rejstříku vedeném Městským soudem v Pr
                                 <expression name="expression" type="javascript">dataSetRow["lDRPR_Description"]</expression>
                                 <property name="dataType">string</property>
                             </structure>
+                            <structure>
+                                <property name="name">DREQ_Interest</property>
+                                <text-property name="displayName">DREQ_Interest</text-property>
+                                <expression name="expression" type="javascript">dataSetRow["DREQ_Interest"]</expression>
+                                <property name="dataType">string</property>
+                            </structure>
                         </list-property>
                         <column id="326">
                             <property name="width">2.85in</property>
@@ -3847,9 +3873,9 @@ Společnost je zapsaná v obchodním rejstříku vedeném Městským soudem v Pr
                             </cell>
                             <cell id="348">
                                 <property name="style">Credix-databox</property>
-                                <label id="372">
-                                    <text-property name="text">% p. a.</text-property>
-                                </label>
+                                <data id="1596">
+                                    <property name="resultSetColumn">DREQ_Interest</property>
+                                </data>
                             </cell>
                         </row>
                         <row id="349">
