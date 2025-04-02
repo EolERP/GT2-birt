@@ -4,7 +4,7 @@ variables:
 - name: SERVICE_CONNECTION
   value: 'SC_EKR_APP_INT_PRO_GWC_ARM'
 - name: REGISTRY_NAME
-  value: 'crdprointekrgwcacr01'
+  value: 'crdprointothergwcacr01'
 
 resources:
   repositories:
@@ -46,13 +46,13 @@ stages:
       inputs:
         targetType: "inline"
         script: |
-          docker build -t $(REGISTRY_NAME).azurecr.io/gt2web:$(GitVersion.FullSemVer) .
+          docker build -t $(REGISTRY_NAME).azurecr.io/ekr-gt2web:$(GitVersion.FullSemVer) .
     
     - task: Bash@3
       inputs:
         targetType: "inline"
         script: |
-          docker push $(REGISTRY_NAME).azurecr.io/gt2web:$(GitVersion.FullSemVer)
+          docker push $(REGISTRY_NAME).azurecr.io/ekr-gt2web:$(GitVersion.FullSemVer)
 
     # Cleanup
     - task: DeleteFiles@1
