@@ -1,0 +1,36 @@
+parameters:
+  - name: chartName
+    default: "helmchart"
+  - name: targetValuesFile
+    default: "values-dev.yaml"
+
+steps:
+  - checkout: helm-charts
+    persistCredentials: true
+    fetchDepth: 0
+    clean: true
+    fetchTags: true
+
+  - task: Bash@3
+    inputs:
+      targetType: inline
+      script: |
+        echo "Version number: " $(Build.BuildNumber)
+        echo "Target helm chart: " ${{ parameters.chartName }}
+        echo "Target values file: " ${{ parameters.targetValuesFile }}
+    displayName: Update image version in helm chart
+
+  - task: Bash@3
+    inputs:
+      targetType: inline
+      script: |
+        git config --local user.email "build.pipeline@creditasgroup.cz"
+        git config --local user.name "Build Pipeline"
+        git fetch -all
+        git checkout main
+        git pull
+        sed -i "s/  version: \"[^\"]*\"/  version: \"$(Build.BuildNumber)\"/" ./${{ parameters.chartName }}/${{ parameters.targetValuesFile }}
+        git add -A
+        git commit -m "image version updated to $(Build.BuildNumber)"
+        git push origin HEAD:main
+    displayName: Commit changes to git repositorory
