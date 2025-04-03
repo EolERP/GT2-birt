@@ -46,13 +46,13 @@ stages:
       inputs:
         targetType: "inline"
         script: |
-          docker build -t $(REGISTRY_NAME).azurecr.io/ekr-gt2web:$(GitVersion.FullSemVer) .
+          docker build -t $(REGISTRY_NAME).azurecr.io/ekr-gt2birt:$(GitVersion.FullSemVer) .
     
     - task: Bash@3
       inputs:
         targetType: "inline"
         script: |
-          docker push $(REGISTRY_NAME).azurecr.io/ekr-gt2web:$(GitVersion.FullSemVer)
+          docker push $(REGISTRY_NAME).azurecr.io/ekr-gt2birt:$(GitVersion.FullSemVer)
 
     # Cleanup
     - task: DeleteFiles@1
@@ -68,5 +68,5 @@ stages:
     steps:
     - template: templates/update-helm-chart.yml
       parameters:
-        chartName: "gt2web"
+        chartName: "gt2birt"
         targetValuesFile: "values.yaml"
