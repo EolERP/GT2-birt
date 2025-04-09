@@ -11,6 +11,10 @@ resources:
   - repository: helm-charts
     type: git
     name: "CreditasGroup.CRX-helm-charts"
+  - repository: versioningTemplates
+    name: CreditasGroup.DevOps.ADO.Shared-Pipeline-Templates-APP/git-version
+    type: git
+    ref: refs/tags/0.8.1
 
 trigger:
   branches:
@@ -35,6 +39,7 @@ stages:
 
     # Build Docker image
     - task: AzureCLI@2
+      displayName: 'ACR Login'
       inputs:
         azureSubscription: $(SERVICE_CONNECTION)
         scriptType: "bash"
@@ -43,21 +48,20 @@ stages:
           az acr login --name $(REGISTRY_NAME).azurecr.io
     
     - task: Bash@3
+      displayName: 'Build Docker Image'
       inputs:
         targetType: "inline"
         script: |
           docker build -t $(REGISTRY_NAME).azurecr.io/gt2birt:$(GitVersion.FullSemVer) .
+        workingDirectory: $(Build.SourcesDirectory)/$(Build.Repository.Name)
     
     - task: Bash@3
+      displayName: 'Push Docker Image'
       inputs:
         targetType: "inline"
         script: |
           docker push $(REGISTRY_NAME).azurecr.io/gt2birt:$(GitVersion.FullSemVer)
-
-    # Cleanup
-    - task: DeleteFiles@1
-      inputs:
-        Contents: '**/*'
+        workingDirectory: $(Build.SourcesDirectory)/$(Build.Repository.Name)
 
 - stage: HelmChartUpdate
   displayName: "Helm Chart Update"
