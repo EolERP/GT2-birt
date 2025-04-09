@@ -4,7 +4,7 @@ variables:
 - name: SERVICE_CONNECTION
   value: 'SC_CRX_APP_INT_PRO_GWC_ARM'
 - name: REGISTRY_NAME
-  value: 'crdprointcrxgwcacr01'
+  value: 'crdprointothergwcacr01'
 
 resources:
   repositories:
@@ -52,7 +52,7 @@ stages:
       inputs:
         targetType: "inline"
         script: |
-          docker build -t $(REGISTRY_NAME).azurecr.io/gt2birt:$(GitVersion.FullSemVer) .
+          docker build -t $(REGISTRY_NAME).azurecr.io/crx-gt2birt:$(GitVersion.FullSemVer) .
         workingDirectory: $(Build.SourcesDirectory)/$(Build.Repository.Name)
     
     - task: Bash@3
@@ -60,7 +60,7 @@ stages:
       inputs:
         targetType: "inline"
         script: |
-          docker push $(REGISTRY_NAME).azurecr.io/gt2birt:$(GitVersion.FullSemVer)
+          docker push $(REGISTRY_NAME).azurecr.io/crx-gt2birt:$(GitVersion.FullSemVer)
         workingDirectory: $(Build.SourcesDirectory)/$(Build.Repository.Name)
 
 - stage: HelmChartUpdate
