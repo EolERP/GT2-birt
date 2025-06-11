@@ -17,6 +17,7 @@ RUN wget "http://download.eclipse.org/birt/downloads/drops/R-R1-4.13.0-202303022
 RUN unzip "/opt/tomcat/webapps/birt-runtime-4.13.0-20230302.zip" -d /opt/tomcat/webapps/birt-runtime
 RUN mv "/opt/tomcat/webapps/birt-runtime/WebViewerExample" "/opt/tomcat/webapps/birt"
 RUN rm /opt/tomcat/webapps/birt-runtime-4.13.0-20230302.zip
+RUN rm -f -r "/opt/tomcat/webapps/ROOT"
 RUN rm -f -r "/opt/tomcat/webapps/birt-runtime"
 
 #RUN mkdir /usr/share/tomcat && mkdir /etc/tomcat
@@ -41,6 +42,7 @@ ADD arial.ttf /usr/share/fonts/truetype
 ADD birt_version.rptdesign /opt/tomcat/webapps/birt
 ADD credix_repayment_schedule.rptdesign /opt/tomcat/webapps/birt
 ADD credix_UN.rptdesign /opt/tomcat/webapps/birt
+ADD index.html /opt/tomcat/webapps/birt
 
 ADD /cert/*.crt /usr/local/share/ca-certificates/
 RUN update-ca-certificates
