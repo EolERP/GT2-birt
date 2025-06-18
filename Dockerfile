@@ -7,7 +7,7 @@ RUN apt-get -y upgrade
 #Pre-Installation
 RUN apt -y install openjdk-11-jdk
 RUN apt -y install wget
-RUN wget "https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.73/bin/apache-tomcat-9.0.73.tar.gz" -P /opt/tomcat
+RUN wget "https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.106/bin/apache-tomcat-9.0.106.tar.gz" -P /opt/tomcat
 RUN tar xzvf /opt/tomcat/apache-tomcat-9*tar.gz -C /opt/tomcat --strip-components=1
 
 RUN grep -rl --include \*.xml allow . | xargs sed -i 's/allow/deny/g'
@@ -17,6 +17,7 @@ RUN wget "http://download.eclipse.org/birt/downloads/drops/R-R1-4.13.0-202303022
 RUN unzip "/opt/tomcat/webapps/birt-runtime-4.13.0-20230302.zip" -d /opt/tomcat/webapps/birt-runtime
 RUN mv "/opt/tomcat/webapps/birt-runtime/WebViewerExample" "/opt/tomcat/webapps/birt"
 RUN rm /opt/tomcat/webapps/birt-runtime-4.13.0-20230302.zip
+RUN rm -f -r "/opt/tomcat/webapps/ROOT"
 RUN rm -f -r "/opt/tomcat/webapps/birt-runtime"
 
 #RUN mkdir /usr/share/tomcat && mkdir /etc/tomcat
@@ -39,6 +40,8 @@ RUN wget "https://download.eclipse.org/releases/2021-03/202103171000/plugins/org
 ADD mundial.ttf /usr/share/fonts/truetype
 ADD arial.ttf /usr/share/fonts/truetype
 ADD birt_version.rptdesign /opt/tomcat/webapps/birt
+ADD index.html /opt/tomcat/webapps/birt
+
 
 ADD /cert/*.crt /usr/local/share/ca-certificates/
 RUN update-ca-certificates
