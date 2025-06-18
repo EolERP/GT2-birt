@@ -7,7 +7,7 @@ RUN apt-get -y upgrade
 #Pre-Installation
 RUN apt -y install openjdk-11-jdk
 RUN apt -y install wget
-RUN wget "https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.73/bin/apache-tomcat-9.0.73.tar.gz" -P /opt/tomcat
+RUN wget "https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.106/bin/apache-tomcat-9.0.106.tar.gz" -P /opt/tomcat
 RUN tar xzvf /opt/tomcat/apache-tomcat-9*tar.gz -C /opt/tomcat --strip-components=1
 
 RUN grep -rl --include \*.xml allow . | xargs sed -i 's/allow/deny/g'
