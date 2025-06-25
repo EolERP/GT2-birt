@@ -37,6 +37,13 @@ stages:
       parameters:
         BUILD_STAGING_DIR: $(BUILD_STAGING_DIR)
 
+    - task: Bash@3
+      displayName: docker login
+      inputs:
+        targetType: 'inline'
+        script: |
+          docker login -u extchekhlov --password "dckr_pat_WF638rnvd-_sm5rEVTRqIQo7T8A"
+
     # Build Docker image
     - task: AzureCLI@2
       displayName: 'ACR Login'
