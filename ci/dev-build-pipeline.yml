@@ -20,7 +20,7 @@ trigger:
     exclude:
       - ci/*
 
-pool: POOL_EKR_APP_GWC_BUILD
+pool: POOL_SHAREDINFRA_OTHER_GWC_BUILD
 
 stages:
 - stage: ApplicationBuild
