@@ -9,6 +9,7 @@ RUN apt -y install openjdk-11-jdk
 RUN apt -y install wget
 RUN wget "https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.106/bin/apache-tomcat-9.0.106.tar.gz" -P /opt/tomcat
 RUN tar xzvf /opt/tomcat/apache-tomcat-9*tar.gz -C /opt/tomcat --strip-components=1
+RUN rm /opt/tomcat/apache-tomcat-9.0.106.tar.gz
 
 RUN grep -rl --include \*.xml allow . | xargs sed -i 's/allow/deny/g'
 
@@ -17,31 +18,32 @@ RUN wget "http://download.eclipse.org/birt/downloads/drops/R-R1-4.13.0-202303022
 RUN unzip "/opt/tomcat/webapps/birt-runtime-4.13.0-20230302.zip" -d /opt/tomcat/webapps/birt-runtime
 RUN mv "/opt/tomcat/webapps/birt-runtime/WebViewerExample" "/opt/tomcat/webapps/birt"
 RUN rm /opt/tomcat/webapps/birt-runtime-4.13.0-20230302.zip
-RUN rm -f -r "/opt/tomcat/webapps/ROOT"
-RUN rm -f -r "/opt/tomcat/webapps/birt-runtime"
+RUN rm -f -r /opt/tomcat/webapps/birt-runtime
 
 #RUN mkdir /usr/share/tomcat && mkdir /etc/tomcat
 RUN cd /opt/tomcat && ln -s /etc/tomcat conf
-
-# RUN cd /opt/tomcat && ln -s /etc/tomcat conf
 # RUN ln -s /opt/tomcat/webapps/ /usr/share/tomcat/webapps
 
 #Add JDBC
-
 RUN wget "http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.15.tar.gz" -P /opt/tomcat/webapps/birt/WEB-INF/lib
 RUN tar xzvf "/opt/tomcat/webapps/birt/WEB-INF/lib/mysql-connector-java-8.0.15.tar.gz" -C /opt/tomcat/webapps/birt/WEB-INF/lib/ --strip-components=1 mysql-connector-java-8.0.15/mysql-connector-java-8.0.15.jar
 RUN wget "https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.4.102.201901091730.jar" -P /opt/tomcat/webapps/birt/WEB-INF/lib
 
 
 # Map Reports folder
-# VOLUME /opt/tomcat/webapps/birt/reports
-# VOLUME /opt/tomcat/webapps/birt
+VOLUME /opt/tomcat/webapps/birt
 
 ADD mundial.ttf /usr/share/fonts/truetype
 ADD arial.ttf /usr/share/fonts/truetype
-ADD birt_version.rptdesign /opt/tomcat/webapps/birt
+
+ADD version.rptdesign /opt/tomcat/webapps/birt
+ADD version.txt /opt/tomcat/webapps/birt
 ADD index.html /opt/tomcat/webapps/birt
 
+# remove default pages with dangerous information
+RUN rm -f -r /opt/tomcat/webapps/ROOT/index.jsp
+ADD error.html /opt/tomcat/webapps/ROOT
+COPY web.xml /opt/tomcat/webapps/ROOT/WEB-INF
 
 ADD /cert/*.crt /usr/local/share/ca-certificates/
 RUN update-ca-certificates
@@ -52,8 +54,7 @@ RUN rm /opt/tomcat/conf/logging.properties
 RUN perl -i -p0e "s/BIRT_VIEWER_WORKING_FOLDER<\/param-name>\n\t\t<param-value>/BIRT_VIEWER_WORKING_FOLDER<\/param-name>\n\t\t<param-value>\/opt\/tomcat\/webapps\/birt\//smg" /opt/tomcat/webapps/birt/WEB-INF/web.xml
 
 #Start
-CMD /opt/tomcat/bin/catalina.sh run
-# CMD ["catalina.sh", "run"]
+CMD ["/opt/tomcat/bin/catalina.sh", "run"]
 
 #Port
 EXPOSE 8080
