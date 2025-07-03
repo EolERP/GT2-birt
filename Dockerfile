@@ -34,14 +34,14 @@ RUN wget "https://download.eclipse.org/releases/2021-03/202103171000/plugins/org
 
 
 # Map Reports folder
-# VOLUME /opt/tomcat/webapps/birt/reports
-# VOLUME /opt/tomcat/webapps/birt
+VOLUME /opt/tomcat/webapps/birt
 
 ADD mundial.ttf /usr/share/fonts/truetype
 ADD arial.ttf /usr/share/fonts/truetype
-ADD birt_version.rptdesign /opt/tomcat/webapps/birt
 ADD credix_repayment_schedule.rptdesign /opt/tomcat/webapps/birt
 ADD credix_UN.rptdesign /opt/tomcat/webapps/birt
+ADD version.rptdesign /opt/tomcat/webapps/birt
+ADD version.txt /opt/tomcat/webapps/birt
 ADD index.html /opt/tomcat/webapps/birt
 
 # remove default pages with dangerous information
@@ -58,8 +58,8 @@ RUN rm /opt/tomcat/conf/logging.properties
 RUN perl -i -p0e "s/BIRT_VIEWER_WORKING_FOLDER<\/param-name>\n\t\t<param-value>/BIRT_VIEWER_WORKING_FOLDER<\/param-name>\n\t\t<param-value>\/opt\/tomcat\/webapps\/birt\//smg" /opt/tomcat/webapps/birt/WEB-INF/web.xml
 
 #Start
-CMD /opt/tomcat/bin/catalina.sh run
-# CMD ["catalina.sh", "run"]
+# CMD /opt/tomcat/bin/catalina.sh run
+CMD ["/opt/tomcat/bin/catalina.sh", "run"]
 
 #Port
 EXPOSE 8080
