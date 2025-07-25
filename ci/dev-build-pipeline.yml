@@ -11,6 +11,10 @@ resources:
   - repository: helm-charts
     type: git
     name: "CreditasGroup.CWF-helm-charts"
+  - repository: versioningTemplates
+    name: CreditasGroup.DevOps.ADO.Shared-Pipeline-Templates-APP/git-version
+    type: git
+    ref: refs/tags/0.8.1
 
 trigger:
   branches:
@@ -47,17 +51,14 @@ stages:
         targetType: "inline"
         script: |
           docker build -t $(REGISTRY_NAME).azurecr.io/cwf-gt2birt:$(GitVersion.FullSemVer) .
+        workingDirectory: $(System.DefaultWorkingDirectory)/$(Build.Repository.Name)/
     
     - task: Bash@3
       inputs:
         targetType: "inline"
         script: |
           docker push $(REGISTRY_NAME).azurecr.io/cwf-gt2birt:$(GitVersion.FullSemVer)
-
-    # Cleanup
-    - task: DeleteFiles@1
-      inputs:
-        Contents: '**/*'
+        workingDirectory: $(System.DefaultWorkingDirectory)/$(Build.Repository.Name)/
 
 - stage: HelmChartUpdate
   displayName: "Helm Chart Update"
