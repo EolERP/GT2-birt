@@ -2,7 +2,7 @@
 <report xmlns="http://www.eclipse.org/birt/2005/design" version="3.2.24" id="1">
     <property name="author">Griff Team Technologies s.r.o.</property>
     <property name="createdBy">Eclipse BIRT Designer Version 4.13.0.v202303021806</property>
-    <text-property name="title">Protokol o schválení skóringu klienta</text-property>
+    <text-property name="title">Faktura</text-property>
     <list-property name="propertyBindings">
         <structure>
             <property name="name">FILELIST</property>
@@ -1827,7 +1827,7 @@ else &#13;
                                         <list-property name="visibility">
                                             <structure>
                                                 <property name="format">all</property>
-                                                <expression name="valueExpr" type="javascript">row["dphProc"] != "0"</expression>
+                                                <expression name="valueExpr" type="javascript">true</expression>
                                             </structure>
                                         </list-property>
                                         <cell id="7439">
@@ -1938,12 +1938,6 @@ else &#13;
                                         </cell>
                                     </row>
                                     <row id="7412">
-                                        <list-property name="visibility">
-                                            <structure>
-                                                <property name="format">all</property>
-                                                <expression name="valueExpr" type="javascript">row["dphProc"] == "0"</expression>
-                                            </structure>
-                                        </list-property>
                                         <cell id="7440">
                                             <label id="7450">
                                                 <property name="backgroundAttachment">scroll</property>
@@ -2047,7 +2041,7 @@ else &#13;
                                                 <property name="showIfBlank">false</property>
                                                 <property name="canShrink">false</property>
                                                 <property name="overflow">hidden</property>
-                                                <text-property name="text">24185299     Plátce DPH</text-property>
+                                                <text-property name="text">24185299     DIČ: CZ699006775</text-property>
                                             </label>
                                         </cell>
                                     </row>
@@ -2055,7 +2049,7 @@ else &#13;
                                         <list-property name="visibility">
                                             <structure>
                                                 <property name="format">all</property>
-                                                <expression name="valueExpr" type="javascript">row["dphProc"] == "0"</expression>
+                                                <expression name="valueExpr" type="javascript">true</expression>
                                             </structure>
                                         </list-property>
                                         <cell id="7441">
@@ -2217,7 +2211,7 @@ else &#13;
                                                 <property name="showIfBlank">false</property>
                                                 <property name="canShrink">false</property>
                                                 <property name="overflow">hidden</property>
-                                                <text-property name="text">Spisová značka: C 186636 vedená u Městského soudu v Praze,</text-property>
+                                                <text-property name="text">Spisová značka: C 186636 vedená u Městského soudu v Praze</text-property>
                                             </label>
                                         </cell>
                                     </row>
