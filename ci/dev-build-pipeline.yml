@@ -14,7 +14,7 @@ resources:
   - repository: versioningTemplates
     name: CreditasGroup.DevOps.ADO.Shared-Pipeline-Templates-APP/git-version
     type: git
-    ref: refs/tags/0.8.1
+    ref: refs/tags/0.8.2
 
 trigger:
   branches:
