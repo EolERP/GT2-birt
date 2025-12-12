@@ -21,7 +21,8 @@ if [%errorlevel%]==[1] (
 ::git.exe -c fetch.parallel=0 -c submodule.fetchJobs=0 pull --progress "origin" +refs/heads/master
 ::echo off
 
-SET /P AREYOUSURE=Deploy GT2Birt.%ver% to Credix DEV, continue (Y/[N])?
+echo.
+SET /P AREYOUSURE=Deploy gt2-birt.%ver% to Credix DEV, continue (Y/[N])?
 IF /I "%AREYOUSURE%" NEQ "Y" goto END
 
 ::clear cache
@@ -42,8 +43,10 @@ call docker tag birt credixcz.azurecr.io/birt:%ver%
 ::DEPLOY
 call docker push credixcz.azurecr.io/birt:%ver%
 
-echo Deploy GT2Birt.%ver% successful!
+echo.
+echo Deploy gt2-birt.%ver% to Credix DEV successful!
 echo (you must set a new revision on Azure Portal)
+echo.
 
 :END
 set ver=
