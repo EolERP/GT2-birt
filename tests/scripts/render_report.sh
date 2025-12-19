@@ -12,7 +12,7 @@ MODE="${5:-preview}"
 RPT_PARAM="${RPT#./}"
 URL="$BASE/$MODE?__report=$RPT_PARAM&__format=$FMT"
 
-HTTP_CODE=$(curl -ks -w "%{http_code}" -o "$OUT" "$URL" || true)
+HTTP_CODE=$(curl -Ls -w "%{http_code}" -o "$OUT" "$URL" || true)
 
 echo "$HTTP_CODE" > artifacts/http_status.txt
 

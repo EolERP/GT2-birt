@@ -7,7 +7,7 @@
   <property name="imageDPI">96</property>
   <data-sources>
     <oda-data-source extensionID="org.eclipse.datatools.connectivity.oda.flatfile" name="CsvSource" id="2001">
-      <property name="URI">tests/data</property>
+      <property name="URI">/opt/tomcat/webapps/birt/tests/data</property>
       <property name="DELIMTYPE">COMMA</property>
       <property name="CHARSET">UTF-8</property>
       <property name="INCLCOLUMNNAME">NO</property>
