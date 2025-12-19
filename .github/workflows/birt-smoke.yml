@@ -41,15 +41,38 @@ jobs:
           VIEWER_BASE=$(cat artifacts/viewer_base.txt)
           echo "Viewer base: $VIEWER_BASE"
 
-          # Try preview first, then frameset
-          if bash tests/scripts/render_report.sh "$VIEWER_BASE" "tests/reports/smoke.rptdesign" html "$OUT_HTML" ; then
+          # Try preview, frameset, then run
+          if bash tests/scripts/render_report.sh "$VIEWER_BASE" "tests/reports/smoke.rptdesign" html "$OUT_HTML" preview ; then
             echo "endpoint=preview" >> $GITHUB_OUTPUT
           elif bash tests/scripts/render_report.sh "$VIEWER_BASE" "tests/reports/smoke.rptdesign" html "$OUT_HTML" frameset ; then
             echo "endpoint=frameset" >> $GITHUB_OUTPUT
+          elif bash tests/scripts/render_report.sh "$VIEWER_BASE" "tests/reports/smoke.rptdesign" html "$OUT_HTML" run ; then
+            echo "endpoint=run" >> $GITHUB_OUTPUT
           else
             echo "Render failed" >&2
+            echo "URL tried: $VIEWER_BASE" >&2
+            echo "If render.html exists, dump its first lines:" >&2
+            head -n 60 "$OUT_HTML" 2>/dev/null || true
             exit 1
           fi
+
+      - name: Show rendered output (snippet)
+        if: always()
+        run: |
+          echo "First 120 lines of rendered output:";
+          head -n 120 artifacts/rendered.html || true
+          echo "\nLines with SMOKE/TOTAL (if any):";
+          grep -nE "SMOKE|TOTAL" artifacts/rendered.html || true
+          {
+            echo "## Rendered HTML snippet";
+            echo;
+            echo "<details><summary>First 120 lines</summary>";
+            echo;
+            echo '```html';
+            head -n 120 artifacts/rendered.html || true;
+            echo '```';
+            echo "</details>";
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Assertions
         run: |
