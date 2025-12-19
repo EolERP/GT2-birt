@@ -26,7 +26,6 @@ jobs:
       - name: Run container
         run: |
           docker run -d --name birt -p 8080:8080 \
-            -e CATALINA_OPTS="-Dbirt.home=/opt/tomcat/webapps/birt/WEB-INF -Dbirt.engine.home=/opt/tomcat/webapps/birt/WEB-INF/platform" \
             -v "${{ github.workspace }}/tests:/opt/tomcat/webapps/birt/tests:ro" \
             gt2-birt:test
 
@@ -34,6 +33,15 @@ jobs:
         run: |
           bash tests/scripts/wait_for_http.sh "http://localhost:8080/birt/" 180
 
+      - name: Check BIRT platform path resolution
+        run: |
+          docker exec birt bash -lc '
+            echo "CATALINA_OPTS=$CATALINA_OPTS";
+            echo "Engine expects platform at: $BIRT_ENGINE_HOME/platform (if set)";
+            ls -la /opt/tomcat/webapps/birt/WEB-INF/platform/plugins | head -n 40;
+            ls -1 /opt/tomcat/webapps/birt/WEB-INF/platform/plugins | grep -E "enablement\.oda\.xml|connectivity\.oda" || true
+          '
+          
       - name: List viewer root paths
         if: always()
         run: |
