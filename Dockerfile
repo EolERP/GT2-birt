@@ -20,6 +20,24 @@ RUN mv "/opt/tomcat/webapps/birt-runtime/WebViewerExample" "/opt/tomcat/webapps/
 RUN rm /opt/tomcat/webapps/birt-runtime-4.13.0-20230302.zip
 RUN rm -f -r /opt/tomcat/webapps/birt-runtime
 
+# Verify XML ODA plugin exists in the runtime
+RUN bash -lc 'set -e; ls /opt/tomcat/webapps/birt/WEB-INF/platform/plugins/org.eclipse.datatools.enablement.oda.xml_* >/dev/null'
+
+# Copy required jars into WEB-INF/lib for non-OSGi runtime
+RUN bash -lc 'set -e; \
+  PLUG=/opt/tomcat/webapps/birt/WEB-INF/platform/plugins; \
+  LIB=/opt/tomcat/webapps/birt/WEB-INF/lib; \
+  for j in \$PLUG/org.eclipse.datatools.*.jar \
+           \$PLUG/org.eclipse.core.runtime_*.jar \
+           \$PLUG/org.eclipse.equinox.registry_*.jar \
+           \$PLUG/org.eclipse.equinox.common_*.jar \
+           \$PLUG/org.eclipse.equinox.app_*.jar; do \
+    [ -f "\$j" ] && cp -v "\$j" "\$LIB/" || true; \
+  done; \
+  ls -1 "\$LIB"/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null'
+
+# Remove platform to ensure non-OSGi runtime (matches many prod setups)
+RUN rm -rf /opt/tomcat/webapps/birt/WEB-INF/platform || true
 
 #RUN mkdir /usr/share/tomcat && mkdir /etc/tomcat
 RUN cd /opt/tomcat && ln -s /etc/tomcat conf
