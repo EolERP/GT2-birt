@@ -16,6 +16,8 @@ jobs:
       - name: Prepare artifacts dir
         run: |
           mkdir -p artifacts tests/scripts
+          : > artifacts/rendered.html
+          : > artifacts/http_status.txt
 
       - name: Build Docker image
         run: |
@@ -29,6 +31,12 @@ jobs:
             gt2-birt:test
 
       - name: Readiness check (Tomcat/BIRT up)
+
+      - name: List viewer root paths
+        if: always()
+        run: |
+          docker exec birt bash -lc 'ls -l /opt/tomcat/webapps && ls -l /opt/tomcat/webapps/birt && ls -l /opt/tomcat/webapps/birt/WEB-INF && ls -l /opt/tomcat/webapps/birt/WEB-INF/platform || true'
+
         run: |
           bash tests/scripts/wait_for_http.sh "http://localhost:8080/birt/" 180
 
