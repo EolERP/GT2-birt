@@ -7,7 +7,9 @@
   <property name="imageDPI">96</property>
   <data-sources>
     <oda-data-source extensionID="org.eclipse.datatools.enablement.oda.xml" name="XmlSource" id="2001">
-      <property name="FILELIST">/opt/tomcat/webapps/birt/tests/data/data.xml</property>
+      <property name="FILELIST">file:/opt/tomcat/webapps/birt/tests/data/data.xml</property>
+      <property name="XML_ENCODING">UTF-8</property>
+      <property name="NAMESPACE_AWARE">false</property>
     </oda-data-source>
   </data-sources>
   <data-sets>
