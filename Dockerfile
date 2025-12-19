@@ -27,12 +27,15 @@ RUN cd /opt/tomcat && ln -s /etc/tomcat conf
 #Add JDBC
 RUN wget "http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.15.tar.gz" -P /opt/tomcat/webapps/birt/WEB-INF/lib
 RUN tar xzvf "/opt/tomcat/webapps/birt/WEB-INF/lib/mysql-connector-java-8.0.15.tar.gz" -C /opt/tomcat/webapps/birt/WEB-INF/lib/ --strip-components=1 mysql-connector-java-8.0.15/mysql-connector-java-8.0.15.jar
-RUN wget "https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.4.102.201901091730.jar" -P /opt/tomcat/webapps/birt/WEB-INF/lib
+# XML ODA plugin is provided by the BIRT runtime under WEB-INF/platform/plugins.
+# Do not override it with an external jar to avoid version mismatches.
 
 
 # Map Reports folder
 # Remove any built-in OSGi platform to avoid OSGi launch errors in viewer
-RUN rm -rf /opt/tomcat/webapps/birt/WEB-INF/platform || true
+# Keep WEB-INF/platform so the BIRT runtime can load its bundled ODA plugins.
+# Ensure the OSGi framework exists; otherwise, prefer non-OSGi mode by moving plugins to WEB-INF/lib.
+# For BIRT 4.13 runtime zip, the platform is complete; do not delete it.
 
 VOLUME /opt/tomcat/webapps/birt
 

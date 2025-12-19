@@ -18,6 +18,7 @@
   <data-sets>
     <oda-data-set extensionID="org.eclipse.datatools.enablement.oda.xml.dataSet" name="SmokeData" id="2002">
       <property name="rowPath">/rows/row</property>
+      <xml-property name="queryText"><![CDATA[/rows/row]]></xml-property>
       <list-property name="columnHints">
         <structure>
           <property name="columnName">label</property>
@@ -36,13 +37,13 @@
             <property name="position">1</property>
             <property name="name">label</property>
             <property name="dataType">string</property>
-            <property name="nativeName">/rows/row/label</property>
+            <property name="nativeName">label</property>
           </structure>
           <structure>
             <property name="position">2</property>
             <property name="name">qty</property>
             <property name="dataType">integer</property>
-            <property name="nativeName">/rows/row/qty</property>
+            <property name="nativeName">qty</property>
           </structure>
         </list-property>
       </structure>
@@ -51,14 +52,14 @@
         <structure>
           <property name="position">1</property>
           <property name="name">label</property>
-          <property name="nativeName">/rows/row/label</property>
+          <property name="nativeName">label</property>
           <property name="dataType">string</property>
           <property name="nativeDataType">12</property>
         </structure>
         <structure>
           <property name="position">2</property>
           <property name="name">qty</property>
-          <property name="nativeName">/rows/row/qty</property>
+          <property name="nativeName">qty</property>
           <property name="dataType">integer</property>
           <property name="nativeDataType">4</property>
         </structure>
