@@ -24,12 +24,57 @@ jobs:
       - name: Run container
         run: |
           docker run -d --name birt -p 8080:8080 \
+            -e CATALINA_OPTS="-Dbirt.home=/opt/tomcat/webapps/birt/WEB-INF" \
             -v "${{ github.workspace }}/tests:/opt/tomcat/webapps/birt/tests:ro" \
             gt2-birt:test
 
       - name: Readiness check (Tomcat/BIRT up)
         run: |
           bash tests/scripts/wait_for_http.sh "http://localhost:8080/birt/" 180
+
+
+      - name: Inspect BIRT runtime (plugins, logs, env)
+        if: always()
+        run: |
+          set -x
+          docker exec birt bash -lc '
+            echo "--- PLATFORM PLUGINS (grep oda) ---";
+            ls -1 /opt/tomcat/webapps/birt/WEB-INF/platform/plugins | grep -E "org\.eclipse\.datatools.*oda" || true;
+            echo "--- XML ODA plugin.xml (first lines) ---";
+            for j in /opt/tomcat/webapps/birt/WEB-INF/platform/plugins/org.eclipse.datatools.*oda*.jar; do
+              echo ">>> $j";
+              unzip -p "$j" plugin.xml | sed -n "1,120p" || true;
+            done;
+            echo "--- Viewer web.xml (head) ---";
+            sed -n "1,220p" /opt/tomcat/webapps/birt/WEB-INF/web.xml || true;
+            echo "--- OSGi configuration logs ---";
+            cat /opt/tomcat/webapps/birt/WEB-INF/platform/configuration/*.log 2>/dev/null || true;
+            echo "--- OSGi workspace .metadata/.log ---";
+            cat /opt/tomcat/webapps/birt/WEB-INF/platform/.metadata/.log 2>/dev/null || true;
+            echo "--- Viewer logs dir ---";
+            ls -l /opt/tomcat/webapps/birt/WEB-INF/logs 2>/dev/null || true;
+            echo "--- Tomcat work logs (if any) ---";
+            find /opt/tomcat/work -maxdepth 3 -type f -name "*.log" -ls 2>/dev/null || true;
+            echo "--- env ---";
+            env | sort;
+          ' || true
+
+      - name: Upload BIRT diagnostic bundle
+        if: always()
+        run: |
+          mkdir -p artifacts
+          docker cp birt:/opt/tomcat/webapps/birt/WEB-INF/platform artifacts/platform 2>/dev/null || true
+          docker cp birt:/opt/tomcat/webapps/birt/WEB-INF/logs artifacts/viewer-logs 2>/dev/null || true
+          docker cp birt:/opt/tomcat/work artifacts/tomcat-work 2>/dev/null || true
+          tar -C artifacts -czf artifacts/birt-diag.tgz platform viewer-logs tomcat-work 2>/dev/null || true
+
+      - name: Upload diagnostics artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: birt-diag
+          path: artifacts/birt-diag.tgz
+          if-no-files-found: ignore
 
       - name: Inspect container (paths and viewer config)
         run: |
@@ -40,8 +85,8 @@ jobs:
             echo "List tests/data:"; ls -la /opt/tomcat/webapps/birt/tests/data || true; echo;
             echo "CSV head:"; head -n 5 /opt/tomcat/webapps/birt/tests/data/data.csv || true; echo;
             echo "XML head:"; head -n 20 /opt/tomcat/webapps/birt/tests/data/data.xml || true; echo;
-            echo "WEB-INF/lib contents (look for XML ODA jar):"; ls -la /opt/tomcat/webapps/birt/WEB-INF/lib | sed -n '1,120p' || true; echo;
-            echo "WEB-INF/platform existence (should be missing):"; ls -la /opt/tomcat/webapps/birt/WEB-INF/platform || echo "(missing)"; echo;
+            echo "WEB-INF/lib contents:"; ls -la /opt/tomcat/webapps/birt/WEB-INF/lib | sed -n '1,120p' || true; echo;
+            echo "WEB-INF/platform existence:"; ls -la /opt/tomcat/webapps/birt/WEB-INF/platform || echo "(missing)"; echo;
             echo "Viewer working folder in web.xml:";
             awk "/BIRT_VIEWER_WORKING_FOLDER/{print; getline; print}" /opt/tomcat/webapps/birt/WEB-INF/web.xml || true
           '
@@ -51,8 +96,7 @@ jobs:
             echo "- tests dir mapped to /opt/tomcat/webapps/birt/tests";
             echo "- data.csv expected at /opt/tomcat/webapps/birt/tests/data/data.csv";
             echo "- data.xml expected at /opt/tomcat/webapps/birt/tests/data/data.xml";
-            echo "- XML ODA jar should be visible in WEB-INF/lib";
-            echo "- WEB-INF/platform should be absent to avoid OSGi startup";
+            echo "- WEB-INF/platform status noted (present/absent)";
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Detect BIRT viewer endpoint and render report
