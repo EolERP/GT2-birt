@@ -7,9 +7,7 @@
   <property name="imageDPI">96</property>
   <data-sources>
     <oda-data-source extensionID="org.eclipse.datatools.enablement.oda.xml" name="XmlSource" id="2001">
-      <property name="XML_FILE">/opt/tomcat/webapps/birt/tests/data/data.xml</property>
-      <property name="XML_ENCODING">UTF-8</property>
-      <property name="NAMESPACE_AWARE">false</property>
+      <property name="FILELIST">/opt/tomcat/webapps/birt/tests/data/data.xml</property>
     </oda-data-source>
   </data-sources>
   <data-sets>
@@ -57,7 +55,7 @@
           <property name="nativeDataType">4</property>
         </structure>
       </list-property>
-      <xml-property name="queryText"><![CDATA[/rows/row]]></xml-property>
+      <xml-property name="queryText"><![CDATA[row["label"], row["qty"] from "/rows/row"]]></xml-property>
       <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
   <Version>2.0</Version>
