@@ -7,13 +7,14 @@
   <property name="imageDPI">96</property>
   <data-sources>
     <oda-data-source extensionID="org.eclipse.datatools.enablement.oda.xml" name="XmlSource" id="2001">
-      <property name="FILELIST">file:/opt/tomcat/webapps/birt/tests/data/data.xml</property>
+      <property name="XML_FILE">/opt/tomcat/webapps/birt/tests/data/data.xml</property>
       <property name="XML_ENCODING">UTF-8</property>
       <property name="NAMESPACE_AWARE">false</property>
     </oda-data-source>
   </data-sources>
   <data-sets>
     <oda-data-set extensionID="org.eclipse.datatools.enablement.oda.xml.dataSet" name="SmokeData" id="2002">
+      <property name="rowPath">/rows/row</property>
       <list-property name="columnHints">
         <structure>
           <property name="columnName">label</property>
@@ -57,7 +58,7 @@
           <property name="nativeDataType">4</property>
         </structure>
       </list-property>
-      <xml-property name="queryText"><![CDATA[select "/rows/row/label" as label, "/rows/row/qty" as qty from "/rows/row"]]></xml-property>
+      <xml-property name="queryText"><![CDATA[/rows/row]]></xml-property>
       <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
   <Version>2.0</Version>
