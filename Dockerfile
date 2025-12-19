@@ -27,7 +27,8 @@ RUN cd /opt/tomcat && ln -s /etc/tomcat conf
 #Add JDBC
 RUN wget "http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.15.tar.gz" -P /opt/tomcat/webapps/birt/WEB-INF/lib
 RUN tar xzvf "/opt/tomcat/webapps/birt/WEB-INF/lib/mysql-connector-java-8.0.15.tar.gz" -C /opt/tomcat/webapps/birt/WEB-INF/lib/ --strip-components=1 mysql-connector-java-8.0.15/mysql-connector-java-8.0.15.jar
-RUN wget "https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.4.102.201901091730.jar" -P /opt/tomcat/webapps/birt/WEB-INF/lib
+RUN mkdir -p /opt/tomcat/webapps/birt/WEB-INF/platform/plugins \
+    && wget "https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.4.102.201901091730.jar" -P /opt/tomcat/webapps/birt/WEB-INF/platform/plugins
 
 
 # Map Reports folder
