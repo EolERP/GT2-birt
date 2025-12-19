@@ -1,0 +1,90 @@
+name: BIRT smoke test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare artifacts dir
+        run: |
+          mkdir -p artifacts tests/scripts
+
+      - name: Build Docker image
+        run: |
+          docker build -t gt2-birt:test .
+
+      - name: Run container
+        run: |
+          docker run -d --name birt -p 8080:8080 \
+            -v "${{ github.workspace }}/tests:/opt/tomcat/webapps/birt/tests:ro" \
+            gt2-birt:test
+
+      - name: Readiness check (Tomcat/BIRT up)
+        run: |
+          bash tests/scripts/wait_for_http.sh "http://localhost:8080/birt/" 180
+
+      - name: Detect BIRT viewer endpoint and render report
+        id: render
+        env:
+          OUT_HTML: artifacts/rendered.html
+        run: |
+          set -u
+          bash tests/scripts/find_birt_endpoint.sh > artifacts/viewer_base.txt
+          VIEWER_BASE=$(cat artifacts/viewer_base.txt)
+          echo "Viewer base: $VIEWER_BASE"
+
+          # Try preview first, then frameset
+          if bash tests/scripts/render_report.sh "$VIEWER_BASE" "tests/reports/smoke.rptdesign" html "$OUT_HTML" ; then
+            echo "endpoint=preview" >> $GITHUB_OUTPUT
+          elif bash tests/scripts/render_report.sh "$VIEWER_BASE" "tests/reports/smoke.rptdesign" html "$OUT_HTML" frameset ; then
+            echo "endpoint=frameset" >> $GITHUB_OUTPUT
+          else
+            echo "Render failed" >&2
+            exit 1
+          fi
+
+      - name: Assertions
+        run: |
+          bash tests/scripts/assert_render.sh artifacts/rendered.html artifacts/http_status.txt "SMOKE_OK" "TOTAL=3"
+
+      - name: Upload rendered artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: birt-rendered
+          path: |
+            artifacts/rendered.html
+            artifacts/http_status.txt
+            artifacts/viewer_base.txt
+
+      - name: Collect Docker logs
+        if: always()
+        run: |
+          docker logs birt > artifacts/docker.log || true
+          echo "## Docker logs" >> "$GITHUB_STEP_SUMMARY"
+          echo "\n<details><summary>Click to expand logs</summary>\n" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          tail -n 500 artifacts/docker.log >> "$GITHUB_STEP_SUMMARY" || true
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "\n</details>" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload logs artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: birt-logs
+          path: |
+            artifacts/docker.log
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker rm -f birt || true

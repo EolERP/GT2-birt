@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report xmlns="http://www.eclipse.org/birt/2005/design" version="3.2.24" id="1001">
+  <property name="createdBy">OpenHands</property>
+  <text-property name="title">Smoke test</text-property>
+  <property name="units">in</property>
+  <property name="bidiLayoutOrientation">ltr</property>
+  <property name="imageDPI">96</property>
+  <data-sources>
+    <oda-data-source extensionID="org.eclipse.datatools.connectivity.oda.flatfile" name="CsvSource" id="2001">
+      <property name="URI">tests/data</property>
+      <property name="DELIMTYPE">COMMA</property>
+      <property name="CHARSET">UTF-8</property>
+      <property name="INCLCOLUMNNAME">NO</property>
+      <property name="INCLTYPELINE">NO</property>
+      <property name="TRAILNULLCOLS">NO</property>
+    </oda-data-source>
+  </data-sources>
+  <data-sets>
+    <oda-data-set extensionID="org.eclipse.datatools.connectivity.oda.flatfile.dataSet" name="SmokeData" id="2002">
+      <list-property name="columnHints">
+        <structure>
+          <property name="columnName">label</property>
+          <text-property name="heading">label</text-property>
+          <property name="analysis">dimension</property>
+        </structure>
+        <structure>
+          <property name="columnName">qty</property>
+          <text-property name="heading">qty</text-property>
+          <property name="analysis">measure</property>
+        </structure>
+      </list-property>
+      <structure name="cachedMetaData">
+        <list-property name="resultSet">
+          <structure>
+            <property name="position">1</property>
+            <property name="name">label</property>
+            <property name="dataType">string</property>
+          </structure>
+          <structure>
+            <property name="position">2</property>
+            <property name="name">qty</property>
+            <property name="dataType">integer</property>
+          </structure>
+        </list-property>
+      </structure>
+      <property name="dataSource">CsvSource</property>
+      <list-property name="resultSet">
+        <structure>
+          <property name="position">1</property>
+          <property name="name">label</property>
+          <property name="nativeName">label</property>
+          <property name="dataType">string</property>
+          <property name="nativeDataType">12</property>
+        </structure>
+        <structure>
+          <property name="position">2</property>
+          <property name="name">qty</property>
+          <property name="nativeName">qty</property>
+          <property name="dataType">integer</property>
+          <property name="nativeDataType">4</property>
+        </structure>
+      </list-property>
+      <xml-property name="queryText"><![CDATA[select "COLUMN_1","COLUMN_2" from "data.csv" : {"label","COLUMN_1",STRING,"qty","COLUMN_2",INTEGER}]]></xml-property>
+      <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
+<model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
+  <Version>2.0</Version>
+  <design:ResultSets derivedMetaData="true">
+    <design:resultSetDefinitions>
+      <design:resultSetColumns>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>label</design:name>
+              <design:position>1</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>12</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>label</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+        <design:resultColumnDefinitions>
+          <design:attributes>
+            <design:identifier>
+              <design:name>qty</design:name>
+              <design:position>2</design:position>
+            </design:identifier>
+            <design:nativeDataTypeCode>4</design:nativeDataTypeCode>
+            <design:precision>-1</design:precision>
+            <design:scale>-1</design:scale>
+            <design:nullability>Unknown</design:nullability>
+          </design:attributes>
+          <design:usageHints>
+            <design:label>qty</design:label>
+            <design:formattingHints/>
+          </design:usageHints>
+        </design:resultColumnDefinitions>
+      </design:resultSetColumns>
+      <design:criteria/>
+    </design:resultSetDefinitions>
+  </design:ResultSets>
+</model:DesignValues>]]></xml-property>
+    </oda-data-set>
+  </data-sets>
+  <styles>
+    <style name="report" id="3001">
+      <property name="fontFamily">sans-serif</property>
+      <property name="fontSize">10pt</property>
+    </style>
+  </styles>
+  <page-setup>
+    <simple-master-page name="Simple MasterPage" id="4001"/>
+  </page-setup>
+  <body>
+    <grid id="5001">
+      <column id="5002"/>
+      <column id="5003"/>
+      <row id="5004">
+        <cell id="5005">
+          <data id="5006">
+            <property name="dataSet">SmokeData</property>
+            <list-property name="boundDataColumns">
+              <structure>
+                <property name="name">label</property>
+                <text-property name="displayName">label</text-property>
+                <expression name="expression" type="javascript">dataSetRow["label"]</expression>
+                <property name="dataType">string</property>
+              </structure>
+            </list-property>
+            <property name="resultSetColumn">label</property>
+          </data>
+        </cell>
+        <cell id="5007">
+          <data id="5008">
+            <property name="dataSet">SmokeData</property>
+            <list-property name="boundDataColumns">
+              <structure>
+                <property name="name">totalStr</property>
+                <text-property name="displayName">totalStr</text-property>
+                <expression name="expression" type="javascript">"TOTAL=" + dataSetRow["qty"]</expression>
+                <property name="dataType">string</property>
+              </structure>
+            </list-property>
+            <property name="resultSetColumn">totalStr</property>
+          </data>
+        </cell>
+      </row>
+    </grid>
+  </body>
+</report>
