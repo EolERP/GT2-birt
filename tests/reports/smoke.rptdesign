@@ -7,9 +7,9 @@
   <property name="imageDPI">96</property>
   <data-sources>
     <oda-data-source extensionID="org.eclipse.datatools.enablement.oda.xml" name="XmlSource" id="2001">
-      <property name="XML_FILE">/opt/tomcat/webapps/birt/tests/data/data.xml</property>
-      <property name="XML_ENCODING">UTF-8</property>
-      <property name="NAMESPACE_AWARE">false</property>
+      <property name="FILELIST">/opt/tomcat/webapps/birt/tests/data/data.xml</property>
+      <property name="ENCODING">UTF-8</property>
+      <property name="IS_NAMESPACE_AWARE">false</property>
     </oda-data-source>
   </data-sources>
   <data-sets>
@@ -33,11 +33,13 @@
             <property name="position">1</property>
             <property name="name">label</property>
             <property name="dataType">string</property>
+            <property name="nativeName">/rows/row/label</property>
           </structure>
           <structure>
             <property name="position">2</property>
             <property name="name">qty</property>
             <property name="dataType">integer</property>
+            <property name="nativeName">/rows/row/qty</property>
           </structure>
         </list-property>
       </structure>
@@ -46,19 +48,19 @@
         <structure>
           <property name="position">1</property>
           <property name="name">label</property>
-          <property name="nativeName">label</property>
+          <property name="nativeName">/rows/row/label</property>
           <property name="dataType">string</property>
           <property name="nativeDataType">12</property>
         </structure>
         <structure>
           <property name="position">2</property>
           <property name="name">qty</property>
-          <property name="nativeName">qty</property>
+          <property name="nativeName">/rows/row/qty</property>
           <property name="dataType">integer</property>
           <property name="nativeDataType">4</property>
         </structure>
       </list-property>
-      <xml-property name="queryText"><![CDATA[/rows/row]]></xml-property>
+      <!-- queryText omitted: use rowPath and column nativeName XPath mappings -->
       <xml-property name="designerValues"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <model:DesignValues xmlns:design="http://www.eclipse.org/datatools/connectivity/oda/design" xmlns:model="http://www.eclipse.org/birt/report/model/adapter/odaModel">
   <Version>2.0</Version>
