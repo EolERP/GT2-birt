@@ -24,7 +24,6 @@ jobs:
       - name: Run container
         run: |
           docker run -d --name birt -p 8080:8080 \
-            -e CATALINA_OPTS="-Dbirt.home=/opt/tomcat/webapps/birt/WEB-INF" \
             -v "${{ github.workspace }}/tests:/opt/tomcat/webapps/birt/tests:ro" \
             gt2-birt:test
 

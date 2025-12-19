@@ -20,6 +20,19 @@ RUN mv "/opt/tomcat/webapps/birt-runtime/WebViewerExample" "/opt/tomcat/webapps/
 RUN rm /opt/tomcat/webapps/birt-runtime-4.13.0-20230302.zip
 RUN rm -f -r /opt/tomcat/webapps/birt-runtime
 
+# Copy required DTP/ODA jars from platform plugins into WEB-INF/lib for non-OSGi runtime
+RUN bash -lc 'set -e; \
+  PLUG=/opt/tomcat/webapps/birt/WEB-INF/platform/plugins; \
+  LIB=/opt/tomcat/webapps/birt/WEB-INF/lib; \
+  for j in \$PLUG/org.eclipse.datatools.connectivity.oda_*.jar \
+           \$PLUG/org.eclipse.datatools.connectivity.oda.consumer_*.jar \
+           \$PLUG/org.eclipse.datatools.enablement.oda.xml_*.jar; do \
+    if [ -f "\$j" ]; then cp -v "\$j" "\$LIB/"; fi; \
+  done'
+
+# Run viewer in non-OSGi mode to mirror prod; remove platform
+RUN rm -rf /opt/tomcat/webapps/birt/WEB-INF/platform || true
+
 #RUN mkdir /usr/share/tomcat && mkdir /etc/tomcat
 RUN cd /opt/tomcat && ln -s /etc/tomcat conf
 # RUN ln -s /opt/tomcat/webapps/ /usr/share/tomcat/webapps
