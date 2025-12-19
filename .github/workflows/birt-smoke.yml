@@ -19,7 +19,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t gt2-birt:test .
+          docker build --pull --no-cache -t gt2-birt:test .
 
       - name: Run container
         run: |
@@ -39,6 +39,9 @@ jobs:
             echo "List tests:"; ls -la /opt/tomcat/webapps/birt/tests || true; echo;
             echo "List tests/data:"; ls -la /opt/tomcat/webapps/birt/tests/data || true; echo;
             echo "CSV head:"; head -n 5 /opt/tomcat/webapps/birt/tests/data/data.csv || true; echo;
+            echo "XML head:"; head -n 20 /opt/tomcat/webapps/birt/tests/data/data.xml || true; echo;
+            echo "WEB-INF/lib contents (look for XML ODA jar):"; ls -la /opt/tomcat/webapps/birt/WEB-INF/lib | sed -n '1,120p' || true; echo;
+            echo "WEB-INF/platform existence (should be missing):"; ls -la /opt/tomcat/webapps/birt/WEB-INF/platform || echo "(missing)"; echo;
             echo "Viewer working folder in web.xml:";
             awk "/BIRT_VIEWER_WORKING_FOLDER/{print; getline; print}" /opt/tomcat/webapps/birt/WEB-INF/web.xml || true
           '
@@ -47,6 +50,9 @@ jobs:
             echo;
             echo "- tests dir mapped to /opt/tomcat/webapps/birt/tests";
             echo "- data.csv expected at /opt/tomcat/webapps/birt/tests/data/data.csv";
+            echo "- data.xml expected at /opt/tomcat/webapps/birt/tests/data/data.xml";
+            echo "- XML ODA jar should be visible in WEB-INF/lib";
+            echo "- WEB-INF/platform should be absent to avoid OSGi startup";
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Detect BIRT viewer endpoint and render report
