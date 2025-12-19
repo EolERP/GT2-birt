@@ -31,6 +31,24 @@ jobs:
         run: |
           bash tests/scripts/wait_for_http.sh "http://localhost:8080/birt/" 180
 
+      - name: Inspect container (paths and viewer config)
+        run: |
+          docker exec birt sh -lc '
+            echo "PWD:"; pwd; echo;
+            echo "List birt root:"; ls -la /opt/tomcat/webapps/birt || true; echo;
+            echo "List tests:"; ls -la /opt/tomcat/webapps/birt/tests || true; echo;
+            echo "List tests/data:"; ls -la /opt/tomcat/webapps/birt/tests/data || true; echo;
+            echo "CSV head:"; head -n 5 /opt/tomcat/webapps/birt/tests/data/data.csv || true; echo;
+            echo "Viewer working folder in web.xml:";
+            awk "/BIRT_VIEWER_WORKING_FOLDER/{print; getline; print}" /opt/tomcat/webapps/birt/WEB-INF/web.xml || true
+          '
+          {
+            echo "## Container debug";
+            echo;
+            echo "- tests dir mapped to /opt/tomcat/webapps/birt/tests";
+            echo "- data.csv expected at /opt/tomcat/webapps/birt/tests/data/data.csv";
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Detect BIRT viewer endpoint and render report
         id: render
         env:
