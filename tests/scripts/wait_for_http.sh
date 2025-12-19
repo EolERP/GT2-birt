@@ -7,7 +7,7 @@ START=$(date +%s)
 [ -n "$URL" ] || { echo "URL required"; exit 2; }
 
 while true; do
-  CODE=$(curl -ks -o /dev/null -w "%{http_code}" "$URL" || true)
+  CODE=$(curl -kLs -o /dev/null -w "%{http_code}" "$URL" || true)
   if [ "$CODE" = "200" ]; then
     echo "200" > artifacts/http_status.txt
     echo "Ready: $URL"
