@@ -1,0 +1,37 @@
+mode: Mainline
+
+branches:
+  main:
+    regex: ^master$|^main$
+    mode: ContinuousDeployment
+    tag: 'dev'
+    increment: None
+    prevent-increment-of-merged-branch-version: true
+    track-merge-target: false
+    source-branches: [ ]
+    tracks-release-branches: false
+    is-release-branch: false
+    is-mainline: false
+
+  release:
+    regex: ^release?[/-]
+    tag: ''
+    increment: Patch
+    prevent-increment-of-merged-branch-version: true
+    track-merge-target: false
+    source-branches: [ 'main' ]
+    tracks-release-branches: false
+    is-release-branch: true
+    is-mainline: true
+
+  user:
+    regex: ^users[/-]
+    mode: ContinuousDeployment
+    tag: 'usr'
+    increment: None
+    source-branches: [ 'main' ]
+    prevent-increment-of-merged-branch-version: true
+    track-merge-target: false
+    tracks-release-branches: false
+    is-release-branch: false
+    is-mainline: false

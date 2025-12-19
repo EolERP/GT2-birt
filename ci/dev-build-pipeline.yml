@@ -1,0 +1,72 @@
+variables:
+- name: BUILD_STAGING_DIR
+  value: '$(System.DefaultWorkingDirectory)/build-staging-directory'
+- name: SERVICE_CONNECTION
+  value: 'SC_EKR_APP_INT_PRO_GWC_ARM'
+- name: REGISTRY_NAME
+  value: 'crdprointothergwcacr01'
+
+resources:
+  repositories:
+  - repository: helm-charts
+    type: git
+    name: "CreditasGroup.EKR-helm-charts"
+
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    exclude:
+      - ci/*
+
+pool: POOL_SHAREDINFRA_OTHER_GWC_BUILD
+
+stages:
+- stage: ApplicationBuild
+  displayName: "Application Build"
+  jobs:
+  - job: buildApp
+    displayName: "Application Build"
+    steps:
+    - template: templates/build-app.yml
+      parameters:
+        BUILD_STAGING_DIR: $(BUILD_STAGING_DIR)
+
+    # Build Docker image
+    - task: AzureCLI@2
+      inputs:
+        azureSubscription: $(SERVICE_CONNECTION)
+        scriptType: "bash"
+        scriptLocation: "inlineScript"
+        inlineScript: |
+          az acr login --name $(REGISTRY_NAME).azurecr.io
+    
+    - task: Bash@3
+      inputs:
+        targetType: "inline"
+        script: |
+          docker build -t $(REGISTRY_NAME).azurecr.io/ekr-gt2birt:$(GitVersion.FullSemVer) .
+    
+    - task: Bash@3
+      inputs:
+        targetType: "inline"
+        script: |
+          docker push $(REGISTRY_NAME).azurecr.io/ekr-gt2birt:$(GitVersion.FullSemVer)
+
+    # Cleanup
+    - task: DeleteFiles@1
+      inputs:
+        Contents: '**/*'
+
+- stage: HelmChartUpdate
+  displayName: "Helm Chart Update"
+  dependsOn: ApplicationBuild
+  jobs:
+  - job: updateImageVersion
+    displayName: "Update Image Version"
+    steps:
+    - template: templates/update-helm-chart.yml
+      parameters:
+        chartName: "gt2birt"
+        targetValuesFile: "values.yaml"
