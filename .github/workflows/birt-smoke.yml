@@ -68,6 +68,29 @@ jobs:
           tar -C artifacts -czf artifacts/birt-diag.tgz platform viewer-logs tomcat-work 2>/dev/null || true
 
       - name: Upload diagnostics artifact
+
+      - name: Collect textual diagnostics (lib inventory, env, web.xml)
+        if: always()
+        run: |
+          mkdir -p artifacts
+          docker exec birt bash -lc '
+            set -e
+            echo "=== WEB-INF/lib (first 200) ===" > /tmp/birt-diag.txt
+            ls -la /opt/tomcat/webapps/birt/WEB-INF/lib | sed -n "1,200p" >> /tmp/birt-diag.txt || true
+            echo "\n=== DTP/ODA jars present ===" >> /tmp/birt-diag.txt
+            ls -1 /opt/tomcat/webapps/birt/WEB-INF/lib/org.eclipse.datatools*oda*.jar 2>/dev/null >> /tmp/birt-diag.txt || true
+            echo "\n=== jar manifest / classes (head) ===" >> /tmp/birt-diag.txt
+            for j in /opt/tomcat/webapps/birt/WEB-INF/lib/org.eclipse.datatools*.jar; do
+              [ -f "$j" ] || continue; echo ">>> $j" >> /tmp/birt-diag.txt; (jar tf "$j" | sed -n "1,60p") >> /tmp/birt-diag.txt || true; done
+            echo "\n=== web.xml (head) ===" >> /tmp/birt-diag.txt
+            sed -n "1,220p" /opt/tomcat/webapps/birt/WEB-INF/web.xml >> /tmp/birt-diag.txt || true
+            echo "\n=== env ===" >> /tmp/birt-diag.txt
+            env | sort >> /tmp/birt-diag.txt
+            echo "\n=== birt tree (depth 3) ===" >> /tmp/birt-diag.txt
+            find /opt/tomcat/webapps/birt -maxdepth 3 -printf "%y %p\n" | sort >> /tmp/birt-diag.txt
+          '
+          docker cp birt:/tmp/birt-diag.txt artifacts/birt-diag.txt || true
+
         if: always()
         uses: actions/upload-artifact@v4
         with:

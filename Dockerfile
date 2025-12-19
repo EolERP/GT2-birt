@@ -24,9 +24,7 @@ RUN rm -f -r /opt/tomcat/webapps/birt-runtime
 RUN bash -lc 'set -e; \
   PLUG=/opt/tomcat/webapps/birt/WEB-INF/platform/plugins; \
   LIB=/opt/tomcat/webapps/birt/WEB-INF/lib; \
-  for j in \$PLUG/org.eclipse.datatools.connectivity.oda_*.jar \
-           \$PLUG/org.eclipse.datatools.connectivity.oda.consumer_*.jar \
-           \$PLUG/org.eclipse.datatools.enablement.oda.xml_*.jar; do \
+  for j in \$PLUG/org.eclipse.datatools.*oda*.jar; do \
     if [ -f "\$j" ]; then cp -v "\$j" "\$LIB/"; fi; \
   done'
 
