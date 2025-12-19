@@ -12,12 +12,12 @@ CANDIDATES=(
 )
 
 for B in "${BASES[@]}"; do
-  CODE=$(curl -ks -o /dev/null -w "%{http_code}" "$B" || true)
+  CODE=$(curl -Ls -o /dev/null -w "%{http_code}" "$B" || true)
   if [ "$CODE" = "200" ]; then
     echo "$B"; exit 0
   fi
   for C in "${CANDIDATES[@]}"; do
-    CODE=$(curl -ks -o /dev/null -w "%{http_code}" "$B/$C" || true)
+    CODE=$(curl -Ls -o /dev/null -w "%{http_code}" "$B/$C" || true)
     if [ "$CODE" = "200" ]; then
       echo "$B"; exit 0
     fi
