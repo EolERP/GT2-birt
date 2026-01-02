@@ -37,7 +37,8 @@ RUN wget "http://download.eclipse.org/birt/downloads/drops/${BIRT_DROP}/birt-run
 RUN unzip "${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip" -d ${TOMCAT_HOME}/webapps/birt-runtime
 RUN mv "${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample" "${TOMCAT_HOME}/webapps/birt"
 RUN rm ${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip
-RUN rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime
+# Keep birt-runtime so we can use its ReportEngine (plugins) as BIRT_HOME
+RUN true
 
 #RUN mkdir /usr/share/tomcat && mkdir /etc/tomcat
 RUN cd ${TOMCAT_HOME} && ln -s /etc/tomcat conf
@@ -77,6 +78,10 @@ ADD /cert/*.crt /usr/local/share/ca-certificates/
 RUN update-ca-certificates
 
 RUN rm ${TOMCAT_HOME}/conf/logging.properties
+# Ensure BIRT_HOME points to runtime engine so ODA plugins are discoverable
+ENV BIRT_HOME=${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine
+ENV BIRT_VIEWER_WORKING_FOLDER=${TOMCAT_HOME}/webapps/birt/
+
 
 # Modify birt viewer setting for reports path issue
 RUN perl -i -p0e "s/BIRT_VIEWER_WORKING_FOLDER<\/param-name>\n\t\t<param-value>/BIRT_VIEWER_WORKING_FOLDER<\/param-name>\n\t\t<param-value>\/opt\/tomcat\/webapps\/birt\//smg" ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml
