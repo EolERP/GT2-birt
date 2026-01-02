@@ -1,9 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <report xmlns="http://www.eclipse.org/birt/2005/design" version="4.3.0" id="1">
     <property name="createdBy">OpenHands</property>
+    <parameters>
+        <scalar-parameter name="XML_URL" id="10" dataType="string" controlType="text-box">
+            <property name="isRequired">false</property>
+            <text-property name="helpText">Optional: URL to XML (e.g. http://localhost:8080/birt/oda_xml_test.xml)</text-property>
+        </scalar-parameter>
+    </parameters>
     <data-sources>
         <oda-data-source name="XML Source" id="2" extensionID="org.eclipse.birt.report.data.oda.xml">
-            <property name="XMLFile">/opt/tomcat/webapps/birt/oda_xml_test.xml</property>
+            <property name="XMLFile"></property>
+            <method name="beforeOpen"><![CDATA[
+                if (params && params["XML_URL"]) {
+                    try { this.setExtensionProperty("XMLURL", String(params["XML_URL"])); } catch (e) {}
+                    try { this.setExtensionProperty("XMLFile", null); } catch (e) {}
+                }
+            ]]></method>
         </oda-data-source>
     </data-sources>
     <data-sets>

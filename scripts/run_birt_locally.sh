@@ -129,10 +129,10 @@ if [ -f "$REPO_ROOT/$ODA_XML_REPORT" ] && [ -f "$REPO_ROOT/$ODA_XML_DATA" ]; the
   fi
 
   # Try multiple candidate URLs (relative/absolute paths, run/frameset)
-  ODA_URL1="$VIEW_BASE/run?__report=$ODA_XML_REPORT&__format=html"
-  ODA_URL2="$VIEW_BASE/frameset?__report=$ODA_XML_REPORT&__format=html"
-  ODA_URL3="$VIEW_BASE/run?__report=$BIRT_DIR/$ODA_XML_REPORT&__format=html"
-  ODA_URL4="$VIEW_BASE/frameset?__report=$BIRT_DIR/$ODA_XML_REPORT&__format=html"
+  ODA_URL1="$VIEW_BASE/run?__report=$ODA_XML_REPORT&__format=html&XML_URL=$VIEW_BASE/$ODA_XML_DATA"
+  ODA_URL2="$VIEW_BASE/frameset?__report=$ODA_XML_REPORT&__format=html&XML_URL=$VIEW_BASE/$ODA_XML_DATA"
+  ODA_URL3="$VIEW_BASE/run?__report=$BIRT_DIR/$ODA_XML_REPORT&__format=html&XML_URL=$VIEW_BASE/$ODA_XML_DATA"
+  ODA_URL4="$VIEW_BASE/frameset?__report=$BIRT_DIR/$ODA_XML_REPORT&__format=html&XML_URL=$VIEW_BASE/$ODA_XML_DATA"
 
   for url in "$ODA_URL1" "$ODA_URL2" "$ODA_URL3" "$ODA_URL4"; do
     echo "[run] Verifying ODA XML via: $url"
