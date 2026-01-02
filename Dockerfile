@@ -37,8 +37,7 @@ RUN wget "http://download.eclipse.org/birt/downloads/drops/${BIRT_DROP}/birt-run
 RUN unzip "${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip" -d ${TOMCAT_HOME}/webapps/birt-runtime
 RUN mv "${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample" "${TOMCAT_HOME}/webapps/birt"
 RUN rm ${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip
-# Keep birt-runtime so we can use its ReportEngine (plugins) as BIRT_HOME
-RUN true
+RUN rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime
 
 #RUN mkdir /usr/share/tomcat && mkdir /etc/tomcat
 RUN cd ${TOMCAT_HOME} && ln -s /etc/tomcat conf
@@ -48,26 +47,6 @@ RUN cd ${TOMCAT_HOME} && ln -s /etc/tomcat conf
 RUN wget "http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.tar.gz" -P ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib
 RUN tar xzvf "${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.tar.gz" -C ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/ --strip-components=1 mysql-connector-java-${MYSQL_CONNECTOR_VERSION}/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.jar
 RUN wget "https://download.eclipse.org/releases/${ODA_XML_RELEASE}/${ODA_XML_RELEASE_BUILD}/plugins/org.eclipse.datatools.enablement.oda.xml_${ODA_XML_JAR_VERSION}.jar" -P ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib
-# Also place ODA XML plugin into ReportEngine plugins (any known layout) so the engine discovers it via BIRT_HOME
-RUN set -e; \
-  JAR=$(ls ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar | head -n1); \
-  FOUND=0; \
-  for P in \
-    ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins \
-    ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/eclipse/plugins \
-    ${TOMCAT_HOME}/webapps/birt-runtime/plugins \
-  ; do \
-    if [ -d "$P" ]; then \
-      cp "$JAR" "$P/"; echo "[docker] Copied XML ODA to $P"; FOUND=1; \
-    fi; \
-  done; \
-  if [ "$FOUND" -eq 0 ]; then echo "[docker] Skipping ODA plugin copy into ReportEngine: no plugins dir present"; fi
-# Ensure ODA XML plugin is also visible to OSGi if platform/plugins exists
-RUN if [ -d ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins ]; then \
-      cp ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/; \
-    else \
-      echo "[docker] Skipping ODA plugin copy: platform/plugins not present in this runtime"; \
-    fi
 
 
 # Map Reports folder
@@ -79,9 +58,6 @@ ADD arial.ttf /usr/share/fonts/truetype
 ADD version.rptdesign ${TOMCAT_HOME}/webapps/birt
 ADD version.txt ${TOMCAT_HOME}/webapps/birt
 ADD index.html ${TOMCAT_HOME}/webapps/birt
-# Add ODA test assets
-ADD oda_xml_test.rptdesign ${TOMCAT_HOME}/webapps/birt
-ADD oda_xml_test.xml ${TOMCAT_HOME}/webapps/birt
 
 # remove default pages with dangerous information
 RUN rm -f -r ${TOMCAT_HOME}/webapps/ROOT/index.jsp
@@ -92,10 +68,6 @@ ADD /cert/*.crt /usr/local/share/ca-certificates/
 RUN update-ca-certificates
 
 RUN rm ${TOMCAT_HOME}/conf/logging.properties
-# Ensure BIRT_HOME points to runtime engine so ODA plugins are discoverable
-ENV BIRT_HOME=${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine
-ENV BIRT_VIEWER_WORKING_FOLDER=${TOMCAT_HOME}/webapps/birt/
-
 
 # Modify birt viewer setting for reports path issue
 RUN perl -i -p0e "s/BIRT_VIEWER_WORKING_FOLDER<\/param-name>\n\t\t<param-value>/BIRT_VIEWER_WORKING_FOLDER<\/param-name>\n\t\t<param-value>\/opt\/tomcat\/webapps\/birt\//smg" ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml
