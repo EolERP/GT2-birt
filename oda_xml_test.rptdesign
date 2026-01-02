@@ -12,7 +12,7 @@
         </scalar-parameter>
     </parameters>
     <data-sources>
-        <oda-data-source name="XML Source" id="2" extensionID="org.eclipse.birt.report.data.oda.xml">
+        <oda-data-source name="XML Source" id="2" extensionID="org.eclipse.datatools.enablement.oda.xml">
             <property name="XMLFile"></property>
             <method name="beforeOpen"><![CDATA[
                 // Prefer inline XML when provided; fallback to URL
