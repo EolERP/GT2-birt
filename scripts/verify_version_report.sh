@@ -388,17 +388,20 @@ if [[ -z "$SKIP_ODA_XML_TEST" ]]; then
   # Install/refresh ODA XML plugin jar
   ODA_LIB_DIR="$BIRT_WEBAPP/WEB-INF/lib"
   TMP_JAR="/tmp/oda-xml.jar"
-  log "Fetching ODA XML jar"
-  curl -fL -o "$TMP_DIR/oda-xml.jar" "$ODA_XML_JAR_URL" || { err "Failed to download ODA XML jar from $ODA_XML_JAR_URL"; exit 1; }
-  docker cp "$TMP_DIR/oda-xml.jar" "$CONTAINER_NAME:$TMP_JAR"
-  # Remove old versions and place new jar
-  docker exec "$CONTAINER_NAME" sh -lc "rm -f '$ODA_LIB_DIR'/org.eclipse.datatools.enablement.oda.xml_*.jar && mv '$TMP_JAR' '$ODA_LIB_DIR/'" || { err "Failed to install ODA XML jar"; exit 1; }
-
-  if [[ "$ODA_XML_RESTART" == "1" ]]; then
-    log "Restarting container to reload libraries"
-    docker restart "$CONTAINER_NAME" >/dev/null
-    log "Waiting after restart"
-    wait_ready || { err "Service did not become ready after restart"; exit 1; }
+  # If XML ODA jar already present, skip installation
+  if docker exec "$CONTAINER_NAME" sh -lc "ls '$ODA_LIB_DIR'/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
+    log "XML ODA jar already present in viewer lib; skipping installation"
+  else
+    log "Fetching ODA XML jar"
+    curl -fL -o "$TMP_DIR/oda-xml.jar" "$ODA_XML_JAR_URL" || { err "Failed to download ODA XML jar from $ODA_XML_JAR_URL"; exit 1; }
+    docker cp "$TMP_DIR/oda-xml.jar" "$CONTAINER_NAME:$TMP_JAR"
+    docker exec "$CONTAINER_NAME" sh -lc "mv '$TMP_JAR' '$ODA_LIB_DIR/'" || { err "Failed to install ODA XML jar"; exit 1; }
+    if [[ "$ODA_XML_RESTART" == "1" ]]; then
+      log "Restarting container to reload libraries"
+      docker restart "$CONTAINER_NAME" >/dev/null
+      log "Waiting after restart"
+      wait_ready || { err "Service did not become ready after restart"; exit 1; }
+    fi
   fi
 
   # Execute report
