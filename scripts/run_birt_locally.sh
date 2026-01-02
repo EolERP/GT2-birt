@@ -90,6 +90,13 @@ if [ -f "$REPO_ROOT/$ODA_XML_REPORT" ] && [ -f "$REPO_ROOT/$ODA_XML_DATA" ]; the
   docker cp "$REPO_ROOT/$ODA_XML_REPORT" "$CONTAINER_NAME:$BIRT_DIR/" >/dev/null
   docker cp "$REPO_ROOT/$ODA_XML_DATA" "$CONTAINER_NAME:$BIRT_DIR/" >/dev/null
   ODA_URL="$VIEW_BASE/run?__report=$ODA_XML_REPORT&__format=html"
+  # Check XML ODA jar presence
+  if docker exec "$CONTAINER_NAME" sh -lc "ls '$BIRT_DIR'/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
+    echo "[run] XML ODA jar present in viewer lib"
+  else
+    echo "[run][WARN] XML ODA jar not found in viewer lib; ODA report may fail"
+  fi
+
   echo "[run] Verifying ODA XML via: $ODA_URL"
   code=$(curl -sS -L -D "$HEADERS_FILE" -o "$BODY_FILE" --max-time 30 "$ODA_URL" -w "%{http_code}" || true)
   if [ "$code" = "200" ] && [ -s "$BODY_FILE" ] && grep -Fq -- "$ODA_XML_EXPECTED" "$BODY_FILE"; then
