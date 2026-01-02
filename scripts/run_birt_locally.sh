@@ -98,16 +98,29 @@ if [ -f "$REPO_ROOT/$ODA_XML_REPORT" ] && [ -f "$REPO_ROOT/$ODA_XML_DATA" ]; the
     echo "[run][WARN] XML ODA jar not found in WEB-INF/lib; ODA runtime may be unavailable"
   fi
 
-  if [ "${NEED_RESTART:-0}" = "1" ]; then
-    echo "[run] Restarting container after ODA adjustments"
-    docker restart "$CONTAINER_NAME" >/dev/null
-    echo "[run] Waiting for Tomcat after restart"
-    start_ts=$(date +%s)
-    while :; do
-      if docker logs "$CONTAINER_NAME" 2>&1 | grep -q "Server startup in"; then break; fi
-      if [ $(( $(date +%s) - start_ts )) -ge $TIMEOUT_SEC ]; then err "Timed out waiting for Tomcat (post-restart)"; break; fi
-      sleep 2
-    done
+  # After viewer starts, platform/plugins appears; if XML ODA plugin missing there, copy it and restart once
+  echo "[run] Waiting for OSGi platform to materialize"
+  start_ts=$(date +%s)
+  while :; do
+    if docker exec "$CONTAINER_NAME" sh -lc "test -d '$BIRT_DIR/WEB-INF/platform/plugins' && ls '$BIRT_DIR'/WEB-INF/platform/plugins/org.eclipse.osgi_*.jar >/dev/null 2>&1"; then break; fi
+    if [ $(( $(date +%s) - start_ts )) -ge $TIMEOUT_SEC ]; then echo "[run][WARN] OSGi platform/plugins not detected within timeout"; break; fi
+    sleep 2
+  done
+  if docker exec "$CONTAINER_NAME" sh -lc "test -d '$BIRT_DIR/WEB-INF/platform/plugins'"; then
+    if docker exec "$CONTAINER_NAME" sh -lc "ls '$BIRT_DIR'/WEB-INF/platform/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
+      echo "[run] XML ODA plugin already present in platform/plugins"
+    else
+      echo "[run] Injecting XML ODA plugin into platform/plugins and restarting"
+      docker exec "$CONTAINER_NAME" sh -lc "cp '$BIRT_DIR'/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar '$BIRT_DIR'/WEB-INF/platform/plugins/" || true
+      docker restart "$CONTAINER_NAME" >/dev/null
+      echo "[run] Waiting for Tomcat after restart"
+      start_ts=$(date +%s)
+      while :; do
+        if docker logs "$CONTAINER_NAME" 2>&1 | grep -q "Server startup in"; then break; fi
+        if [ $(( $(date +%s) - start_ts )) -ge $TIMEOUT_SEC ]; then err "Timed out waiting for Tomcat (post-restart)"; break; fi
+        sleep 2
+      done
+    fi
   fi
 
   # Verify files exist inside container
