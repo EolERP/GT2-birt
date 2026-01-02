@@ -361,7 +361,7 @@ run_url="${run_path}${qs}"
 : > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
 HTTP_CODE=$(fetch_url "$run_url")
 bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
-if [[ "$HTTP_CODE" == "200" && -s "$bodyfile" && ! obvious_error "$bodyfile" && ! obvious_error "$HEADERS_FILE" ]]; then
+if [[ "$HTTP_CODE" == "200" && -s "$bodyfile" ]] && ! obvious_error "$bodyfile" && ! obvious_error "$HEADERS_FILE"; then
   VERIFY_URL="$run_url"
 else
   VERIFY_URL="$orig_url"
