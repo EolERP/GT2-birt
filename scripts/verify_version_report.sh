@@ -105,10 +105,14 @@ docker run -d --name "$CONTAINER_NAME" -p "$HOST_PORT:8080" "$IMAGE_NAME" >/dev/
 
 # Wait until ready
 wait_ready() {
-  local start=$(date +%s) deadline=$((start + TIMEOUT_SEC))
+  local start_ts
+  start_ts=$(date +%s)
+  local deadline
+  deadline=$((start_ts + TIMEOUT_SEC))
   while (( $(date +%s) <= deadline )); do
     if docker logs "$CONTAINER_NAME" 2>&1 | grep -q "Server startup in"; then return 0; fi
-    local code; code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 2 "$BASE_URL" || true)
+    local code
+    code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 2 "$BASE_URL" || true)
     if [[ "$code" != "000" ]]; then return 0; fi
     sleep 2
   done
