@@ -86,30 +86,31 @@ ODA_XML_DATA=${ODA_XML_DATA:-oda_xml_test.xml}
 ODA_XML_EXPECTED=${ODA_XML_EXPECTED:-ODA_XML_OK}
 ODA_XML_JAR_URL=${ODA_XML_JAR_URL:-https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.4.102.201901091730.jar}
 BIRT_DIR=/opt/tomcat/webapps/birt
-PLUGINS_DIR="$BIRT_DIR/WEB-INF/platform/plugins"
 if [ -f "$REPO_ROOT/$ODA_XML_REPORT" ] && [ -f "$REPO_ROOT/$ODA_XML_DATA" ]; then
   echo "[run] Ensuring ODA XML test assets are in the container"
   docker cp "$REPO_ROOT/$ODA_XML_REPORT" "$CONTAINER_NAME:$BIRT_DIR/" >/dev/null
   docker cp "$REPO_ROOT/$ODA_XML_DATA" "$CONTAINER_NAME:$BIRT_DIR/" >/dev/null
 
-  # Ensure XML ODA driver is available in platform/plugins (preferred)
-  if docker exec "$CONTAINER_NAME" sh -lc "ls '$PLUGINS_DIR'/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
-    echo "[run] XML ODA plugin jar present in platform/plugins"
-  else
-    if docker exec "$CONTAINER_NAME" sh -lc "ls '$BIRT_DIR'/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
-      echo "[run] Copying XML ODA jar from WEB-INF/lib -> platform/plugins"
-      docker exec "$CONTAINER_NAME" sh -lc "mkdir -p '$PLUGINS_DIR' && cp '$BIRT_DIR'/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar '$PLUGINS_DIR'/"
-      RESTART_NEEDED=1
-    else
-      echo "[run] Downloading XML ODA jar into platform/plugins"
-      docker exec "$CONTAINER_NAME" sh -lc "mkdir -p '$PLUGINS_DIR'"
-      curl -fL "$ODA_XML_JAR_URL" | docker exec -i "$CONTAINER_NAME" sh -lc "cat > '$PLUGINS_DIR'/org.eclipse.datatools.enablement.oda.xml.jar" || echo "[run][WARN] Download to container failed"
-      RESTART_NEEDED=1
+  # If a stray platform/plugins exists without org.eclipse.osgi, remove it to avoid OSGi startup errors
+  if docker exec "$CONTAINER_NAME" sh -lc "test -d '$BIRT_DIR/WEB-INF/platform/plugins'"; then
+    if ! docker exec "$CONTAINER_NAME" sh -lc "ls '$BIRT_DIR'/WEB-INF/platform/plugins/org.eclipse.osgi_*.jar >/dev/null 2>&1"; then
+      echo "[run][WARN] Removing incomplete WEB-INF/platform to restore viewer"
+      docker exec "$CONTAINER_NAME" sh -lc "rm -rf '$BIRT_DIR/WEB-INF/platform'"
+      NEED_RESTART=1
     fi
   fi
 
-  if [ "${RESTART_NEEDED:-0}" = "1" ]; then
-    echo "[run] Restarting container to load ODA plugin"
+  # Ensure XML ODA jar is in WEB-INF/lib (preferred and sufficient)
+  if docker exec "$CONTAINER_NAME" sh -lc "ls '$BIRT_DIR'/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
+    echo "[run] XML ODA jar present in WEB-INF/lib"
+  else
+    echo "[run] Installing XML ODA jar into WEB-INF/lib"
+    curl -fL "$ODA_XML_JAR_URL" -o "$TMP_DIR/oda-xml.jar" && docker cp "$TMP_DIR/oda-xml.jar" "$CONTAINER_NAME:$BIRT_DIR/WEB-INF/lib/" || echo "[run][WARN] Failed to place XML ODA jar"
+    NEED_RESTART=1
+  fi
+
+  if [ "${NEED_RESTART:-0}" = "1" ]; then
+    echo "[run] Restarting container after ODA adjustments"
     docker restart "$CONTAINER_NAME" >/dev/null
     echo "[run] Waiting for Tomcat after restart"
     start_ts=$(date +%s)
