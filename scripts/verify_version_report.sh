@@ -30,7 +30,7 @@ REPORT_DIR_DISCOVERY_FILE="$TMP_DIR/report_dir_discovery.txt"
 
 FAILED=1
 
-log() { echo "[verify] $*"; }
+log() { echo "[verify] $*" >&2; }
 warn() { echo "[verify][WARN] $*" >&2; }
 err() { echo "[verify][ERROR] $*" >&2; }
 
