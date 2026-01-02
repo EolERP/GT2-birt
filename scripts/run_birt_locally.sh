@@ -84,25 +84,51 @@ fi
 ODA_XML_REPORT=${ODA_XML_REPORT:-oda_xml_test.rptdesign}
 ODA_XML_DATA=${ODA_XML_DATA:-oda_xml_test.xml}
 ODA_XML_EXPECTED=${ODA_XML_EXPECTED:-ODA_XML_OK}
+ODA_XML_JAR_URL=${ODA_XML_JAR_URL:-https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.4.102.201901091730.jar}
 BIRT_DIR=/opt/tomcat/webapps/birt
+PLUGINS_DIR="$BIRT_DIR/WEB-INF/platform/plugins"
 if [ -f "$REPO_ROOT/$ODA_XML_REPORT" ] && [ -f "$REPO_ROOT/$ODA_XML_DATA" ]; then
   echo "[run] Ensuring ODA XML test assets are in the container"
   docker cp "$REPO_ROOT/$ODA_XML_REPORT" "$CONTAINER_NAME:$BIRT_DIR/" >/dev/null
   docker cp "$REPO_ROOT/$ODA_XML_DATA" "$CONTAINER_NAME:$BIRT_DIR/" >/dev/null
-  ODA_URL="$VIEW_BASE/run?__report=$ODA_XML_REPORT&__format=html"
-  # Check XML ODA jar presence
-  if docker exec "$CONTAINER_NAME" sh -lc "ls '$BIRT_DIR'/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
-    echo "[run] XML ODA jar present in viewer lib"
+
+  # Ensure XML ODA driver is available in platform/plugins (preferred)
+  if docker exec "$CONTAINER_NAME" sh -lc "ls '$PLUGINS_DIR'/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
+    echo "[run] XML ODA plugin jar present in platform/plugins"
   else
-    echo "[run][WARN] XML ODA jar not found in viewer lib; ODA report may fail"
+    if docker exec "$CONTAINER_NAME" sh -lc "ls '$BIRT_DIR'/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
+      echo "[run] Copying XML ODA jar from WEB-INF/lib -> platform/plugins"
+      docker exec "$CONTAINER_NAME" sh -lc "mkdir -p '$PLUGINS_DIR' && cp '$BIRT_DIR'/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar '$PLUGINS_DIR'/"
+      RESTART_NEEDED=1
+    else
+      echo "[run] Downloading XML ODA jar into platform/plugins"
+      docker exec "$CONTAINER_NAME" sh -lc "mkdir -p '$PLUGINS_DIR'"
+      curl -fL "$ODA_XML_JAR_URL" | docker exec -i "$CONTAINER_NAME" sh -lc "cat > '$PLUGINS_DIR'/org.eclipse.datatools.enablement.oda.xml.jar" || echo "[run][WARN] Download to container failed"
+      RESTART_NEEDED=1
+    fi
   fi
 
+  if [ "${RESTART_NEEDED:-0}" = "1" ]; then
+    echo "[run] Restarting container to load ODA plugin"
+    docker restart "$CONTAINER_NAME" >/dev/null
+    echo "[run] Waiting for Tomcat after restart"
+    start_ts=$(date +%s)
+    while :; do
+      if docker logs "$CONTAINER_NAME" 2>&1 | grep -q "Server startup in"; then break; fi
+      if [ $(( $(date +%s) - start_ts )) -ge $TIMEOUT_SEC ]; then err "Timed out waiting for Tomcat (post-restart)"; break; fi
+      sleep 2
+    done
+  fi
+
+  ODA_URL="$VIEW_BASE/run?__report=$ODA_XML_REPORT&__format=html"
   echo "[run] Verifying ODA XML via: $ODA_URL"
   code=$(curl -sS -L -D "$HEADERS_FILE" -o "$BODY_FILE" --max-time 30 "$ODA_URL" -w "%{http_code}" || true)
   if [ "$code" = "200" ] && [ -s "$BODY_FILE" ] && grep -Fq -- "$ODA_XML_EXPECTED" "$BODY_FILE"; then
     echo "[run] PASS ODA XML: found '$ODA_XML_EXPECTED' in ODA output"
   else
     echo "[run][WARN] ODA XML not confirmed programmatically (HTTP $code). Please open ODA URL manually."
+    echo "[run][INFO] Recent container log tail:"
+    docker logs --tail 120 "$CONTAINER_NAME" 2>&1 | sed 's/^/[docker] /'
   fi
 else
   echo "[run][INFO] ODA XML test assets not present in repo; skipping ODA quick test."
