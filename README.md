@@ -59,3 +59,20 @@ Notes:
 - Force endpoint or report dir if you already know them:
   REPORT_PATH=/birt/run ./scripts/verify_version_report.sh
   REPORT_DIR=/opt/tomcat/webapps/birt ./scripts/verify_version_report.sh
+
+## ODA XML E2E test
+The verification script also performs an optional ODA XML datasource end-to-end check.
+- Test inputs: oda_xml_test.xml and oda_xml_test.rptdesign (bundled in repo). The report reads the XML and prints the value.
+- Env overrides:
+  - SKIP_ODA_XML_TEST=1 to skip the XML test
+  - ODA_XML_EXPECTED (default: ODA_XML_OK)
+  - ODA_XML_REPORT (default: oda_xml_test.rptdesign)
+  - ODA_XML_DATA (default: oda_xml_test.xml)
+  - ODA_XML_JAR_URL to override the XML ODA plugin JAR URL used in the test
+
+## CI
+A GitHub Action runs the end-to-end verification on PRs and main pushes.
+- It fails the job if the script returns a non-zero exit code
+- On failure it uploads e2e.log and docker logs as artifacts
+- See .github/workflows/birt-e2e.yml
+

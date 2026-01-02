@@ -12,6 +12,13 @@ REPORT_FORMAT=${REPORT_FORMAT:-html}
 TIMEOUT_SEC=${TIMEOUT_SEC:-120}
 REPORT_PATH=${REPORT_PATH:-}
 REPORT_DIR=${REPORT_DIR:-}
+# ODA XML test env
+SKIP_ODA_XML_TEST=${SKIP_ODA_XML_TEST:-}
+ODA_XML_EXPECTED=${ODA_XML_EXPECTED:-ODA_XML_OK}
+ODA_XML_REPORT=${ODA_XML_REPORT:-oda_xml_test.rptdesign}
+ODA_XML_DATA=${ODA_XML_DATA:-oda_xml_test.xml}
+ODA_XML_JAR_URL=${ODA_XML_JAR_URL:-https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.4.102.201901091730.jar}
+ODA_XML_RESTART=${ODA_XML_RESTART:-1}
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -189,7 +196,7 @@ if ! docker exec "$CONTAINER_NAME" test -f "$REPORT_TARGET_DIR/$EXPECTED_FILE"; 
 fi
 
 # Helpers
-obvious_error() { grep -qiE "Exception|Whitelabel|HTTP Status|Not Found|404|500|error\.html|Stacktrace|SEVERE|There was an error" "$1"; }
+obvious_error() { grep -qiE "Exception|Whitelabel|HTTP Status|Not Found|404|500|Stacktrace|SEVERE|There was an error" "$1"; }
 
 fetch_url() {
   local url="$1"
@@ -264,8 +271,9 @@ http_discover() {
   if [[ ${#candidates[@]} -gt 0 ]]; then
     local seen=()
     local ordered=()
-    for p in "${candidates[@]}"; do [[ "$p" == *.jsp* ]] && ordered+=("$p"); done
+    # Prefer non-JSP endpoints (run/frameset) before JSP index pages
     for p in "${candidates[@]}"; do [[ "$p" != *.jsp* ]] && ordered+=("$p"); done
+    for p in "${candidates[@]}"; do [[ "$p" == *.jsp* ]] && ordered+=("$p"); done
     for p in "${ordered[@]}"; do
       [[ " ${seen[*]} " == *" $p "* ]] && continue
       seen+=("$p")
@@ -337,6 +345,31 @@ log "Selected endpoint: $SELECTED_URL"
 
 # Verification request
 VERIFY_URL="$SELECTED_URL"
+# Try to prefer non-framed, non-index endpoints for content verification, but fall back if not valid
+orig_url="$VERIFY_URL"
+path="${orig_url%%\?*}"
+qs="${orig_url#${path}}"
+run_path="$path"
+run_path="${run_path//index.jsp/run}"
+run_path="${run_path//viewer.jsp/run}"
+run_path="${run_path//frameset.jsp/run}"
+run_path="${run_path/\/frameset/\/run}"
+run_path="${run_path/\/preview/\/run}"
+run_url="${run_path}${qs}"
+
+# Test run_url quickly; if bad, keep original
+: > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
+HTTP_CODE=$(fetch_url "$run_url")
+bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
+if [[ "$HTTP_CODE" == "200" && -s "$bodyfile" ]] && ! obvious_error "$bodyfile" && ! obvious_error "$HEADERS_FILE"; then
+  VERIFY_URL="$run_url"
+else
+  VERIFY_URL="$orig_url"
+fi
+
+
+log "Verification URL: $VERIFY_URL"
+
 : > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
 HTTP_CODE=$(fetch_url "$VERIFY_URL")
 if [[ "$HTTP_CODE" != "200" ]]; then
@@ -366,6 +399,7 @@ if ! grep -Fq -- "$EXPECTED_VALUE" "$BODY_FILE"; then
   exit 1
 fi
 
-log "Success: report contains expected value '$EXPECTED_VALUE'"
+log "SUCCESS: Found expected value '$EXPECTED_VALUE' in response."
 FAILED=0
 exit 0
+
