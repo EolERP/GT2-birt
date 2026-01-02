@@ -15,17 +15,26 @@
         <oda-data-source name="XML Source" id="2" extensionID="org.eclipse.birt.report.data.oda.xml">
             <property name="XMLFile"></property>
             <method name="beforeOpen"><![CDATA[
-                if (params && params["XML_CONTENT"]) {
-                    var content = String(params["XML_CONTENT"]);
-                    var tmpDir = java.lang.System.getProperty("java.io.tmpdir");
-                    var file = new java.io.File(tmpDir, "oda_xml_inline.xml");
-                    var writer = new java.io.OutputStreamWriter(new java.io.FileOutputStream(file), "UTF-8");
-                    writer.write(content);
-                    writer.close();
-                    try { this.setExtensionProperty("XMLFile", file.getAbsolutePath()); } catch (e) {}
-                } else if (params && params["XML_URL"]) {
-                    try { this.setExtensionProperty("XMLURL", String(params["XML_URL"])); } catch (e) {}
-                    try { this.setExtensionProperty("XMLFile", null); } catch (e) {}
+                // Prefer inline XML when provided; fallback to URL
+                try {
+                    if (params && params["XML_CONTENT"]) {
+                        var content = String(params["XML_CONTENT"]);
+                        var JSystem = Packages.java.lang.System;
+                        var JIO = Packages.java.io;
+                        var tmpDir = JSystem.getProperty("java.io.tmpdir");
+                        var file = new JIO.File(tmpDir, "oda_xml_inline.xml");
+                        var fos = new JIO.FileOutputStream(file);
+                        var writer = new JIO.OutputStreamWriter(fos, "UTF-8");
+                        writer.write(content);
+                        writer.close();
+                        try { this.setExtensionProperty("XMLFile", file.getAbsolutePath()); } catch (e1) {}
+                        try { this.setExtensionProperty("XMLURL", null); } catch (e2) {}
+                    } else if (params && params["XML_URL"]) {
+                        try { this.setExtensionProperty("XMLURL", String(params["XML_URL"])); } catch (e3) {}
+                        try { this.setExtensionProperty("XMLFile", null); } catch (e4) {}
+                    }
+                } catch (ex) {
+                    // As a last resort, do nothing; the design may still run if default properties are valid
                 }
             ]]></method>
         </oda-data-source>
