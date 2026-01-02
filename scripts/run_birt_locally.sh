@@ -55,16 +55,63 @@ RUN_URL="$VIEW_BASE/run?__report=version.rptdesign&__format=html"
 FRAMESET_URL="$VIEW_BASE/frameset?__report=version.rptdesign&__format=html"
 INDEX_URL="$VIEW_BASE/index.jsp?__report=version.rptdesign&__format=html"
 
+# Programmatic sanity checks
+TMP_DIR=$(mktemp -d)
+HEADERS_FILE="$TMP_DIR/headers.txt"
+BODY_FILE="$TMP_DIR/body.html"
+
+expect_file="$REPO_ROOT/version.txt"
+if [ -f "$expect_file" ]; then
+  EXPECTED=$(head -n1 "$expect_file" | tr -d '\r' | sed -e 's/^\s\+//' -e 's/\s\+$//')
+  if [ -n "$EXPECTED" ]; then
+    echo "[run] Verifying version via: $RUN_URL"
+    code=$(curl -sS -L -D "$HEADERS_FILE" -o "$BODY_FILE" --max-time 30 "$RUN_URL" -w "%{http_code}" || true)
+    if [ "$code" = "200" ] && [ -s "$BODY_FILE" ] && grep -Fq -- "$EXPECTED" "$BODY_FILE"; then
+      echo "[run] PASS version: found '$EXPECTED' in /run output"
+    else
+      echo "[run][WARN] Version check did not confirm '$EXPECTED' on /run (HTTP $code). Trying frameset..."
+      code=$(curl -sS -L -D "$HEADERS_FILE" -o "$BODY_FILE" --max-time 30 "$FRAMESET_URL" -w "%{http_code}" || true)
+      if [ "$code" = "200" ] && [ -s "$BODY_FILE" ] && grep -Fq -- "$EXPECTED" "$BODY_FILE"; then
+        echo "[run] PASS version: found '$EXPECTED' in /frameset output"
+      else
+        echo "[run][WARN] Version not confirmed programmatically. Please open one of the URLs below to verify manually."
+      fi
+    fi
+  fi
+fi
+
+# ODA XML quick test (optional)
+ODA_XML_REPORT=${ODA_XML_REPORT:-oda_xml_test.rptdesign}
+ODA_XML_DATA=${ODA_XML_DATA:-oda_xml_test.xml}
+ODA_XML_EXPECTED=${ODA_XML_EXPECTED:-ODA_XML_OK}
+BIRT_DIR=/opt/tomcat/webapps/birt
+if [ -f "$REPO_ROOT/$ODA_XML_REPORT" ] && [ -f "$REPO_ROOT/$ODA_XML_DATA" ]; then
+  echo "[run] Ensuring ODA XML test assets are in the container"
+  docker cp "$REPO_ROOT/$ODA_XML_REPORT" "$CONTAINER_NAME:$BIRT_DIR/" >/dev/null
+  docker cp "$REPO_ROOT/$ODA_XML_DATA" "$CONTAINER_NAME:$BIRT_DIR/" >/dev/null
+  ODA_URL="$VIEW_BASE/run?__report=$ODA_XML_REPORT&__format=html"
+  echo "[run] Verifying ODA XML via: $ODA_URL"
+  code=$(curl -sS -L -D "$HEADERS_FILE" -o "$BODY_FILE" --max-time 30 "$ODA_URL" -w "%{http_code}" || true)
+  if [ "$code" = "200" ] && [ -s "$BODY_FILE" ] && grep -Fq -- "$ODA_XML_EXPECTED" "$BODY_FILE"; then
+    echo "[run] PASS ODA XML: found '$ODA_XML_EXPECTED' in ODA output"
+  else
+    echo "[run][WARN] ODA XML not confirmed programmatically (HTTP $code). Please open ODA URL manually."
+  fi
+else
+  echo "[run][INFO] ODA XML test assets not present in repo; skipping ODA quick test."
+fi
+
 cat <<EOF
 
-Container is running. Try opening one of these URLs in your browser:
-1) $RUN_URL
-2) $FRAMESET_URL
-3) $INDEX_URL
+Container is running. Try opening these URLs in your browser:
+- Version (preferred): $RUN_URL
+- Version (frameset):  $FRAMESET_URL
+- Version (index.jsp): $INDEX_URL
+- ODA XML (if assets present): ${VIEW_BASE}/run?__report=${ODA_XML_REPORT}&__format=html
 
-If the first one doesn't work, try the next ones. Press Ctrl+C to stop.
+Press Ctrl+C to stop.
 
-To stop the container:
+To stop the container manually:
   docker rm -f $CONTAINER_NAME
 EOF
 
