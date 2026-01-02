@@ -119,12 +119,20 @@ if [ -f "$REPO_ROOT/$ODA_XML_REPORT" ] && [ -f "$REPO_ROOT/$ODA_XML_DATA" ]; the
 
   # Try multiple candidate URLs (relative/absolute paths, run/frameset)
   xml_inline='<root><version>ODA_XML_OK</version></root>'
-  urlenc() { python3 - <<'PY'
-import sys, urllib.parse
-print(urllib.parse.quote(sys.stdin.read().strip(), safe=''))
-PY
+  urlencode() {
+    local LC_ALL=C s="$1" out="" i c
+    for ((i=0; i<${#s}; i++)); do
+      c=${s:i:1}
+      case "$c" in
+        [a-zA-Z0-9.~_-]) out+="$c" ;;
+        ' ') out+='%20' ;;
+        *) printf -v c '%%%02X' "'$c'"; out+="$c" ;;
+      esac
+    done
+    printf '%s' "$out"
   }
-  XML_INLINE_ENC=$(printf "%s" "$xml_inline" | urlenc)
+  XML_INLINE_ENC="$(urlencode "$xml_inline")"
+  echo "[run] Inline XML (encoded) length: ${#XML_INLINE_ENC}"
 
   ODA_URL1="$VIEW_BASE/run?__report=$ODA_XML_REPORT&__format=html&XML_CONTENT=$XML_INLINE_ENC"
   ODA_URL2="$VIEW_BASE/frameset?__report=$ODA_XML_REPORT&__format=html&XML_CONTENT=$XML_INLINE_ENC"
