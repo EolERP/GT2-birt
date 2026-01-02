@@ -345,15 +345,28 @@ log "Selected endpoint: $SELECTED_URL"
 
 # Verification request
 VERIFY_URL="$SELECTED_URL"
-# Prefer non-framed, non-index endpoints for content verification
-path="${VERIFY_URL%%\?*}"
-qs="${VERIFY_URL#${path}}"
-path="${path//index.jsp/run}"
-path="${path//viewer.jsp/run}"
-path="${path//frameset.jsp/run}"
-path="${path/\/frameset/\/run}"
-path="${path/\/preview/\/run}"
-VERIFY_URL="${path}${qs}"
+# Try to prefer non-framed, non-index endpoints for content verification, but fall back if not valid
+orig_url="$VERIFY_URL"
+path="${orig_url%%\?*}"
+qs="${orig_url#${path}}"
+run_path="$path"
+run_path="${run_path//index.jsp/run}"
+run_path="${run_path//viewer.jsp/run}"
+run_path="${run_path//frameset.jsp/run}"
+run_path="${run_path/\/frameset/\/run}"
+run_path="${run_path/\/preview/\/run}"
+run_url="${run_path}${qs}"
+
+# Test run_url quickly; if bad, keep original
+: > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
+HTTP_CODE=$(fetch_url "$run_url")
+bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
+if [[ "$HTTP_CODE" == "200" && -s "$bodyfile" && ! obvious_error "$bodyfile" && ! obvious_error "$HEADERS_FILE" ]]; then
+  VERIFY_URL="$run_url"
+else
+  VERIFY_URL="$orig_url"
+fi
+
 : > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
 HTTP_CODE=$(fetch_url "$VERIFY_URL")
 if [[ "$HTTP_CODE" != "200" ]]; then
