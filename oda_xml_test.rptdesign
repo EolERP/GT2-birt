@@ -3,7 +3,7 @@
     <property name="createdBy">OpenHands</property>
     <data-sources>
         <oda-data-source name="XML Source" id="2" extensionID="org.eclipse.birt.report.data.oda.xml">
-            <property name="XMLFile">oda_xml_test.xml</property>
+            <property name="XMLFile">/opt/tomcat/webapps/birt/oda_xml_test.xml</property>
         </oda-data-source>
     </data-sources>
     <data-sets>
