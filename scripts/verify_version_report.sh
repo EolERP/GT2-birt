@@ -12,6 +12,13 @@ REPORT_FORMAT=${REPORT_FORMAT:-html}
 TIMEOUT_SEC=${TIMEOUT_SEC:-120}
 REPORT_PATH=${REPORT_PATH:-}
 REPORT_DIR=${REPORT_DIR:-}
+# ODA XML test env
+SKIP_ODA_XML_TEST=${SKIP_ODA_XML_TEST:-}
+ODA_XML_EXPECTED=${ODA_XML_EXPECTED:-ODA_XML_OK}
+ODA_XML_REPORT=${ODA_XML_REPORT:-oda_xml_test.rptdesign}
+ODA_XML_DATA=${ODA_XML_DATA:-oda_xml_test.xml}
+ODA_XML_JAR_URL=${ODA_XML_JAR_URL:-https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.4.102.201901091730.jar}
+ODA_XML_RESTART=${ODA_XML_RESTART:-1}
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -362,6 +369,58 @@ if ! grep -Fq -- "$EXPECTED_VALUE" "$BODY_FILE"; then
   err "URL used: $VERIFY_URL"
   warn "Relevant headers:"
   grep -Ei '^(HTTP/|Server:|Content-Type:|Location:)' "$HEADERS_FILE" | sed 's/^/[headers] /' >&2 || true
+  FAILED=1
+  exit 1
+fi
+
+# --- ODA XML end-to-end test ---
+if [[ -z "$SKIP_ODA_XML_TEST" ]]; then
+  log "Starting ODA XML end-to-end test"
+
+  # Ensure test assets present in container
+  if ! docker exec "$CONTAINER_NAME" test -f "$REPORT_TARGET_DIR/$ODA_XML_REPORT"; then
+    log "Copy $ODA_XML_REPORT -> $REPORT_TARGET_DIR"; docker cp "$REPO_ROOT/$ODA_XML_REPORT" "$CONTAINER_NAME:$REPORT_TARGET_DIR/"
+  fi
+  if ! docker exec "$CONTAINER_NAME" test -f "$REPORT_TARGET_DIR/$ODA_XML_DATA"; then
+    log "Copy $ODA_XML_DATA -> $REPORT_TARGET_DIR"; docker cp "$REPO_ROOT/$ODA_XML_DATA" "$CONTAINER_NAME:$REPORT_TARGET_DIR/"
+  fi
+
+  # Install/refresh ODA XML plugin jar
+  ODA_LIB_DIR="$BIRT_WEBAPP/WEB-INF/lib"
+  TMP_JAR="/tmp/oda-xml.jar"
+  log "Fetching ODA XML jar"
+  curl -fL -o "$TMP_DIR/oda-xml.jar" "$ODA_XML_JAR_URL" || { err "Failed to download ODA XML jar from $ODA_XML_JAR_URL"; exit 1; }
+  docker cp "$TMP_DIR/oda-xml.jar" "$CONTAINER_NAME:$TMP_JAR"
+  # Remove old versions and place new jar
+  docker exec "$CONTAINER_NAME" sh -lc "rm -f '$ODA_LIB_DIR'/org.eclipse.datatools.enablement.oda.xml_*.jar && mv '$TMP_JAR' '$ODA_LIB_DIR/'" || { err "Failed to install ODA XML jar"; exit 1; }
+
+  if [[ "$ODA_XML_RESTART" == "1" ]]; then
+    log "Restarting container to reload libraries"
+    docker restart "$CONTAINER_NAME" >/dev/null
+    log "Waiting after restart"
+    wait_ready || { err "Service did not become ready after restart"; exit 1; }
+  fi
+
+  # Execute report
+  ODA_URL_BASE="${SELECTED_URL%\?*}"
+  ODA_URL=$(append_params "$ODA_URL_BASE" | sed "s/__report=[^&]*/__report=${ODA_XML_REPORT//\//\\/}/")
+  log "ODA XML test URL: $ODA_URL"
+  : > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
+  HTTP_CODE=$(fetch_url "$ODA_URL")
+  if [[ "$HTTP_CODE" != "200" ]]; then
+    err "ODA XML request failed with HTTP $HTTP_CODE"; err "URL used: $ODA_URL"; exit 1
+  fi
+  BODY_FILE="$BODY_HTML"
+  [[ -s "$BODY_FILE" ]] || { err "Empty ODA XML body"; err "URL used: $ODA_URL"; exit 1; }
+  if obvious_error "$BODY_FILE" || obvious_error "$HEADERS_FILE"; then
+    err "Obvious error in ODA XML response"; err "URL used: $ODA_URL"; exit 1
+  fi
+  if ! grep -Fq -- "$ODA_XML_EXPECTED" "$BODY_FILE"; then
+    err "ODA XML expected value NOT found in output"; err "Expected: $ODA_XML_EXPECTED"; err "URL used: $ODA_URL"; exit 1
+  fi
+  log "Success: ODA XML report contains expected value '$ODA_XML_EXPECTED'"
+fi
+
   FAILED=1
   exit 1
 fi

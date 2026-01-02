@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report xmlns="http://www.eclipse.org/birt/2005/design" version="4.3.0" id="1">
+    <property name="createdBy">OpenHands</property>
+    <data-sources>
+        <oda-data-source name="XML Source" id="2" extensionID="org.eclipse.birt.report.data.oda.xml">
+            <property name="XMLFile">oda_xml_test.xml</property>
+        </oda-data-source>
+    </data-sources>
+    <data-sets>
+        <oda-data-set name="XML Data Set" id="3" extensionID="org.eclipse.birt.report.data.oda.xml" dataSource="XML Source">
+            <property name="rowXPath">/root</property>
+            <list-property name="resultSet">
+                <structure>
+                    <property name="position">1</property>
+                    <property name="name">version</property>
+                    <property name="dataType">string</property>
+                    <expression name="xpath">/root/version/text()</expression>
+                </structure>
+            </list-property>
+        </oda-data-set>
+    </data-sets>
+    <body>
+        <list id="4">
+            <property name="dataSet">XML Data Set</property>
+            <list-property name="boundDataColumns">
+                <structure>
+                    <property name="name">version</property>
+                    <expression name="expression">dataSetRow["version"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+            </list-property>
+            <text id="5">
+                <property name="contentType">plain</property>
+                <text-property name="content"><![CDATA[${version}]]></text-property>
+            </text>
+        </list>
+    </body>
+</report>
