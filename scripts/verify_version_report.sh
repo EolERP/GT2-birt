@@ -367,6 +367,9 @@ else
   VERIFY_URL="$orig_url"
 fi
 
+
+log "Verification URL: $VERIFY_URL"
+
 : > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
 HTTP_CODE=$(fetch_url "$VERIFY_URL")
 if [[ "$HTTP_CODE" != "200" ]]; then
@@ -395,4 +398,8 @@ if ! grep -Fq -- "$EXPECTED_VALUE" "$BODY_FILE"; then
   FAILED=1
   exit 1
 fi
+
+log "SUCCESS: Found expected value '$EXPECTED_VALUE' in response."
+FAILED=0
+exit 0
 
