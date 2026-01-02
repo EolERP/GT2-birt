@@ -121,15 +121,35 @@ if [ -f "$REPO_ROOT/$ODA_XML_REPORT" ] && [ -f "$REPO_ROOT/$ODA_XML_DATA" ]; the
     done
   fi
 
-  ODA_URL="$VIEW_BASE/run?__report=$ODA_XML_REPORT&__format=html"
-  echo "[run] Verifying ODA XML via: $ODA_URL"
-  code=$(curl -sS -L -D "$HEADERS_FILE" -o "$BODY_FILE" --max-time 30 "$ODA_URL" -w "%{http_code}" || true)
-  if [ "$code" = "200" ] && [ -s "$BODY_FILE" ] && grep -Fq -- "$ODA_XML_EXPECTED" "$BODY_FILE"; then
-    echo "[run] PASS ODA XML: found '$ODA_XML_EXPECTED' in ODA output"
+  # Verify files exist inside container
+  if docker exec "$CONTAINER_NAME" sh -lc "ls -l '$BIRT_DIR/$ODA_XML_REPORT' '$BIRT_DIR/$ODA_XML_DATA'" >/dev/null 2>&1; then
+    echo "[run] Confirmed ODA assets present in container: $BIRT_DIR/$ODA_XML_REPORT, $BIRT_DIR/$ODA_XML_DATA"
   else
-    echo "[run][WARN] ODA XML not confirmed programmatically (HTTP $code). Please open ODA URL manually."
+    echo "[run][ERROR] ODA assets missing in container"; docker exec "$CONTAINER_NAME" sh -lc "ls -l '$BIRT_DIR'" | sed 's/^/[ls] /'
+  fi
+
+  # Try multiple candidate URLs (relative/absolute paths, run/frameset)
+  ODA_URL1="$VIEW_BASE/run?__report=$ODA_XML_REPORT&__format=html"
+  ODA_URL2="$VIEW_BASE/frameset?__report=$ODA_XML_REPORT&__format=html"
+  ODA_URL3="$VIEW_BASE/run?__report=$BIRT_DIR/$ODA_XML_REPORT&__format=html"
+  ODA_URL4="$VIEW_BASE/frameset?__report=$BIRT_DIR/$ODA_XML_REPORT&__format=html"
+
+  for url in "$ODA_URL1" "$ODA_URL2" "$ODA_URL3" "$ODA_URL4"; do
+    echo "[run] Verifying ODA XML via: $url"
+    : > "$HEADERS_FILE"; : > "$BODY_FILE"
+    code=$(curl -sS -L -D "$HEADERS_FILE" -o "$BODY_FILE" --max-time 30 "$url" -w "%{http_code}" || true)
+    if [ "$code" = "200" ] && [ -s "$BODY_FILE" ] && grep -Fq -- "$ODA_XML_EXPECTED" "$BODY_FILE"; then
+      echo "[run] PASS ODA XML: found '$ODA_XML_EXPECTED' in ODA output via: $url"
+      ODA_PASS=1
+      break
+    fi
+  done
+  if [ "${ODA_PASS:-0}" != "1" ]; then
+    echo "[run][WARN] ODA XML not confirmed programmatically. Checked:"
+    echo "[run][WARN] - $ODA_URL1"; echo "[run][WARN] - $ODA_URL2"; echo "[run][WARN] - $ODA_URL3"; echo "[run][WARN] - $ODA_URL4"
     echo "[run][INFO] Recent container log tail:"
     docker logs --tail 120 "$CONTAINER_NAME" 2>&1 | sed 's/^/[docker] /'
+    echo "[run][INFO] First 400 chars of last response body:"; head -c 400 "$BODY_FILE" | sed 's/^/[body] /'
   fi
 else
   echo "[run][INFO] ODA XML test assets not present in repo; skipping ODA quick test."
