@@ -48,6 +48,8 @@ RUN cd ${TOMCAT_HOME} && ln -s /etc/tomcat conf
 RUN wget "http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.tar.gz" -P ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib
 RUN tar xzvf "${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.tar.gz" -C ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/ --strip-components=1 mysql-connector-java-${MYSQL_CONNECTOR_VERSION}/mysql-connector-java-${MYSQL_CONNECTOR_VERSION}.jar
 RUN wget "https://download.eclipse.org/releases/${ODA_XML_RELEASE}/${ODA_XML_RELEASE_BUILD}/plugins/org.eclipse.datatools.enablement.oda.xml_${ODA_XML_JAR_VERSION}.jar" -P ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib
+# Also place ODA XML plugin into ReportEngine plugins so the engine discovers it via BIRT_HOME
+RUN cp ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins/
 # Ensure ODA XML plugin is also visible to OSGi if platform/plugins exists
 RUN if [ -d ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins ]; then \
       cp ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/; \
