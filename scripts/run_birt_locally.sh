@@ -91,22 +91,32 @@ if [ -f "$REPO_ROOT/$ODA_XML_REPORT" ] && [ -f "$REPO_ROOT/$ODA_XML_DATA" ]; the
   docker cp "$REPO_ROOT/$ODA_XML_REPORT" "$CONTAINER_NAME:$BIRT_DIR/" >/dev/null
   docker cp "$REPO_ROOT/$ODA_XML_DATA" "$CONTAINER_NAME:$BIRT_DIR/" >/dev/null
 
-  # If a stray platform/plugins exists without org.eclipse.osgi, remove it to avoid OSGi startup errors
-  if docker exec "$CONTAINER_NAME" sh -lc "test -d '$BIRT_DIR/WEB-INF/platform/plugins'"; then
-    if ! docker exec "$CONTAINER_NAME" sh -lc "ls '$BIRT_DIR'/WEB-INF/platform/plugins/org.eclipse.osgi_*.jar >/dev/null 2>&1"; then
-      echo "[run][WARN] Removing incomplete WEB-INF/platform to restore viewer"
-      docker exec "$CONTAINER_NAME" sh -lc "rm -rf '$BIRT_DIR/WEB-INF/platform'"
+  # Ensure XML OSGi platform exists and is healthy
+  if docker exec "$CONTAINER_NAME" sh -lc "test -d '$BIRT_DIR/WEB-INF/platform/plugins' && ls '$BIRT_DIR'/WEB-INF/platform/plugins/org.eclipse.osgi_*.jar >/dev/null 2>&1"; then
+    echo "[run] OSGi platform present"
+  else
+    echo "[run][ERROR] OSGi platform missing or incomplete at $BIRT_DIR/WEB-INF/platform; viewer may be broken"
+  fi
+
+  # Ensure XML ODA plugin is available to OSGi (preferred location: WEB-INF/platform/plugins)
+  if docker exec "$CONTAINER_NAME" sh -lc "ls '$BIRT_DIR'/WEB-INF/platform/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
+    echo "[run] XML ODA plugin present in platform/plugins"
+  else
+    if docker exec "$CONTAINER_NAME" sh -lc "ls '$BIRT_DIR'/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
+      echo "[run] Installing XML ODA plugin into platform/plugins (from WEB-INF/lib)"
+      docker exec "$CONTAINER_NAME" sh -lc "cp '$BIRT_DIR'/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar '$BIRT_DIR'/WEB-INF/platform/plugins/"
+      NEED_RESTART=1
+    else
+      echo "[run] Downloading XML ODA plugin into platform/plugins"
+      curl -fL "$ODA_XML_JAR_URL" -o "$TMP_DIR/oda-xml.jar" && docker cp "$TMP_DIR/oda-xml.jar" "$CONTAINER_NAME:$BIRT_DIR/WEB-INF/platform/plugins/" || echo "[run][WARN] Failed to place XML ODA plugin"
       NEED_RESTART=1
     fi
   fi
 
-  # Ensure XML ODA jar is in WEB-INF/lib (preferred and sufficient)
-  if docker exec "$CONTAINER_NAME" sh -lc "ls '$BIRT_DIR'/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
-    echo "[run] XML ODA jar present in WEB-INF/lib"
-  else
-    echo "[run] Installing XML ODA jar into WEB-INF/lib"
-    curl -fL "$ODA_XML_JAR_URL" -o "$TMP_DIR/oda-xml.jar" && docker cp "$TMP_DIR/oda-xml.jar" "$CONTAINER_NAME:$BIRT_DIR/WEB-INF/lib/" || echo "[run][WARN] Failed to place XML ODA jar"
-    NEED_RESTART=1
+  # Also keep a copy in WEB-INF/lib (harmless and helps older runtimes)
+  if ! docker exec "$CONTAINER_NAME" sh -lc "ls '$BIRT_DIR'/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
+    echo "[run] Mirroring XML ODA jar into WEB-INF/lib"
+    docker exec "$CONTAINER_NAME" sh -lc "cp '$BIRT_DIR'/WEB-INF/platform/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar '$BIRT_DIR'/WEB-INF/lib/" || true
   fi
 
   if [ "${NEED_RESTART:-0}" = "1" ]; then
@@ -129,10 +139,18 @@ if [ -f "$REPO_ROOT/$ODA_XML_REPORT" ] && [ -f "$REPO_ROOT/$ODA_XML_DATA" ]; the
   fi
 
   # Try multiple candidate URLs (relative/absolute paths, run/frameset)
-  ODA_URL1="$VIEW_BASE/run?__report=$ODA_XML_REPORT&__format=html&XML_URL=$VIEW_BASE/$ODA_XML_DATA"
-  ODA_URL2="$VIEW_BASE/frameset?__report=$ODA_XML_REPORT&__format=html&XML_URL=$VIEW_BASE/$ODA_XML_DATA"
-  ODA_URL3="$VIEW_BASE/run?__report=$BIRT_DIR/$ODA_XML_REPORT&__format=html&XML_URL=$VIEW_BASE/$ODA_XML_DATA"
-  ODA_URL4="$VIEW_BASE/frameset?__report=$BIRT_DIR/$ODA_XML_REPORT&__format=html&XML_URL=$VIEW_BASE/$ODA_XML_DATA"
+  xml_inline='<root><version>ODA_XML_OK</version></root>'
+  urlenc() { python3 - <<'PY'
+import sys, urllib.parse
+print(urllib.parse.quote(sys.stdin.read().strip(), safe=''))
+PY
+  }
+  XML_INLINE_ENC=$(printf "%s" "$xml_inline" | urlenc)
+
+  ODA_URL1="$VIEW_BASE/run?__report=$ODA_XML_REPORT&__format=html&XML_CONTENT=$XML_INLINE_ENC"
+  ODA_URL2="$VIEW_BASE/frameset?__report=$ODA_XML_REPORT&__format=html&XML_CONTENT=$XML_INLINE_ENC"
+  ODA_URL3="$VIEW_BASE/run?__report=$BIRT_DIR/$ODA_XML_REPORT&__format=html&XML_CONTENT=$XML_INLINE_ENC"
+  ODA_URL4="$VIEW_BASE/frameset?__report=$BIRT_DIR/$ODA_XML_REPORT&__format=html&XML_CONTENT=$XML_INLINE_ENC"
 
   for url in "$ODA_URL1" "$ODA_URL2" "$ODA_URL3" "$ODA_URL4"; do
     echo "[run] Verifying ODA XML via: $url"

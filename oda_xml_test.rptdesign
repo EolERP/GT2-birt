@@ -6,12 +6,24 @@
             <property name="isRequired">false</property>
             <text-property name="helpText">Optional: URL to XML (e.g. http://localhost:8080/birt/oda_xml_test.xml)</text-property>
         </scalar-parameter>
+        <scalar-parameter name="XML_CONTENT" id="11" dataType="string" controlType="text-box">
+            <property name="isRequired">false</property>
+            <text-property name="helpText">Optional: inline XML content (will be written to a temp file)</text-property>
+        </scalar-parameter>
     </parameters>
     <data-sources>
         <oda-data-source name="XML Source" id="2" extensionID="org.eclipse.birt.report.data.oda.xml">
             <property name="XMLFile"></property>
             <method name="beforeOpen"><![CDATA[
-                if (params && params["XML_URL"]) {
+                if (params && params["XML_CONTENT"]) {
+                    var content = String(params["XML_CONTENT"]);
+                    var tmpDir = java.lang.System.getProperty("java.io.tmpdir");
+                    var file = new java.io.File(tmpDir, "oda_xml_inline.xml");
+                    var writer = new java.io.OutputStreamWriter(new java.io.FileOutputStream(file), "UTF-8");
+                    writer.write(content);
+                    writer.close();
+                    try { this.setExtensionProperty("XMLFile", file.getAbsolutePath()); } catch (e) {}
+                } else if (params && params["XML_URL"]) {
                     try { this.setExtensionProperty("XMLURL", String(params["XML_URL"])); } catch (e) {}
                     try { this.setExtensionProperty("XMLFile", null); } catch (e) {}
                 }
