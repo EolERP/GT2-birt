@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<report xmlns="http://www.eclipse.org/birt/2005/design" version="4.3.0" id="1">
+    <property name="createdBy">OpenHands</property>
+    <parameters>
+        <scalar-parameter name="XML_URL" id="10" dataType="string" controlType="text-box">
+            <property name="isRequired">false</property>
+            <text-property name="helpText">Optional: URL to XML (e.g. http://localhost:8080/birt/oda_xml_test.xml)</text-property>
+        </scalar-parameter>
+        <scalar-parameter name="XML_CONTENT" id="11" dataType="string" controlType="text-box">
+            <property name="isRequired">false</property>
+            <text-property name="helpText">Optional: inline XML content (will be written to a temp file)</text-property>
+        </scalar-parameter>
+    </parameters>
+    <data-sources>
+        <oda-data-source name="XML Source" id="2" extensionID="org.eclipse.datatools.enablement.oda.xml">
+            <property name="XMLFile"></property>
+            <method name="beforeOpen"><![CDATA[
+                // Prefer inline XML when provided; fallback to URL
+                try {
+                    if (params && params["XML_CONTENT"]) {
+                        var content = String(params["XML_CONTENT"]);
+                        var JSystem = Packages.java.lang.System;
+                        var JIO = Packages.java.io;
+                        var tmpDir = JSystem.getProperty("java.io.tmpdir");
+                        var file = new JIO.File(tmpDir, "oda_xml_inline.xml");
+                        var fos = new JIO.FileOutputStream(file);
+                        var writer = new JIO.OutputStreamWriter(fos, "UTF-8");
+                        writer.write(content);
+                        writer.close();
+                        try { this.setExtensionProperty("XMLFile", file.getAbsolutePath()); } catch (e1) {}
+                        try { this.setExtensionProperty("XMLURL", null); } catch (e2) {}
+                    } else if (params && params["XML_URL"]) {
+                        try { this.setExtensionProperty("XMLURL", String(params["XML_URL"])); } catch (e3) {}
+                        try { this.setExtensionProperty("XMLFile", null); } catch (e4) {}
+                    }
+                } catch (ex) {
+                    // As a last resort, do nothing; the design may still run if default properties are valid
+                }
+            ]]></method>
+        </oda-data-source>
+    </data-sources>
+    <data-sets>
+        <oda-data-set name="XML Data Set" id="3" extensionID="org.eclipse.birt.report.data.oda.xml" dataSource="XML Source">
+            <property name="rowXPath">/root</property>
+            <list-property name="resultSet">
+                <structure>
+                    <property name="position">1</property>
+                    <property name="name">version</property>
+                    <property name="dataType">string</property>
+                    <expression name="xpath">/root/version/text()</expression>
+                </structure>
+            </list-property>
+        </oda-data-set>
+    </data-sets>
+    <body>
+        <list id="4">
+            <property name="dataSet">XML Data Set</property>
+            <list-property name="boundDataColumns">
+                <structure>
+                    <property name="name">version</property>
+                    <expression name="expression">dataSetRow["version"]</expression>
+                    <property name="dataType">string</property>
+                </structure>
+            </list-property>
+            <text id="5">
+                <property name="contentType">plain</property>
+                <text-property name="content"><![CDATA[${version}]]></text-property>
+            </text>
+        </list>
+    </body>
+</report>
