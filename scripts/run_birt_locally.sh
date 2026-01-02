@@ -47,6 +47,8 @@ for b in "${BASES[@]}"; do
   if [ "$code" = "200" ]; then VIEW_BASE="$b/"; break; fi
 done
 VIEW_BASE=${VIEW_BASE:-"$BASE_URL/birt"}
+# Normalize to avoid double slashes
+VIEW_BASE="${VIEW_BASE%/}"
 
 # Propose best URLs to try manually
 RUN_URL="$VIEW_BASE/run?__report=version.rptdesign&__format=html"
