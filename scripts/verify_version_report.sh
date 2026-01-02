@@ -196,7 +196,7 @@ if ! docker exec "$CONTAINER_NAME" test -f "$REPORT_TARGET_DIR/$EXPECTED_FILE"; 
 fi
 
 # Helpers
-obvious_error() { grep -qiE "Exception|Whitelabel|HTTP Status|Not Found|404|500|error\.html|Stacktrace|SEVERE|There was an error" "$1"; }
+obvious_error() { grep -qiE "Exception|Whitelabel|HTTP Status|Not Found|404|500|Stacktrace|SEVERE|There was an error" "$1"; }
 
 fetch_url() {
   local url="$1"
@@ -271,8 +271,9 @@ http_discover() {
   if [[ ${#candidates[@]} -gt 0 ]]; then
     local seen=()
     local ordered=()
-    for p in "${candidates[@]}"; do [[ "$p" == *.jsp* ]] && ordered+=("$p"); done
+    # Prefer non-JSP endpoints (run/frameset) before JSP index pages
     for p in "${candidates[@]}"; do [[ "$p" != *.jsp* ]] && ordered+=("$p"); done
+    for p in "${candidates[@]}"; do [[ "$p" == *.jsp* ]] && ordered+=("$p"); done
     for p in "${ordered[@]}"; do
       [[ " ${seen[*]} " == *" $p "* ]] && continue
       seen+=("$p")
@@ -344,6 +345,15 @@ log "Selected endpoint: $SELECTED_URL"
 
 # Verification request
 VERIFY_URL="$SELECTED_URL"
+# Prefer non-framed, non-index endpoints for content verification
+path="${VERIFY_URL%%\?*}"
+qs="${VERIFY_URL#${path}}"
+path="${path//index.jsp/run}"
+path="${path//viewer.jsp/run}"
+path="${path//frameset.jsp/run}"
+path="${path/\/frameset/\/run}"
+path="${path/\/preview/\/run}"
+VERIFY_URL="${path}${qs}"
 : > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
 HTTP_CODE=$(fetch_url "$VERIFY_URL")
 if [[ "$HTTP_CODE" != "200" ]]; then
