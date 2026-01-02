@@ -91,32 +91,11 @@ if [ -f "$REPO_ROOT/$ODA_XML_REPORT" ] && [ -f "$REPO_ROOT/$ODA_XML_DATA" ]; the
   docker cp "$REPO_ROOT/$ODA_XML_REPORT" "$CONTAINER_NAME:$BIRT_DIR/" >/dev/null
   docker cp "$REPO_ROOT/$ODA_XML_DATA" "$CONTAINER_NAME:$BIRT_DIR/" >/dev/null
 
-  # Ensure XML OSGi platform exists and is healthy
-  if docker exec "$CONTAINER_NAME" sh -lc "test -d '$BIRT_DIR/WEB-INF/platform/plugins' && ls '$BIRT_DIR'/WEB-INF/platform/plugins/org.eclipse.osgi_*.jar >/dev/null 2>&1"; then
-    echo "[run] OSGi platform present"
+  # Ensure XML ODA jar exists in WEB-INF/lib (image installs it)
+  if docker exec "$CONTAINER_NAME" sh -lc "ls '$BIRT_DIR'/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
+    echo "[run] XML ODA jar present in WEB-INF/lib"
   else
-    echo "[run][ERROR] OSGi platform missing or incomplete at $BIRT_DIR/WEB-INF/platform; viewer may be broken"
-  fi
-
-  # Ensure XML ODA plugin is available to OSGi (preferred location: WEB-INF/platform/plugins)
-  if docker exec "$CONTAINER_NAME" sh -lc "ls '$BIRT_DIR'/WEB-INF/platform/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
-    echo "[run] XML ODA plugin present in platform/plugins"
-  else
-    if docker exec "$CONTAINER_NAME" sh -lc "ls '$BIRT_DIR'/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
-      echo "[run] Installing XML ODA plugin into platform/plugins (from WEB-INF/lib)"
-      docker exec "$CONTAINER_NAME" sh -lc "cp '$BIRT_DIR'/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar '$BIRT_DIR'/WEB-INF/platform/plugins/"
-      NEED_RESTART=1
-    else
-      echo "[run] Downloading XML ODA plugin into platform/plugins"
-      curl -fL "$ODA_XML_JAR_URL" -o "$TMP_DIR/oda-xml.jar" && docker cp "$TMP_DIR/oda-xml.jar" "$CONTAINER_NAME:$BIRT_DIR/WEB-INF/platform/plugins/" || echo "[run][WARN] Failed to place XML ODA plugin"
-      NEED_RESTART=1
-    fi
-  fi
-
-  # Also keep a copy in WEB-INF/lib (harmless and helps older runtimes)
-  if ! docker exec "$CONTAINER_NAME" sh -lc "ls '$BIRT_DIR'/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1"; then
-    echo "[run] Mirroring XML ODA jar into WEB-INF/lib"
-    docker exec "$CONTAINER_NAME" sh -lc "cp '$BIRT_DIR'/WEB-INF/platform/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar '$BIRT_DIR'/WEB-INF/lib/" || true
+    echo "[run][WARN] XML ODA jar not found in WEB-INF/lib; ODA runtime may be unavailable"
   fi
 
   if [ "${NEED_RESTART:-0}" = "1" ]; then

@@ -58,6 +58,9 @@ ADD arial.ttf /usr/share/fonts/truetype
 ADD version.rptdesign ${TOMCAT_HOME}/webapps/birt
 ADD version.txt ${TOMCAT_HOME}/webapps/birt
 ADD index.html ${TOMCAT_HOME}/webapps/birt
+# Add ODA test assets
+ADD oda_xml_test.rptdesign ${TOMCAT_HOME}/webapps/birt
+ADD oda_xml_test.xml ${TOMCAT_HOME}/webapps/birt
 
 # remove default pages with dangerous information
 RUN rm -f -r ${TOMCAT_HOME}/webapps/ROOT/index.jsp
