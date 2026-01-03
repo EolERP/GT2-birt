@@ -1,4 +1,4 @@
-ARG UBUNTU_VERSION=20.04
+ARG UBUNTU_VERSION=24.04
 FROM ubuntu:${UBUNTU_VERSION}
 
 # --- Version / constants (keep everything else the same) ---
@@ -18,6 +18,7 @@ ENV TOMCAT_HOME=/opt/tomcat
 # Pre-Installation and system packages
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
     && apt-get install -y --no-install-recommends \
+        ca-certificates \
         openjdk-${JAVA_VERSION}-jre-headless \
         wget \
         unzip \
