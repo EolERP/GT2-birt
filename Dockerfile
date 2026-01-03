@@ -12,9 +12,6 @@ ARG BIRT_VERSION=4.14.0
 ARG BIRT_DROP=snapshot
 ARG BIRT_RUNTIME_DATE=202306081749
 
-ARG ODA_XML_JAR_VERSION=1.4.102.201901091730
-ARG ODA_XML_RELEASE=2021-03
-ARG ODA_XML_RELEASE_BUILD=202103171000
 
 ENV TOMCAT_HOME=/opt/tomcat
 
@@ -42,8 +39,6 @@ RUN rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime
 RUN cd ${TOMCAT_HOME} && ln -s /etc/tomcat conf
 # RUN ln -s /opt/tomcat/webapps/ /usr/share/tomcat/webapps
 
-#Add JDBC (XML ODA only)
-RUN wget "https://download.eclipse.org/releases/${ODA_XML_RELEASE}/${ODA_XML_RELEASE_BUILD}/plugins/org.eclipse.datatools.enablement.oda.xml_${ODA_XML_JAR_VERSION}.jar" -P ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib
 
 
 # Map Reports folder
