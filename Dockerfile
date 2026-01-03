@@ -3,7 +3,7 @@ FROM ubuntu:${UBUNTU_VERSION}
 
 # --- Version / constants (keep everything else the same) ---
 
-ARG JAVA_VERSION=11
+ARG JAVA_VERSION=17
 
 ARG TOMCAT_VERSION=9.0.113
 ARG TOMCAT_MAJOR=9
@@ -21,7 +21,7 @@ ENV TOMCAT_HOME=/opt/tomcat
 # Pre-Installation and system packages
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
     && apt-get install -y --no-install-recommends \
-        openjdk-${JAVA_VERSION}-jdk \
+        openjdk-${JAVA_VERSION}-jre-headless \
         wget \
         unzip \
     && apt-get clean \
