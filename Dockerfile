@@ -5,7 +5,7 @@ FROM ubuntu:${UBUNTU_VERSION}
 
 ARG JAVA_VERSION=11
 
-ARG TOMCAT_VERSION=9.0.106
+ARG TOMCAT_VERSION=9.0.113
 ARG TOMCAT_MAJOR=9
 
 ARG BIRT_VERSION=4.13.0
@@ -67,8 +67,14 @@ RUN update-ca-certificates
 
 RUN rm ${TOMCAT_HOME}/conf/logging.properties
 
-# Modify birt viewer setting for reports path issue
-RUN perl -i -p0e "s/BIRT_VIEWER_WORKING_FOLDER<\/param-name>\n\t\t<param-value>/BIRT_VIEWER_WORKING_FOLDER<\/param-name>\n\t\t<param-value>\/opt\/tomcat\/webapps\/birt\//smg" ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml
+# Modify BIRT viewer settings for reports path issues
+# 1) Set it in WEB-INF/web.xml (robust whitespace-insensitive)
+RUN perl -0777 -i -pe 's|(\<param-name\>\s*BIRT_VIEWER_WORKING_FOLDER\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1/opt/tomcat/webapps/birt/\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml || true
+# 2) Also set it explicitly in WEB-INF/web-viewer.xml (newer packs read from here)
+RUN perl -0777 -i -pe 's|(\<param-name\>\s*BIRT_VIEWER_WORKING_FOLDER\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1/opt/tomcat/webapps/birt/\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true
+# Relax working folder access (some Tomcat 9.0.11x + BIRT combos require it)
+RUN perl -0777 -i -pe 's|(\<param-name\>\s*WORKING_FOLDER_ACCESS_ONLY\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1false\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml || true
+RUN perl -0777 -i -pe 's|(\<param-name\>\s*WORKING_FOLDER_ACCESS_ONLY\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1false\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true
 
 #Start
 CMD ["/opt/tomcat/bin/catalina.sh", "run"]
