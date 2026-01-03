@@ -58,6 +58,7 @@ ADD arial.ttf /usr/share/fonts/truetype
 ADD version.rptdesign ${TOMCAT_HOME}/webapps/birt
 ADD version.txt ${TOMCAT_HOME}/webapps/birt
 ADD index.html ${TOMCAT_HOME}/webapps/birt
+ADD credix_repayment_schedule.rptdesign ${TOMCAT_HOME}/webapps/birt
 
 # remove default pages with dangerous information
 RUN rm -f -r ${TOMCAT_HOME}/webapps/ROOT/index.jsp
