@@ -24,6 +24,13 @@ jobs:
           docker version
           docker info
 
+      - name: Install pdftotext
+        run: |
+          if ! command -v pdftotext; then
+            sudo apt-get update
+            sudo apt-get install -y poppler-utils
+          fi
+
       - name: Run BIRT E2E verification
         shell: bash
         env:
@@ -43,6 +50,7 @@ jobs:
           name: e2e-diagnostics
           path: |
             e2e.log
+            out/**
 
       - name: Docker diagnostics on failure
         if: failure()

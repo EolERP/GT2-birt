@@ -400,6 +400,99 @@ if ! grep -Fq -- "$EXPECTED_VALUE" "$BODY_FILE"; then
 fi
 
 log "SUCCESS: Found expected value '$EXPECTED_VALUE' in response."
+
+# ==========================
+# Credix PDF E2E verification
+# ==========================
+# Configurable variables with defaults
+CREDIX_REPORT_NAME=${CREDIX_REPORT_NAME:-credix_repayment_schedule.rptdesign}
+CREDIX_XML_FILE_URL=${CREDIX_XML_FILE_URL:-https://gist.githubusercontent.com/dpodhola-eolerp/16266ad29c3bc8309c6601e2c15ac3d8/raw/4612297f7613d063ce2d0cf64e2f554ef6b03d7b/data.xml}
+CREDIX_EXPECT_1=${CREDIX_EXPECT_1:-E2E_TEST_CredixBankAccount_123}
+CREDIX_EXPECT_2=${CREDIX_EXPECT_2:-E2E_TEST_SCONT_Value_123}
+CREDIX_ENDPOINT_PATH=${CREDIX_ENDPOINT_PATH:-/birt/frameset}
+CREDIX_FORMAT=${CREDIX_FORMAT:-pdf}
+
+log "Credix config: REPORT=$CREDIX_REPORT_NAME XML=$CREDIX_XML_FILE_URL EXPECT_1=$CREDIX_EXPECT_1 EXPECT_2=$CREDIX_EXPECT_2 ENDPOINT=$CREDIX_ENDPOINT_PATH FORMAT=$CREDIX_FORMAT"
+
+# 1) Verify report exists in container
+if ! docker exec "$CONTAINER_NAME" test -f "/opt/tomcat/webapps/birt/$CREDIX_REPORT_NAME"; then
+  warn "Listing /opt/tomcat/webapps/birt contents:"
+  docker exec "$CONTAINER_NAME" ls -la /opt/tomcat/webapps/birt || true
+  err "Credix report not found in container: /opt/tomcat/webapps/birt/$CREDIX_REPORT_NAME"
+  FAILED=1
+  exit 1
+fi
+
+# Helper to URL-encode only the XML value
+credix_urlencode() {
+  local s="$1"
+  if command -v python3 >/dev/null 2>&1; then
+    python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$s"
+  elif command -v python >/dev/null 2>&1; then
+    python - "$s" <<'PY'
+import sys, urllib
+try:
+    from urllib import quote  # py2
+except Exception:
+    from urllib.parse import quote  # py3
+print(quote(sys.argv[1], safe=''))
+PY
+  else
+    # Minimal fallback (not full RFC 3986)
+    local i out="" c
+    for (( i=0; i<${#s}; i++ )); do
+      c=${s:i:1}
+      case "$c" in
+        [a-zA-Z0-9._~-]) out+="$c";;
+        *) printf -v hex '%%%02X' "'${c}"; out+="$hex";;
+      esac
+    done
+    echo -n "$out"
+  fi
+}
+
+# 2) Build URL
+BASE_URL="http://localhost:${HOST_PORT:-8080}"
+ENC_XML="$(credix_urlencode "$CREDIX_XML_FILE_URL")"
+CREDIX_URL="${BASE_URL}${CREDIX_ENDPOINT_PATH}?xml_file=${ENC_XML}&__format=${CREDIX_FORMAT}&__report=${CREDIX_REPORT_NAME}"
+log "Credix request URL: $CREDIX_URL"
+
+# 3) Download output
+mkdir -p out
+if ! curl -fsSL -D out/credix_headers.txt "$CREDIX_URL" -o out/credix_report.pdf; then
+  err "curl download failed for Credix report"
+  FAILED=1
+  exit 1
+fi
+
+# 4) Verify it is a PDF
+if ! head -c 5 out/credix_report.pdf | grep -q "%PDF-"; then
+  head -c 2000 out/credix_report.pdf > out/credix_body_preview.txt 2>/dev/null || true
+  err "Credix response is not a PDF"
+  FAILED=1
+  exit 1
+fi
+
+# 5) Extract text
+if command -v pdftotext >/dev/null 2>&1; then
+  pdftotext -q out/credix_report.pdf out/credix_report.txt || true
+else
+  strings -a out/credix_report.pdf > out/credix_report.txt || true
+fi
+
+# 6) Verify expected content
+if ! grep -Fq -- "$CREDIX_EXPECT_1" out/credix_report.txt; then
+  err "Expected string 1 not found in PDF: $CREDIX_EXPECT_1"
+  FAILED=1
+  exit 1
+fi
+if ! grep -Fq -- "$CREDIX_EXPECT_2" out/credix_report.txt; then
+  err "Expected string 2 not found in PDF: $CREDIX_EXPECT_2"
+  FAILED=1
+  exit 1
+fi
+
+log "SUCCESS: Credix PDF report contains expected strings."
 FAILED=0
 exit 0
 
