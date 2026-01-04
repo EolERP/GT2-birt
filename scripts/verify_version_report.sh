@@ -275,14 +275,12 @@ fetch_url() {
 
 append_params() {
   local base="$1"
-  local repkey="__report"; local fmtkey="__format"
-  # EngineServlet (/preview) expects 'report' and 'format'
-  if [[ "$base" == *"/preview"* ]]; then repkey="report"; fmtkey="format"; fi
-  if [[ "$base" == *"?"* || "$base" == *"&"* || "$base" == *"${repkey}="* ]]; then
-    if [[ "$base" != *"${repkey}="* ]]; then base+="&${repkey}=${REPORT_PARAM}"; fi
-    if [[ "$base" != *"${fmtkey}="* ]]; then base+="&${fmtkey}=${REPORT_FORMAT}"; fi
+  # Use standard __report and __format keys for all viewer endpoints
+  if [[ "$base" == *"?"* || "$base" == *"&"* || "$base" == *"__report="* ]]; then
+    if [[ "$base" != *"__report="* ]]; then base+="&__report=${REPORT_PARAM}"; fi
+    if [[ "$base" != *"__format="* ]]; then base+="&__format=${REPORT_FORMAT}"; fi
   else
-    base+="?${repkey}=${REPORT_PARAM}&${fmtkey}=${REPORT_FORMAT}"
+    base+="?__report=${REPORT_PARAM}&__format=${REPORT_FORMAT}"
   fi
   echo "$base"
 }
@@ -302,8 +300,8 @@ try_endpoint_url() {
 }
 
 # Deterministic endpoint selection for BIRT 4.18+
-# Use /preview to get direct rendered output (HTML/PDF) without viewer shell
-SELECTED_URL="${BASE_URL}/birt/preview"
+# Prefer /run as canonical viewer endpoint; works with __report relative to working folder
+SELECTED_URL="${BASE_URL}/birt/run"
 # Build URL with relative report path against report root
 SELECTED_URL=$(append_params "$SELECTED_URL")
 
