@@ -59,9 +59,9 @@ RUN set -euo pipefail; \
       else \
         wget -O ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/$(basename ${ODA_XML_JAR_URL}) "${ODA_XML_JAR_URL}"; \
       fi; \
-    # Set viewer working folder to absolute report directory for deterministic resolution
-    xmlstarlet ed -L -u "//context-param[param-name='BIRT_VIEWER_WORKING_FOLDER']/param-value" -v "${TOMCAT_HOME}/webapps/birt/report" ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml; \
-    xmlstarlet ed -L -u "//context-param[param-name='BIRT_VIEWER_WORKING_FOLDER']/param-value" -v "${TOMCAT_HOME}/webapps/birt/report" ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true; \
+    # Set viewer working folder to absolute documents directory for deterministic resolution on 4.18+
+    xmlstarlet ed -L -u "//context-param[param-name='BIRT_VIEWER_WORKING_FOLDER']/param-value" -v "${TOMCAT_HOME}/webapps/birt/documents" ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml; \
+    xmlstarlet ed -L -u "//context-param[param-name='BIRT_VIEWER_WORKING_FOLDER']/param-value" -v "${TOMCAT_HOME}/webapps/birt/documents" ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true; \
 
     rm -f ${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}*; \
     rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime;
@@ -79,12 +79,17 @@ VOLUME ${TOMCAT_HOME}/webapps/birt
 ADD mundial.ttf /usr/share/fonts/truetype
 ADD arial.ttf /usr/share/fonts/truetype
 
-# Ensure report root exists for BIRT 4.18 viewer (WebViewerExample default is 'report')
-RUN mkdir -p ${TOMCAT_HOME}/webapps/birt/report
+# Ensure known-good baseline: also place reports into 'documents' working folder
+RUN mkdir -p ${TOMCAT_HOME}/webapps/birt/report ${TOMCAT_HOME}/webapps/birt/documents
 ADD version.rptdesign ${TOMCAT_HOME}/webapps/birt/report
 ADD version.txt ${TOMCAT_HOME}/webapps/birt/report
 ADD index.html ${TOMCAT_HOME}/webapps/birt/report
 ADD credix_repayment_schedule.rptdesign ${TOMCAT_HOME}/webapps/birt/report
+# Primary for 4.18+: documents
+ADD version.rptdesign ${TOMCAT_HOME}/webapps/birt/documents
+ADD version.txt ${TOMCAT_HOME}/webapps/birt/documents
+ADD index.html ${TOMCAT_HOME}/webapps/birt/documents
+ADD credix_repayment_schedule.rptdesign ${TOMCAT_HOME}/webapps/birt/documents
 
 # remove default pages with dangerous information
 RUN rm -f -r ${TOMCAT_HOME}/webapps/ROOT/index.jsp
