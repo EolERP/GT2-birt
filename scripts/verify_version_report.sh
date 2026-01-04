@@ -170,8 +170,8 @@ if ! docker exec "$CONTAINER_NAME" test -d "$BIRT_WEBAPP"; then
 fi
 log "BIRT webapp root: $BIRT_WEBAPP"
 
-# For BIRT 4.18+, use the 'documents' subfolder as report root when present
-REPORT_ROOT_CAND="$BIRT_WEBAPP/documents"
+# For BIRT 4.18+, use the 'report' subfolder as report root when present
+REPORT_ROOT_CAND="$BIRT_WEBAPP/report"
 if docker exec "$CONTAINER_NAME" test -d "$REPORT_ROOT_CAND"; then
   REPORT_DIR="$REPORT_ROOT_CAND"
 fi
