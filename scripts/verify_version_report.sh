@@ -234,12 +234,14 @@ try_endpoint_url() {
   local bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
   if [[ ! -s "$bodyfile" ]]; then warn "Empty body for $url"; return 1; fi
   if obvious_error "$bodyfile" || obvious_error "$HEADERS_FILE"; then warn "Obvious error detected for $url"; return 1; fi
+  # In newer BIRT packs, index.jsp may ignore __report and show the viewer home. Reject that.
+  if grep -qi "BIRT Viewer Installation" "$bodyfile"; then warn "Viewer index page detected for $url"; return 1; fi
   echo "$url"; return 0
 }
 
 # 1) HTTP discovery: fetch /birt and parse links
 http_discover() {
-  local bases=("${BASE_URL}/birt" "${BASE_URL}/birt/")
+  local bases=("${BASE_URL}/birt" "${BASE_URL}/birt/" "${BASE_URL}/birt/run" "${BASE_URL}/birt/frameset")
   local candidates=()
   for b in "${bases[@]}"; do
     log "HTTP discovery: probing $b"
@@ -355,14 +357,20 @@ run_path="${run_path//viewer.jsp/run}"
 run_path="${run_path//frameset.jsp/run}"
 run_path="${run_path/\/frameset/\/run}"
 run_path="${run_path/\/preview/\/run}"
-run_url="${run_path}${qs}"
+# If discovery landed on /birt (root) or index.jsp, force run
+  [[ "$run_path" == */birt ]] && run_path="${run_path}/run"
+  run_url="${run_path}${qs}"
 
 # Test run_url quickly; if bad, keep original
 : > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
 HTTP_CODE=$(fetch_url "$run_url")
 bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
 if [[ "$HTTP_CODE" == "200" && -s "$bodyfile" ]] && ! obvious_error "$bodyfile" && ! obvious_error "$HEADERS_FILE"; then
-  VERIFY_URL="$run_url"
+  if grep -qi "BIRT Viewer Installation" "$bodyfile"; then
+    VERIFY_URL="$orig_url"
+  else
+    VERIFY_URL="$run_url"
+  fi
 else
   VERIFY_URL="$orig_url"
 fi
