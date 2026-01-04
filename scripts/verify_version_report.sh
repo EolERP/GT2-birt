@@ -236,13 +236,19 @@ log "Report target directory in container: $REPORT_TARGET_DIR"
 # Use discovered folder; avoid forcing subfolder that may be restricted in newer BIRT
 log "Using discovered report dir: $REPORT_TARGET_DIR"
 
-# Build __report param relative path from REPORT_TARGET_DIR to BIRT webapp root
-REPORT_PARAM="$REPORT_FILE"
-case "$REPORT_TARGET_DIR" in
-  "$BIRT_WEBAPP") REPORT_PARAM="$REPORT_FILE";;
-  "$BIRT_WEBAPP"/*) REPORT_PARAM="${REPORT_TARGET_DIR#${BIRT_WEBAPP}/}/$REPORT_FILE";;
-  *) REPORT_PARAM="$REPORT_FILE";;
+# Build report param
+if [[ -n "$WORKING_FOLDER" ]]; then
+  # Working folder is absolute; EngineServlet resolves names within it
+  REPORT_PARAM="$(basename -- "$REPORT_FILE")"
+else
+  # Relative to webapp root
+  REPORT_PARAM="$REPORT_FILE"
+  case "$REPORT_TARGET_DIR" in
+    "$BIRT_WEBAPP") REPORT_PARAM="$REPORT_FILE";;
+    "$BIRT_WEBAPP"/*) REPORT_PARAM="${REPORT_TARGET_DIR#${BIRT_WEBAPP}/}/$REPORT_FILE";;
+    *) REPORT_PARAM="$REPORT_FILE";;
   esac
+fi
 
 log "Resolved __report param: $REPORT_PARAM"
 # If working folder is set and we use /preview, change param keys
