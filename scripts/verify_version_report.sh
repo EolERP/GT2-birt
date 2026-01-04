@@ -149,33 +149,38 @@ gather_container_intel() {
 }
 gather_container_intel
 
-# Ensure report files are available in the correct folder (discover it)
+# Ensure report files are available in the correct folder (discover viewer working folder if set)
 discover_report_dir() {
   local notes=""
 
   local webxml="$BIRT_WEBAPP/WEB-INF/web.xml"
+  local webviewerxml="$BIRT_WEBAPP/WEB-INF/web-viewer.xml"
+  local wf=""
+
   if docker exec "$CONTAINER_NAME" test -f "$webxml"; then
-    local wf
     wf=$(docker exec "$CONTAINER_NAME" sh -lc "awk 'BEGIN{IGNORECASE=1}/BIRT_VIEWER_WORKING_FOLDER/{f=1} f&&/<param-value>/{gsub(/<\\/?.*?>/,\"\");print; exit}' '$webxml' | xargs echo -n") || true
-    if [[ -n "$wf" ]]; then
-      notes+="Found BIRT_VIEWER_WORKING_FOLDER in web.xml: $wf\n"
-      echo "$wf"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
-    else
-      notes+="Param BIRT_VIEWER_WORKING_FOLDER not found in web.xml.\n"
-    fi
-  else
-    notes+="web.xml not found at $webxml.\n"
+    if [[ -n "$wf" ]]; then notes+="Found BIRT_VIEWER_WORKING_FOLDER in web.xml: $wf\n"; fi
   fi
-  local grep_out
-  grep_out=$(docker exec "$CONTAINER_NAME" sh -lc "grep -RInE 'BIRT_VIEWER_WORKING_FOLDER|WORKING_FOLDER|reportFolder|resource|reports' '$BIRT_WEBAPP'/WEB-INF 2>/dev/null | head -n 50") || true
-  if [[ -n "$grep_out" ]]; then notes+="Config hits:\n$grep_out\n"; fi
-  local rpt
-  rpt=$(docker exec "$CONTAINER_NAME" sh -lc "find '$BIRT_WEBAPP' -maxdepth 4 -type f -name '*.rptdesign' 2>/dev/null | head -n1") || true
-  if [[ -n "$rpt" ]]; then
-    local dir; dir=$(dirname "$rpt")
-    notes+="Found existing .rptdesign: $rpt -> using $dir\n"
-    echo "$dir"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
+  if [[ -z "$wf" ]] && docker exec "$CONTAINER_NAME" test -f "$webviewerxml"; then
+    wf=$(docker exec "$CONTAINER_NAME" sh -lc "awk 'BEGIN{IGNORECASE=1}/BIRT_VIEWER_WORKING_FOLDER/{f=1} f&&/<param-value>/{gsub(/<\\/?.*?>/,\"\");print; exit}' '$webviewerxml' | xargs echo -n") || true
+    if [[ -n "$wf" ]]; then notes+="Found BIRT_VIEWER_WORKING_FOLDER in web-viewer.xml: $wf\n"; fi
   fi
+
+  if [[ -n "$wf" ]]; then
+    # Make absolute if relative
+    if [[ "$wf" != /* ]]; then wf="$BIRT_WEBAPP/$wf"; fi
+    docker exec "$CONTAINER_NAME" sh -lc "mkdir -p '$wf'" >/dev/null 2>&1 || true
+    echo "$wf"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
+  fi
+
+  # Heuristic fallbacks commonly used by BIRT viewer
+  for cand in "$BIRT_WEBAPP/work" "$BIRT_WEBAPP/report" "$BIRT_WEBAPP/reports"; do
+    notes+="Trying candidate working folder: $cand\n"
+    docker exec "$CONTAINER_NAME" sh -lc "mkdir -p '$cand'" >/dev/null 2>&1 || true
+    echo "$cand"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
+  done
+
+  # Last resort: webapp root
   notes+="Falling back to webapp root: $BIRT_WEBAPP\n"
   echo "$BIRT_WEBAPP"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
 }
