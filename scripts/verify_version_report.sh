@@ -275,14 +275,14 @@ fetch_url() {
 
 append_params() {
   local base="$1"
-  local repkey="__report"
-  # EngineServlet (/preview) expects 'report' param name
-  if [[ "$base" == *"/preview"* ]]; then repkey="report"; fi
+  local repkey="__report"; local fmtkey="__format"
+  # EngineServlet (/preview) expects 'report' and 'format'
+  if [[ "$base" == *"/preview"* ]]; then repkey="report"; fmtkey="format"; fi
   if [[ "$base" == *"?"* || "$base" == *"&"* || "$base" == *"${repkey}="* ]]; then
     if [[ "$base" != *"${repkey}="* ]]; then base+="&${repkey}=${REPORT_PARAM}"; fi
-    if [[ "$base" != *"__format="* ]]; then base+="&__format=${REPORT_FORMAT}"; fi
+    if [[ "$base" != *"${fmtkey}="* ]]; then base+="&${fmtkey}=${REPORT_FORMAT}"; fi
   else
-    base+="?${repkey}=${REPORT_PARAM}&__format=${REPORT_FORMAT}"
+    base+="?${repkey}=${REPORT_PARAM}&${fmtkey}=${REPORT_FORMAT}"
   fi
   echo "$base"
 }
