@@ -8,9 +8,11 @@ ARG JAVA_VERSION=17
 ARG TOMCAT_VERSION=9.0.113
 ARG TOMCAT_MAJOR=9
 
-ARG BIRT_VERSION=4.14.0
-ARG BIRT_DROP=snapshot
-ARG BIRT_RUNTIME_DATE=202306081749
+ARG BIRT_VERSION=4.16.0
+ARG BIRT_BUILD=202406141054
+ARG BIRT_CHANNEL=release
+# BIRT base URL will be derived from channel during download (release | latest | milestone)
+ARG ODA_XML_JAR_URL=https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.4.102.201901091730.jar
 
 
 ENV TOMCAT_HOME=/opt/tomcat
@@ -30,13 +32,34 @@ RUN rm ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz
 
 RUN grep -rl --include \*.xml allow . | xargs sed -i 's/allow/deny/g'
 
-RUN wget "https://download.eclipse.org/birt/downloads/drops/${BIRT_DROP}/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip" -P ${TOMCAT_HOME}/webapps
-RUN unzip "${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip" -d ${TOMCAT_HOME}/webapps/birt-runtime
-RUN mv "${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample" "${TOMCAT_HOME}/webapps/birt"
-# Copy ODA XML driver provided by BIRT runtime into the webapp lib
-RUN cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/
-RUN rm ${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip
-RUN rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime
+# Determine BIRT base URL based on channel
+SHELL ["/bin/bash", "-c"]
+RUN set -euo pipefail; \
+    if [[ "${BIRT_CHANNEL}" == "latest" ]]; then \
+      BIRT_BASE_URL="https://download.eclipse.org/birt/updates/release/latest/downloads"; \
+    elif [[ "${BIRT_CHANNEL}" == "milestone" ]]; then \
+      BIRT_BASE_URL="https://download.eclipse.org/birt/updates/milestone/${BIRT_VERSION}/downloads"; \
+    else \
+      BIRT_BASE_URL="https://download.eclipse.org/birt/updates/release/${BIRT_VERSION}/downloads"; \
+    fi; \
+    echo "Using BIRT_BASE_URL=${BIRT_BASE_URL}"; \
+    RUNTIME_ZIP="birt-runtime-${BIRT_VERSION}-${BIRT_BUILD}.zip"; \
+    wget "${BIRT_BASE_URL}/${RUNTIME_ZIP}" -P ${TOMCAT_HOME}/webapps; \
+    if wget -qO- --spider "${BIRT_BASE_URL}/${RUNTIME_ZIP}.sha512"; then \
+      wget "${BIRT_BASE_URL}/${RUNTIME_ZIP}.sha512" -P ${TOMCAT_HOME}/webapps; \
+      cd ${TOMCAT_HOME}/webapps; \
+      sha512sum -c "${RUNTIME_ZIP}.sha512"; \
+    fi; \
+    unzip "${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}" -d ${TOMCAT_HOME}/webapps/birt-runtime; \
+    mv "${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample" "${TOMCAT_HOME}/webapps/birt"; \
+    if compgen -G "${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar" > /dev/null; then \
+        cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/; \
+      else \
+        wget -O ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/$(basename ${ODA_XML_JAR_URL}) "${ODA_XML_JAR_URL}"; \
+      fi; \
+
+    rm -f ${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}*; \
+    rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime
 
 #RUN mkdir /usr/share/tomcat && mkdir /etc/tomcat
 RUN cd ${TOMCAT_HOME} && ln -s /etc/tomcat conf
