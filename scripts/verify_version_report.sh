@@ -89,13 +89,52 @@ cleanup() {
       warn "Finding report design files (maxdepth 2):"
       docker exec "$CONTAINER_NAME" sh -lc 'find /opt/tomcat/webapps/birt -maxdepth 2 \( -name "version.rptdesign" -o -name "credix_repayment_schedule.rptdesign" \) -print' 2>&1 | sed 's/^/[container find] /' >&2 || true
 
-      # B) Viewer configuration
-      warn "Viewer config: BIRT_VIEWER_WORKING_FOLDER occurrences:"
-      docker exec "$CONTAINER_NAME" sh -lc 'grep -R "BIRT_VIEWER_WORKING_FOLDER" -n /opt/tomcat/webapps/birt/WEB-INF/web.xml /opt/tomcat/webapps/birt/WEB-INF/web-viewer.xml 2>/dev/null || true' 2>&1 | sed 's/^/[viewer] /' >&2 || true
-      warn "Viewer config: WORKING_FOLDER_ACCESS_ONLY occurrences:"
-      docker exec "$CONTAINER_NAME" sh -lc 'grep -R "WORKING_FOLDER_ACCESS_ONLY" -n /opt/tomcat/webapps/birt/WEB-INF/web.xml /opt/tomcat/webapps/birt/WEB-INF/web-viewer.xml 2>/dev/null || true' 2>&1 | sed 's/^/[viewer] /' >&2 || true
-      warn "Viewer config: REPORT references (first 200 lines):"
-      docker exec "$CONTAINER_NAME" sh -lc 'grep -R "REPORT" -n /opt/tomcat/webapps/birt/WEB-INF/web.xml /opt/tomcat/webapps/birt/WEB-INF/web-viewer.xml 2>/dev/null | head -200 || true' 2>&1 | sed 's/^/[viewer] /' >&2 || true
+      # B) Viewer configuration: save head snippets and effective params
+      warn "Saving viewer config head to out/viewer-config-head.txt"
+      docker exec "$CONTAINER_NAME" sh -lc '
+        for f in /opt/tomcat/webapps/birt/WEB-INF/web.xml /opt/tomcat/webapps/birt/WEB-INF/web-viewer.xml; do
+          [ -f "$f" ] || continue;
+          echo "== $f ==";
+          awk "NR>=1&&NR<=200{print}" "$f" | sed -n "1,200p" | cat;
+        done
+      ' > out/viewer-config-head.txt 2>&1 || true
+
+      warn "Extracting effective viewer param values to out/viewer-effective-params.txt"
+      docker exec "$CONTAINER_NAME" sh -lc '
+        set -e; OUT="/tmp/viewer-effective-params.txt"; : > "$OUT" || true;
+        extract_with_xmlstarlet() {
+          local f="$1";
+          xmlstarlet sel -t \
+            -m "//context-param[param-name='BIRT_VIEWER_WORKING_FOLDER' or param-name='WORKING_FOLDER_ACCESS_ONLY' or param-name='URL_REPORT_PATH_POLICY' or starts-with(param-name,'URL_REPORT_')]" \
+            -v "concat(param-name, '=', normalize-space(param-value))" -n "$f" 2>/dev/null || true;
+        }
+        extract_with_awk() {
+          awk '
+            BEGIN{IGNORECASE=1; key=""}
+            /<context-param>/{inctx=1}
+            inctx && /<param-name>/ {
+              match($0, /<param-name>\s*([^<]+)\s*<\\/param-name>/, m); if (m[1] != "") key=m[1];
+            }
+            inctx && /<param-value>/ && key != "" {
+              match($0, /<param-value>\s*([^<]+)\s*<\\/param-value>/, v);
+              if (v[1] != "") {
+                if (key ~ /^(BIRT_VIEWER_WORKING_FOLDER|WORKING_FOLDER_ACCESS_ONLY|URL_REPORT_PATH_POLICY|URL_REPORT_.*)$/) {
+                  gsub(/\r|\n/, "", v[1]); print key "=" v[1];
+                }
+                key="";
+              }
+            }
+            /<\\/context-param>/{inctx=0}
+          ' "$1" 2>/dev/null || true;
+        }
+        for f in /opt/tomcat/webapps/birt/WEB-INF/web.xml /opt/tomcat/webapps/birt/WEB-INF/web-viewer.xml; do
+          [ -f "$f" ] || continue;
+          echo "== $f ==" >> "$OUT";
+          if command -v xmlstarlet >/dev/null 2>&1; then extract_with_xmlstarlet "$f" >> "$OUT"; else extract_with_awk "$f" >> "$OUT"; fi
+        done;
+        cat "$OUT"
+      ' > out/viewer-effective-params.txt 2>&1 || true
+      warn "Effective params:"; sed 's/^/[viewer-param] /' out/viewer-effective-params.txt >&2 || true
 
       # C) Docker logs tail saved to out/
       docker logs "$CONTAINER_NAME" | tail -400 > out/docker-logs-tail.txt 2>/dev/null || true
