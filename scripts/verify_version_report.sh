@@ -152,6 +152,16 @@ gather_container_intel
 # Ensure report files are available in the correct folder (discover it)
 discover_report_dir() {
   local notes=""
+  # Prefer standard 'report' subfolder used by BIRT viewer defaults
+  if docker exec "$CONTAINER_NAME" test -d "$BIRT_WEBAPP/report"; then
+    notes+="Using existing report folder: $BIRT_WEBAPP/report\n"
+    echo "$BIRT_WEBAPP/report"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
+  else
+    docker exec "$CONTAINER_NAME" sh -lc "mkdir -p '$BIRT_WEBAPP/report'" >/dev/null 2>&1 || true
+    notes+="Created report folder: $BIRT_WEBAPP/report\n"
+    echo "$BIRT_WEBAPP/report"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
+  fi
+
   local webxml="$BIRT_WEBAPP/WEB-INF/web.xml"
   if docker exec "$CONTAINER_NAME" test -f "$webxml"; then
     local wf
@@ -178,6 +188,13 @@ discover_report_dir() {
   notes+="Falling back to webapp root: $BIRT_WEBAPP\n"
   echo "$BIRT_WEBAPP"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
 }
+# Build report parameter path based on discovered target dir
+REPORT_PARAM="$REPORT_FILE"
+if [[ "$REPORT_TARGET_DIR" == */report ]]; then
+  REPORT_PARAM="report/$REPORT_FILE"
+fi
+log "Resolved __report param: $REPORT_PARAM"
+
 
 if [[ -n "$REPORT_DIR" ]]; then
   REPORT_TARGET_DIR="$REPORT_DIR"
@@ -216,10 +233,10 @@ fetch_url() {
 append_params() {
   local base="$1"
   if [[ "$base" == *"?"* || "$base" == *"&"* || "$base" == *"__report="* ]]; then
-    if [[ "$base" != *"__report="* ]]; then base+="&__report=${REPORT_FILE}"; fi
+    if [[ "$base" != *"__report="* ]]; then base+="&__report=${REPORT_PARAM}"; fi
     if [[ "$base" != *"__format="* ]]; then base+="&__format=${REPORT_FORMAT}"; fi
   else
-    base+="?__report=${REPORT_FILE}&__format=${REPORT_FORMAT}"
+    base+="?__report=${REPORT_PARAM}&__format=${REPORT_FORMAT}"
   fi
   echo "$base"
 }
