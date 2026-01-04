@@ -237,7 +237,8 @@ log "Using discovered report dir: $REPORT_TARGET_DIR"
 # Build __report param relative path from REPORT_TARGET_DIR to BIRT webapp root
 REPORT_PARAM="$REPORT_FILE"
 case "$REPORT_TARGET_DIR" in
-  "$BIRT_WEBAPP"|"$BIRT_WEBAPP/report") REPORT_PARAM="$REPORT_FILE";;
+  "$BIRT_WEBAPP") REPORT_PARAM="$REPORT_FILE";;
+  "$BIRT_WEBAPP/report") REPORT_PARAM="report/$REPORT_FILE";;
   "$BIRT_WEBAPP"/*) REPORT_PARAM="${REPORT_TARGET_DIR#${BIRT_WEBAPP}/}/$REPORT_FILE";;
   *) REPORT_PARAM="$REPORT_FILE";;
   esac
@@ -302,8 +303,8 @@ try_endpoint_url() {
 
 # Deterministic endpoint selection for BIRT 4.18+
 SELECTED_URL="${BASE_URL}/birt/run"
-# Build URL with relative report path against report root if we discovered report/ folder
-# append_params will add __report and __format; avoid __resourceFolder unless necessary
+# Build URL with relative report path against report root
+SELECTED_URL=$(append_params "$SELECTED_URL")
 
 log "Selected endpoint: $SELECTED_URL"
 
