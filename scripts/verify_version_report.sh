@@ -170,8 +170,8 @@ if ! docker exec "$CONTAINER_NAME" test -d "$BIRT_WEBAPP"; then
 fi
 log "BIRT webapp root: $BIRT_WEBAPP"
 
-# For BIRT 4.18+, use the report subfolder as report root when present
-REPORT_ROOT_CAND="$BIRT_WEBAPP/report"
+# For BIRT 4.18+, use the 'documents' subfolder as report root when present
+REPORT_ROOT_CAND="$BIRT_WEBAPP/documents"
 if docker exec "$CONTAINER_NAME" test -d "$REPORT_ROOT_CAND"; then
   REPORT_DIR="$REPORT_ROOT_CAND"
 fi
@@ -213,7 +213,7 @@ discover_report_dir() {
   fi
 
   # Heuristic fallbacks commonly used by BIRT viewer
-  for cand in "$BIRT_WEBAPP/report"; do
+  for cand in "$BIRT_WEBAPP/documents"; do
     notes+="Using standard report folder: $cand\n"
     docker exec "$CONTAINER_NAME" sh -lc "mkdir -p '$cand'" >/dev/null 2>&1 || true
     echo "$cand"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
