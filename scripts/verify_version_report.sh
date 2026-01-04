@@ -152,15 +152,6 @@ gather_container_intel
 # Ensure report files are available in the correct folder (discover it)
 discover_report_dir() {
   local notes=""
-  # Prefer standard 'report' subfolder used by BIRT viewer defaults
-  if docker exec "$CONTAINER_NAME" test -d "$BIRT_WEBAPP/report"; then
-    notes+="Using existing report folder: $BIRT_WEBAPP/report\n"
-    echo "$BIRT_WEBAPP/report"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
-  else
-    docker exec "$CONTAINER_NAME" sh -lc "mkdir -p '$BIRT_WEBAPP/report'" >/dev/null 2>&1 || true
-    notes+="Created report folder: $BIRT_WEBAPP/report\n"
-    echo "$BIRT_WEBAPP/report"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
-  fi
 
   local webxml="$BIRT_WEBAPP/WEB-INF/web.xml"
   if docker exec "$CONTAINER_NAME" test -f "$webxml"; then
@@ -188,14 +179,6 @@ discover_report_dir() {
   notes+="Falling back to webapp root: $BIRT_WEBAPP\n"
   echo "$BIRT_WEBAPP"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
 }
-# Build report parameter path based on discovered target dir
-REPORT_PARAM="$REPORT_FILE"
-if [[ "$REPORT_TARGET_DIR" == */report ]]; then
-  REPORT_PARAM="report/$REPORT_FILE"
-fi
-log "Resolved __report param: $REPORT_PARAM"
-
-
 if [[ -n "$REPORT_DIR" ]]; then
   REPORT_TARGET_DIR="$REPORT_DIR"
   echo "REPORT_DIR overridden by env: $REPORT_TARGET_DIR" > "$REPORT_DIR_DISCOVERY_FILE"
@@ -203,6 +186,15 @@ else
   REPORT_TARGET_DIR=$(discover_report_dir)
 fi
 log "Report target directory in container: $REPORT_TARGET_DIR"
+
+# Build __report param relative path from REPORT_TARGET_DIR to BIRT webapp root
+REPORT_PARAM="$REPORT_FILE"
+case "$REPORT_TARGET_DIR" in
+  "$BIRT_WEBAPP") REPORT_PARAM="$REPORT_FILE";;
+  "$BIRT_WEBAPP"/*) REPORT_PARAM="${REPORT_TARGET_DIR#${BIRT_WEBAPP}/}/$REPORT_FILE";;
+  *) REPORT_PARAM="$REPORT_FILE";;
+
+log "Resolved __report param: $REPORT_PARAM"
 
 # Copy report assets if missing
 if ! docker exec "$CONTAINER_NAME" test -f "$REPORT_TARGET_DIR/$REPORT_FILE"; then
