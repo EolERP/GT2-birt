@@ -101,36 +101,17 @@ cleanup() {
 
       warn "Extracting effective viewer param values to out/viewer-effective-params.txt"
       docker exec "$CONTAINER_NAME" sh -lc '
-        set -e; OUT="/tmp/viewer-effective-params.txt"; : > "$OUT" || true;
-        extract_with_xmlstarlet() {
-          local f="$1";
-          xmlstarlet sel -t \
-            -m "//context-param[param-name='BIRT_VIEWER_WORKING_FOLDER' or param-name='WORKING_FOLDER_ACCESS_ONLY' or param-name='URL_REPORT_PATH_POLICY' or starts-with(param-name,'URL_REPORT_')]" \
-            -v "concat(param-name, '=', normalize-space(param-value))" -n "$f" 2>/dev/null || true;
-        }
-        extract_with_awk() {
-          awk '
-            BEGIN{IGNORECASE=1; key=""}
-            /<context-param>/{inctx=1}
-            inctx && /<param-name>/ {
-              match($0, /<param-name>\s*([^<]+)\s*<\\/param-name>/, m); if (m[1] != "") key=m[1];
-            }
-            inctx && /<param-value>/ && key != "" {
-              match($0, /<param-value>\s*([^<]+)\s*<\\/param-value>/, v);
-              if (v[1] != "") {
-                if (key ~ /^(BIRT_VIEWER_WORKING_FOLDER|WORKING_FOLDER_ACCESS_ONLY|URL_REPORT_PATH_POLICY|URL_REPORT_.*)$/) {
-                  gsub(/\r|\n/, "", v[1]); print key "=" v[1];
-                }
-                key="";
-              }
-            }
-            /<\\/context-param>/{inctx=0}
-          ' "$1" 2>/dev/null || true;
-        }
+        OUT="/tmp/viewer-effective-params.txt"; : > "$OUT" || true;
         for f in /opt/tomcat/webapps/birt/WEB-INF/web.xml /opt/tomcat/webapps/birt/WEB-INF/web-viewer.xml; do
           [ -f "$f" ] || continue;
           echo "== $f ==" >> "$OUT";
-          if command -v xmlstarlet >/dev/null 2>&1; then extract_with_xmlstarlet "$f" >> "$OUT"; else extract_with_awk "$f" >> "$OUT"; fi
+          if command -v xmlstarlet >/dev/null 2>&1; then
+            xmlstarlet sel -t \
+              -m "//context-param[param-name='BIRT_VIEWER_WORKING_FOLDER' or param-name='WORKING_FOLDER_ACCESS_ONLY' or param-name='URL_REPORT_PATH_POLICY' or starts-with(param-name,'URL_REPORT_')]" \
+              -v "concat(param-name, '=', normalize-space(param-value))" -n "$f" 2>/dev/null >> "$OUT" || true;
+          else
+            echo "xmlstarlet not available in container; skipping param extraction for $f" >> "$OUT";
+          fi
         done;
         cat "$OUT"
       ' > out/viewer-effective-params.txt 2>&1 || true
