@@ -170,6 +170,12 @@ if ! docker exec "$CONTAINER_NAME" test -d "$BIRT_WEBAPP"; then
 fi
 log "BIRT webapp root: $BIRT_WEBAPP"
 
+# For BIRT 4.18+, use the report subfolder as report root when present
+REPORT_ROOT_CAND="$BIRT_WEBAPP/report"
+if docker exec "$CONTAINER_NAME" test -d "$REPORT_ROOT_CAND"; then
+  REPORT_DIR="$REPORT_ROOT_CAND"
+fi
+
 # Always gather container intel for diagnostics
 gather_container_intel() {
   local webxml="$BIRT_WEBAPP/WEB-INF/web.xml"
@@ -231,7 +237,7 @@ log "Using discovered report dir: $REPORT_TARGET_DIR"
 # Build __report param relative path from REPORT_TARGET_DIR to BIRT webapp root
 REPORT_PARAM="$REPORT_FILE"
 case "$REPORT_TARGET_DIR" in
-  "$BIRT_WEBAPP") REPORT_PARAM="$REPORT_FILE";;
+  "$BIRT_WEBAPP"|"$BIRT_WEBAPP/report") REPORT_PARAM="$REPORT_FILE";;
   "$BIRT_WEBAPP"/*) REPORT_PARAM="${REPORT_TARGET_DIR#${BIRT_WEBAPP}/}/$REPORT_FILE";;
   *) REPORT_PARAM="$REPORT_FILE";;
   esac
@@ -274,9 +280,8 @@ append_params() {
   if [[ "$base" == *"?"* || "$base" == *"&"* || "$base" == *"${repkey}="* ]]; then
     if [[ "$base" != *"${repkey}="* ]]; then base+="&${repkey}=${REPORT_PARAM}"; fi
     if [[ "$base" != *"__format="* ]]; then base+="&__format=${REPORT_FORMAT}"; fi
-    if [[ "$base" != *"__resourceFolder="* ]]; then base+="&__resourceFolder=${REPORT_TARGET_DIR}"; fi
   else
-    base+="?${repkey}=${REPORT_PARAM}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}"
+    base+="?${repkey}=${REPORT_PARAM}&__format=${REPORT_FORMAT}"
   fi
   echo "$base"
 }
@@ -295,187 +300,17 @@ try_endpoint_url() {
   echo "$url"; return 0
 }
 
-# 1) HTTP discovery: fetch /birt and parse links
-http_discover() {
-  local bases=("${BASE_URL}/birt" "${BASE_URL}/birt/" "${BASE_URL}/birt/run" "${BASE_URL}/birt/frameset" "${BASE_URL}/birt/preview" "${BASE_URL}/birt/servlet/run" "${BASE_URL}/birt/servlet/frameset")
-  local candidates=()
-  for b in "${bases[@]}"; do
-    log "HTTP discovery: probing $b"
-    local code; code=$(fetch_url "$b")
-    local ct; ct=$(grep -i '^Content-Type:' "$HEADERS_FILE" | tail -n1 | awk '{print tolower($0)}')
-    if [[ "$code" == "200" ]] && echo "$ct" | grep -q 'text/html'; then
-      cp -f "$BODY_HTML" "$DISCOVERY_HTML" 2>/dev/null || true
-      local links
-      links=$(grep -Eoi 'href\s*=\s*"[^"]+"|src\s*=\s*"[^"]+"' "$DISCOVERY_HTML" | sed -E 's/^[^\"]+"(.*)"/\1/' | sed 's/#.*$//' | sort -u)
-      while IFS= read -r L; do
-        [[ -z "$L" ]] && continue
-        if echo "$L" | grep -Eqi 'frameset|run|preview|report|viewer|servlet|__report|__format'; then
-          local path="$L"
-          if [[ "$path" == http* ]]; then
-            :
-          elif [[ "$path" == /* ]]; then
-            path="$path"
-          else
-            path="/birt/${path}"
-          fi
-          path="${path%%\?*}"
-          if [[ "$path" == http* || "$path" == /birt/* ]]; then
-            candidates+=("$path")
-          fi
-        fi
-      done <<< "$links"
-    fi
-  done
-  if [[ ${#candidates[@]} -gt 0 ]]; then
-    local seen=()
-    local ordered=()
-    # Prefer non-JSP endpoints (run/frameset) before JSP index pages
-    for p in "${candidates[@]}"; do [[ "$p" != *.jsp* ]] && ordered+=("$p"); done
-    for p in "${candidates[@]}"; do [[ "$p" == *.jsp* ]] && ordered+=("$p"); done
-    for p in "${ordered[@]}"; do
-      [[ " ${seen[*]} " == *" $p "* ]] && continue
-      seen+=("$p")
-      if SELECTED=$(try_endpoint_url "$p"); then echo "$SELECTED"; return 0; fi
-    done
-  fi
-  return 1
-}
-
-# 2) Container discovery: use gathered mappings and JSPs
-container_discover() {
-  log "Container discovery: analyzing servlet mappings and JSPs"
-  local patterns
-  patterns=$(grep -Eo '<url-pattern>[^<]+' "$SERVLET_MAP_FILE" | sed 's/<url-pattern>//g' | tr -d '\r' | sed 's/\s\+$//' | sort -u) || true
-  local candidates=()
-  while IFS= read -r pat; do
-    [[ -z "$pat" ]] && continue
-    if ! echo "$pat" | grep -Eqi 'frameset|run|preview|report|viewer'; then
-      continue
-    fi
-    local base="$pat"
-    case "$base" in
-      */\*) base="${base%/\*}";;
-      *\*) base="${base%\*}";;
-    esac
-    [[ "$base" != /* ]] && base="/$base"
-    candidates+=("/birt${base}")
-  done <<< "$patterns"
-
-  for name in frameset.jsp run.jsp viewer.jsp report.jsp index.jsp; do
-    if grep -q "/$name$" "$JSP_LIST_FILE"; then candidates+=("/birt/$name"); fi
-  done
-
-  if [[ ${#candidates[@]} -gt 0 ]]; then
-    local seen=()
-    local uniq=()
-    for p in "${candidates[@]}"; do
-      [[ " ${seen[*]} " == *" $p "* ]] && continue
-      seen+=("$p"); uniq+=("$p")
-    done
-    for p in "${uniq[@]}"; do
-      if SELECTED=$(try_endpoint_url "$p"); then echo "$SELECTED"; return 0; fi
-    done
-  fi
-  return 1
-}
-
-SELECTED_URL=""
-if [[ -n "$REPORT_PATH" ]]; then
-  log "REPORT_PATH provided: $REPORT_PATH (skipping discovery)"
-  if SELECTED_URL=$(try_endpoint_url "$REPORT_PATH"); then :; else err "Provided REPORT_PATH is not working"; exit 1; fi
-else
-  log "Starting endpoint discovery"
-  if SELECTED_URL=$(http_discover); then
-    log "HTTP discovery succeeded: $SELECTED_URL"
-  elif SELECTED_URL=$(container_discover); then
-    log "Container discovery succeeded: $SELECTED_URL"
-  else
-    warn "Discovery failed; falling back to standard candidates"
-    fallback=("/birt/run" "/birt/frameset" "/birt/servlet/run" "/birt/servlet/frameset" "/viewer/run" "/viewer/frameset" "/birt-viewer/run" "/birt-viewer/frameset")
-    for p in "${fallback[@]}"; do
-      if SELECTED=$(try_endpoint_url "$p"); then SELECTED_URL="$SELECTED"; break; fi
-    done
-    # Try again using legacy 'report=' parameter name (without leading underscores)
-    if [[ -z "$SELECTED_URL" ]]; then
-      warn "Trying fallback with report= parameter name"
-      for p in "${fallback[@]}"; do
-        raw="$p"
-        # Build URL with report= instead of __report=
-        url="${BASE_URL}${raw}"
-        if [[ "$url" == *"?"* || "$url" == *"&"* || "$url" == *"report="* ]]; then
-          if [[ "$url" != *"report="* ]]; then url+="&report=${REPORT_PARAM}"; fi
-          if [[ "$url" != *"__format="* ]]; then url+="&__format=${REPORT_FORMAT}"; fi
-        else
-          url+="?report=${REPORT_PARAM}&__format=${REPORT_FORMAT}"
-        fi
-        log "Trying endpoint (report=): $url"
-        code=$(fetch_url "$url")
-        bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
-        if [[ "$code" == "200" && -s "$bodyfile" ]] && ! obvious_error "$bodyfile" && ! grep -qi "BIRT Viewer Installation" "$bodyfile"; then
-          SELECTED_URL="$url"; break
-        fi
-      done
-    fi
-
-    if [[ -z "$SELECTED_URL" ]]; then
-      warn "No endpoint found via discovery; attempting absolute-path fallback"
-      ABS_REPORT_PATH="$REPORT_TARGET_DIR/$REPORT_FILE"
-      for p in "/birt/run" "/birt/preview"; do
-        url="${BASE_URL}${p}"
-        if [[ "$url" == *"?"* || "$url" == *"&"* ]]; then
-          url+="&__report=${ABS_REPORT_PATH}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}"
-        else
-          url+="?__report=${ABS_REPORT_PATH}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}"
-        fi
-        log "Trying absolute-path endpoint: $url"
-        code=$(fetch_url "$url")
-        if [[ "$code" == "200" ]]; then
-          bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
-          if [[ -s "$bodyfile" ]] && ! obvious_error "$bodyfile" && ! grep -qi "BIRT Viewer Installation" "$bodyfile"; then
-            SELECTED_URL="$url"; break
-          fi
-        fi
-      done
-    fi
-    [[ -n "$SELECTED_URL" ]] || { err "Failed to find a working report endpoint"; exit 1; }
-# absolute fallback handled above
-
-  fi
-fi
+# Deterministic endpoint selection for BIRT 4.18+
+SELECTED_URL="${BASE_URL}/birt/run"
+# Build URL with relative report path against report root if we discovered report/ folder
+# append_params will add __report and __format; avoid __resourceFolder unless necessary
 
 log "Selected endpoint: $SELECTED_URL"
 
 # Verification request
 VERIFY_URL="$SELECTED_URL"
-# Try to prefer non-framed, non-index endpoints for content verification, but fall back if not valid
-orig_url="$VERIFY_URL"
-path="${orig_url%%\?*}"
-qs="${orig_url#${path}}"
-run_path="$path"
-run_path="${run_path//index.jsp/run}"
-run_path="${run_path//viewer.jsp/run}"
-run_path="${run_path//frameset.jsp/run}"
-run_path="${run_path/\/frameset/\/run}"
-run_path="${run_path/\/preview/\/run}"
-# If discovery landed on /birt (root) or index.jsp, force run
-  [[ "$run_path" == */birt ]] && run_path="${run_path}/run"
-  run_url="${run_path}${qs}"
-
-# Test run_url quickly; if bad, keep original
-: > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
-HTTP_CODE=$(fetch_url "$run_url")
-bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
-if [[ "$HTTP_CODE" == "200" && -s "$bodyfile" ]] && ! obvious_error "$bodyfile" && ! obvious_error "$HEADERS_FILE"; then
-  if grep -qi "BIRT Viewer Installation" "$bodyfile"; then
-    VERIFY_URL="$orig_url"
-  else
-    VERIFY_URL="$run_url"
-  fi
-else
-  VERIFY_URL="$orig_url"
-fi
-
-
+# Deterministic verification URL
+VERIFY_URL="$SELECTED_URL"
 log "Verification URL: $VERIFY_URL"
 
 try_verify_with_url() {
@@ -494,64 +329,19 @@ try_verify_with_url() {
   echo "$url"; return 0
 }
 
-attempt_fallbacks() {
-  local orig="$1"
-  local base_path="${orig%%\?*}"
-  local abs_report_path="$REPORT_TARGET_DIR/$REPORT_FILE"
-  local try_urls=()
-
-  # Try frameset/run with relative and absolute report; both __report and report param keys
-  for p in "/frameset" "/run"; do
-    local path="${base_path}"
-    path="${path/\/frameset/$p}"
-    path="${path/\/run/$p}"
-    for key in "__report" "report"; do
-      try_urls+=("${path}?${key}=${REPORT_PARAM}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}")
-      try_urls+=("${path}?${key}=${abs_report_path}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}")
-    done
-  done
-
-  # Engine preview with report=; try relative and absolute
-  local prev_path="${base_path/\/frameset/\/preview}"
-  prev_path="${prev_path/\/run/\/preview}"
-  try_urls+=("${prev_path}?report=${REPORT_PARAM}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}")
-  try_urls+=("${prev_path}?report=${abs_report_path}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}")
-
-  for u in "${try_urls[@]}"; do
-    log "Fallback try: $u"
-    if SELECTED=$(try_verify_with_url "$u"); then echo "$SELECTED"; return 0; fi
-  done
-  return 1
-}
-
 if SELECTED=$(try_verify_with_url "$VERIFY_URL"); then
   VERIFY_URL="$SELECTED"
 else
-  warn "Primary verification failed, attempting fallbacks with absolute report path and /preview"
-  if SELECTED=$(attempt_fallbacks "$VERIFY_URL"); then
-    VERIFY_URL="$SELECTED"
-  else
-    err "Verification failed after fallbacks"
-    err "URL used: $VERIFY_URL"
-    FAILED=1
-    exit 1
-  fi
+  err "Verification failed"
+  err "URL used: $VERIFY_URL"
+  FAILED=1
+  exit 1
 fi
 
 BODY_FILE="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then BODY_FILE="$BODY_TXT"; fi
 
 if ! grep -Fq -- "$EXPECTED_VALUE" "$BODY_FILE"; then
-  warn "Primary verification did not contain expected value, attempting endpoint fallbacks"
-  if SELECTED=$(attempt_fallbacks "$VERIFY_URL"); then
-    VERIFY_URL="$SELECTED"
-    : > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
-    code=$(fetch_url "$VERIFY_URL")
-    BODY_FILE="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then BODY_FILE="$BODY_TXT"; fi
-  fi
-fi
-
-if ! grep -Fq -- "$EXPECTED_VALUE" "$BODY_FILE"; then
-  err "Expected value NOT found in report output after fallbacks"
+  err "Expected value NOT found in report output"
   err "Expected: $EXPECTED_VALUE"
   err "URL used: $VERIFY_URL"
   warn "Relevant headers:"
