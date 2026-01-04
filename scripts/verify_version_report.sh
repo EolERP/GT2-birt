@@ -238,7 +238,7 @@ append_params() {
     if [[ "$base" != *"__format="* ]]; then base+="&__format=${REPORT_FORMAT}"; fi
     if [[ "$base" != *"__resourceFolder="* ]]; then base+="&__resourceFolder=${REPORT_TARGET_DIR}"; fi
   else
-    base+="?${repkey}=${REPORT_PARAM}&__format=${REPORT_FORMAT}"
+    base+="?${repkey}=${REPORT_PARAM}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}"
   fi
   echo "$base"
 }
