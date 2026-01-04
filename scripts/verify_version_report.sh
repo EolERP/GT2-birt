@@ -154,6 +154,30 @@ require() { command -v "$1" >/dev/null 2>&1 || { err "Required command '$1' not 
 require docker
 require curl
 
+
+# Runtime self-check: print effective working folder and access-only values from both configs
+runtime_self_check() {
+  local webxml="$BIRT_WEBAPP/WEB-INF/web.xml"
+  local viewerxml="$BIRT_WEBAPP/WEB-INF/web-viewer.xml"
+  log "--- Runtime viewer config (effective params) ---"
+  for f in "$webxml" "$viewerxml"; do
+    if docker exec "$CONTAINER_NAME" test -f "$f"; then
+      log "File: $f"
+      # Print the whole context-param blocks for the two keys for unambiguous evidence
+      docker exec "$CONTAINER_NAME" sh -lc "awk '/<context-param>/{p=1} p{print} /<\\/context-param>/{p=0}' '$f' | sed -n '1,400p'" | sed 's/^/[viewer-conf] /' >&2 || true
+      # Extract effective values via xmlstarlet when available
+      docker exec "$CONTAINER_NAME" sh -lc "if command -v xmlstarlet >/dev/null 2>&1; then \
+        xmlstarlet sel -t \
+          -m \"//context-param[param-name='BIRT_VIEWER_WORKING_FOLDER' or param-name='WORKING_FOLDER_ACCESS_ONLY']\" \
+          -v \"concat(param-name, '=', normalize-space(param-value))\" -n '$f'; \
+      else echo 'xmlstarlet not found in container'; fi" | sed 's/^/[viewer-param] /' >&2 || true
+    else
+      warn "File missing: $f"
+    fi
+  done
+}
+runtime_self_check
+
 # Validate inputs
 [[ -f "$REPO_ROOT/$REPORT_FILE" ]] || { err "Report file not found: $REPO_ROOT/$REPORT_FILE"; exit 1; }
 [[ -f "$REPO_ROOT/$EXPECTED_FILE" ]] || { err "Expected value file not found: $REPO_ROOT/$EXPECTED_FILE"; exit 1; }
