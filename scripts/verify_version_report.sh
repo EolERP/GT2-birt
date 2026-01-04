@@ -234,6 +234,9 @@ if ! docker exec "$CONTAINER_NAME" test -d "$BIRT_WEBAPP"; then
 fi
 log "BIRT webapp root: $BIRT_WEBAPP"
 
+# Print runtime self-check evidence before any HTTP requests
+runtime_self_check
+
 # For BIRT 4.18+, use the 'report' subfolder as report root when present
 REPORT_ROOT_CAND="$BIRT_WEBAPP/report"
 if docker exec "$CONTAINER_NAME" test -d "$REPORT_ROOT_CAND"; then
