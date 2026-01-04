@@ -187,13 +187,21 @@ else
 fi
 log "Report target directory in container: $REPORT_TARGET_DIR"
 
+# Override to use standard 'report' subfolder to maximize compatibility
+if command -v docker >/dev/null 2>&1; then
+  docker exec "$CONTAINER_NAME" sh -lc "mkdir -p '$BIRT_WEBAPP/report'" >/dev/null 2>&1 || true
+fi
+REPORT_TARGET_DIR="$BIRT_WEBAPP/report"
+REPORT_PARAM="report/$REPORT_FILE"
+log "Using report dir: $REPORT_TARGET_DIR (__report=$REPORT_PARAM)"
+
 # Build __report param relative path from REPORT_TARGET_DIR to BIRT webapp root
 REPORT_PARAM="$REPORT_FILE"
 case "$REPORT_TARGET_DIR" in
   "$BIRT_WEBAPP") REPORT_PARAM="$REPORT_FILE";;
   "$BIRT_WEBAPP"/*) REPORT_PARAM="${REPORT_TARGET_DIR#${BIRT_WEBAPP}/}/$REPORT_FILE";;
   *) REPORT_PARAM="$REPORT_FILE";;
-	esac
+esac
 
 log "Resolved __report param: $REPORT_PARAM"
 
