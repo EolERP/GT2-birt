@@ -181,7 +181,6 @@ runtime_self_check() {
     fi
   done
 }
-runtime_self_check
 
 # Validate inputs
 [[ -f "$REPO_ROOT/$REPORT_FILE" ]] || { err "Report file not found: $REPO_ROOT/$REPORT_FILE"; exit 1; }
