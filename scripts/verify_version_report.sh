@@ -451,6 +451,7 @@ try_verify_with_url() {
   local bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
   if [[ ! -s "$bodyfile" ]]; then warn "Empty body for $url"; return 1; fi
   if grep -qi "BIRT Viewer Installation" "$bodyfile"; then warn "Viewer index page detected for $url"; return 1; fi
+  if grep -qi "There is no report design object available" "$bodyfile"; then warn "Viewer error: no report design for $url"; return 1; fi
   # Accept HTML or PDF; only treat as error if still no expected token later
   echo "$url"; return 0
 }
