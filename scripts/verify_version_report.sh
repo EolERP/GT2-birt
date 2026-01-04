@@ -353,6 +353,28 @@ else
     for p in "${fallback[@]}"; do
       if SELECTED=$(try_endpoint_url "$p"); then SELECTED_URL="$SELECTED"; break; fi
     done
+    # Try again using legacy 'report=' parameter name (without leading underscores)
+    if [[ -z "$SELECTED_URL" ]]; then
+      warn "Trying fallback with report= parameter name"
+      for p in "${fallback[@]}"; do
+        raw="$p"
+        # Build URL with report= instead of __report=
+        url="${BASE_URL}${raw}"
+        if [[ "$url" == *"?"* || "$url" == *"&"* || "$url" == *"report="* ]]; then
+          if [[ "$url" != *"report="* ]]; then url+="&report=${REPORT_PARAM}"; fi
+          if [[ "$url" != *"__format="* ]]; then url+="&__format=${REPORT_FORMAT}"; fi
+        else
+          url+="?report=${REPORT_PARAM}&__format=${REPORT_FORMAT}"
+        fi
+        log "Trying endpoint (report=): $url"
+        code=$(fetch_url "$url")
+        bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
+        if [[ "$code" == "200" && -s "$bodyfile" ]] && ! obvious_error "$bodyfile" && ! grep -qi "BIRT Viewer Installation" "$bodyfile"; then
+          SELECTED_URL="$url"; break
+        fi
+      done
+    fi
+
     if [[ -z "$SELECTED_URL" ]]; then
       warn "No endpoint found via discovery; attempting absolute-path fallback"
       ABS_REPORT_PATH="$REPORT_TARGET_DIR/$REPORT_FILE"
