@@ -230,12 +230,15 @@ fetch_url() {
 
 append_params() {
   local base="$1"
-  if [[ "$base" == *"?"* || "$base" == *"&"* || "$base" == *"__report="* ]]; then
-    if [[ "$base" != *"__report="* ]]; then base+="&__report=${REPORT_PARAM}"; fi
+  local repkey="__report"
+  # EngineServlet (/preview) expects 'report' param name
+  if [[ "$base" == *"/preview"* ]]; then repkey="report"; fi
+  if [[ "$base" == *"?"* || "$base" == *"&"* || "$base" == *"${repkey}="* ]]; then
+    if [[ "$base" != *"${repkey}="* ]]; then base+="&${repkey}=${REPORT_PARAM}"; fi
     if [[ "$base" != *"__format="* ]]; then base+="&__format=${REPORT_FORMAT}"; fi
     if [[ "$base" != *"__resourceFolder="* ]]; then base+="&__resourceFolder=${REPORT_TARGET_DIR}"; fi
   else
-    base+="?__report=${REPORT_PARAM}&__format=${REPORT_FORMAT}"
+    base+="?${repkey}=${REPORT_PARAM}&__format=${REPORT_FORMAT}"
   fi
   echo "$base"
 }
