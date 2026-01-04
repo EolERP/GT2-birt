@@ -458,21 +458,26 @@ try_verify_with_url() {
 attempt_fallbacks() {
   local orig="$1"
   local base_path="${orig%%\?*}"
-  local qs="${orig#${base_path}}"
   local abs_report_path="$REPORT_TARGET_DIR/$REPORT_FILE"
   local try_urls=()
-  # Absolute path with ViewerServlet endpoints
-  for p in "/run" "/frameset"; do
+
+  # Try frameset/run with relative and absolute report; both __report and report param keys
+  for p in "/frameset" "/run"; do
     local path="${base_path}"
     path="${path/\/frameset/$p}"
     path="${path/\/run/$p}"
-    local u="${path}?__report=${abs_report_path}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}"
-    try_urls+=("$u")
+    for key in "__report" "report"; do
+      try_urls+=("${path}?${key}=${REPORT_PARAM}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}")
+      try_urls+=("${path}?${key}=${abs_report_path}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}")
+    done
   done
-  # Engine preview with report= and absolute path
+
+  # Engine preview with report=; try relative and absolute
   local prev_path="${base_path/\/frameset/\/preview}"
   prev_path="${prev_path/\/run/\/preview}"
+  try_urls+=("${prev_path}?report=${REPORT_PARAM}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}")
   try_urls+=("${prev_path}?report=${abs_report_path}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}")
+
   for u in "${try_urls[@]}"; do
     log "Fallback try: $u"
     if SELECTED=$(try_verify_with_url "$u"); then echo "$SELECTED"; return 0; fi
