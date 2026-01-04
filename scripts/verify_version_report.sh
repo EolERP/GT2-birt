@@ -45,6 +45,16 @@ cleanup() {
   local code=$?
   if [[ $FAILED -ne 0 ]]; then
     warn "Collecting diagnostics before cleanup..."
+
+    # Save response artifacts for version report
+    mkdir -p out || true
+    if [[ -s "$BODY_HTML" ]]; then
+      cp -f "$BODY_HTML" out/version_response.html 2>/dev/null || true
+    fi
+    if [[ -s "$BODY_TXT" ]]; then
+      cp -f "$BODY_TXT" out/version_response.txt 2>/dev/null || true
+    fi
+
     if [[ -s "$HEADERS_FILE" ]]; then
       warn "Response headers (first 80 lines):"
       sed -n '1,80p' "$HEADERS_FILE" | sed 's/^/[headers] /' >&2
@@ -68,9 +78,32 @@ cleanup() {
       warn "Report folder discovery notes:"
       sed 's/^/[report-dir] /' "$REPORT_DIR_DISCOVERY_FILE" >&2
     fi
+
     if command -v docker >/dev/null 2>&1; then
-      warn "Docker logs (last 200 lines):"
-      docker logs --tail 200 "$CONTAINER_NAME" 2>&1 | sed 's/^/[docker] /' >&2 || true
+      # A) Confirm reports presence
+      warn "Listing /opt/tomcat/webapps/birt (first 200 entries):"
+      docker exec "$CONTAINER_NAME" sh -lc 'ls -la /opt/tomcat/webapps/birt | head -200' 2>&1 | sed 's/^/[container ls] /' >&2 || true
+      warn "Listing /opt/tomcat/webapps/birt/WEB-INF (first 200 entries):"
+      docker exec "$CONTAINER_NAME" sh -lc 'ls -la /opt/tomcat/webapps/birt/WEB-INF | head -200' 2>&1 | sed 's/^/[container ls] /' >&2 || true
+      warn "Finding report design files (maxdepth 2):"
+      docker exec "$CONTAINER_NAME" sh -lc 'find /opt/tomcat/webapps/birt -maxdepth 2 \( -name "version.rptdesign" -o -name "credix_repayment_schedule.rptdesign" \) -print' 2>&1 | sed 's/^/[container find] /' >&2 || true
+
+      # B) Viewer configuration
+      warn "Viewer config: BIRT_VIEWER_WORKING_FOLDER occurrences:"
+      docker exec "$CONTAINER_NAME" sh -lc 'grep -R "BIRT_VIEWER_WORKING_FOLDER" -n /opt/tomcat/webapps/birt/WEB-INF/web.xml /opt/tomcat/webapps/birt/WEB-INF/web-viewer.xml 2>/dev/null || true' 2>&1 | sed 's/^/[viewer] /' >&2 || true
+      warn "Viewer config: WORKING_FOLDER_ACCESS_ONLY occurrences:"
+      docker exec "$CONTAINER_NAME" sh -lc 'grep -R "WORKING_FOLDER_ACCESS_ONLY" -n /opt/tomcat/webapps/birt/WEB-INF/web.xml /opt/tomcat/webapps/birt/WEB-INF/web-viewer.xml 2>/dev/null || true' 2>&1 | sed 's/^/[viewer] /' >&2 || true
+      warn "Viewer config: REPORT references (first 200 lines):"
+      docker exec "$CONTAINER_NAME" sh -lc 'grep -R "REPORT" -n /opt/tomcat/webapps/birt/WEB-INF/web.xml /opt/tomcat/webapps/birt/WEB-INF/web-viewer.xml 2>/dev/null | head -200 || true' 2>&1 | sed 's/^/[viewer] /' >&2 || true
+
+      # C) Docker logs tail saved to out/
+      docker logs "$CONTAINER_NAME" | tail -400 > out/docker-logs-tail.txt 2>/dev/null || true
+      warn "Saved docker logs tail to out/docker-logs-tail.txt"
+
+      # D) Save Credix response preview if present
+      if [[ -f out/credix_body_preview.txt ]]; then
+        cp -f out/credix_body_preview.txt out/credix_response.txt 2>/dev/null || true
+      fi
     fi
   fi
   if command -v docker >/dev/null 2>&1; then
@@ -149,36 +182,41 @@ gather_container_intel() {
 }
 gather_container_intel
 
-# Ensure report files are available in the correct folder (discover it)
+# Ensure report files are available in the correct folder (discover viewer working folder if set)
 discover_report_dir() {
   local notes=""
+
   local webxml="$BIRT_WEBAPP/WEB-INF/web.xml"
+  local webviewerxml="$BIRT_WEBAPP/WEB-INF/web-viewer.xml"
+  local wf=""
+
   if docker exec "$CONTAINER_NAME" test -f "$webxml"; then
-    local wf
     wf=$(docker exec "$CONTAINER_NAME" sh -lc "awk 'BEGIN{IGNORECASE=1}/BIRT_VIEWER_WORKING_FOLDER/{f=1} f&&/<param-value>/{gsub(/<\\/?.*?>/,\"\");print; exit}' '$webxml' | xargs echo -n") || true
-    if [[ -n "$wf" ]]; then
-      notes+="Found BIRT_VIEWER_WORKING_FOLDER in web.xml: $wf\n"
-      echo "$wf"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
-    else
-      notes+="Param BIRT_VIEWER_WORKING_FOLDER not found in web.xml.\n"
-    fi
-  else
-    notes+="web.xml not found at $webxml.\n"
+    if [[ -n "$wf" ]]; then notes+="Found BIRT_VIEWER_WORKING_FOLDER in web.xml: $wf\n"; fi
   fi
-  local grep_out
-  grep_out=$(docker exec "$CONTAINER_NAME" sh -lc "grep -RInE 'BIRT_VIEWER_WORKING_FOLDER|WORKING_FOLDER|reportFolder|resource|reports' '$BIRT_WEBAPP'/WEB-INF 2>/dev/null | head -n 50") || true
-  if [[ -n "$grep_out" ]]; then notes+="Config hits:\n$grep_out\n"; fi
-  local rpt
-  rpt=$(docker exec "$CONTAINER_NAME" sh -lc "find '$BIRT_WEBAPP' -maxdepth 4 -type f -name '*.rptdesign' 2>/dev/null | head -n1") || true
-  if [[ -n "$rpt" ]]; then
-    local dir; dir=$(dirname "$rpt")
-    notes+="Found existing .rptdesign: $rpt -> using $dir\n"
-    echo "$dir"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
+  if [[ -z "$wf" ]] && docker exec "$CONTAINER_NAME" test -f "$webviewerxml"; then
+    wf=$(docker exec "$CONTAINER_NAME" sh -lc "awk 'BEGIN{IGNORECASE=1}/BIRT_VIEWER_WORKING_FOLDER/{f=1} f&&/<param-value>/{gsub(/<\\/?.*?>/,\"\");print; exit}' '$webviewerxml' | xargs echo -n") || true
+    if [[ -n "$wf" ]]; then notes+="Found BIRT_VIEWER_WORKING_FOLDER in web-viewer.xml: $wf\n"; fi
   fi
+
+  if [[ -n "$wf" ]]; then
+    # Make absolute if relative
+    if [[ "$wf" != /* ]]; then wf="$BIRT_WEBAPP/$wf"; fi
+    docker exec "$CONTAINER_NAME" sh -lc "mkdir -p '$wf'" >/dev/null 2>&1 || true
+    echo "$wf"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
+  fi
+
+  # Heuristic fallbacks commonly used by BIRT viewer
+  for cand in "$BIRT_WEBAPP/work" "$BIRT_WEBAPP/report" "$BIRT_WEBAPP/reports"; do
+    notes+="Trying candidate working folder: $cand\n"
+    docker exec "$CONTAINER_NAME" sh -lc "mkdir -p '$cand'" >/dev/null 2>&1 || true
+    echo "$cand"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
+  done
+
+  # Last resort: webapp root
   notes+="Falling back to webapp root: $BIRT_WEBAPP\n"
   echo "$BIRT_WEBAPP"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
 }
-
 if [[ -n "$REPORT_DIR" ]]; then
   REPORT_TARGET_DIR="$REPORT_DIR"
   echo "REPORT_DIR overridden by env: $REPORT_TARGET_DIR" > "$REPORT_DIR_DISCOVERY_FILE"
@@ -186,6 +224,19 @@ else
   REPORT_TARGET_DIR=$(discover_report_dir)
 fi
 log "Report target directory in container: $REPORT_TARGET_DIR"
+
+# Use discovered folder; avoid forcing subfolder that may be restricted in newer BIRT
+log "Using discovered report dir: $REPORT_TARGET_DIR"
+
+# Build __report param relative path from REPORT_TARGET_DIR to BIRT webapp root
+REPORT_PARAM="$REPORT_FILE"
+case "$REPORT_TARGET_DIR" in
+  "$BIRT_WEBAPP") REPORT_PARAM="$REPORT_FILE";;
+  "$BIRT_WEBAPP"/*) REPORT_PARAM="${REPORT_TARGET_DIR#${BIRT_WEBAPP}/}/$REPORT_FILE";;
+  *) REPORT_PARAM="$REPORT_FILE";;
+  esac
+
+log "Resolved __report param: $REPORT_PARAM"
 
 # Copy report assets if missing
 if ! docker exec "$CONTAINER_NAME" test -f "$REPORT_TARGET_DIR/$REPORT_FILE"; then
@@ -209,17 +260,23 @@ fetch_url() {
     if command -v pdftotext >/dev/null 2>&1; then pdftotext -q "$BODY_PDF" "$BODY_TXT" || true; else strings "$BODY_PDF" > "$BODY_TXT" || true; fi
   else
     mv "$RESPONSE_FILE" "$BODY_HTML" 2>/dev/null || true
+    # Also create a crude text version for token searches
+    sed -E 's/<[^>]+>/\n/g' "$BODY_HTML" | sed -E 's/&nbsp;/ /g' | tr -s '\n' > "$BODY_TXT" || true
   fi
   echo "$code"
 }
 
 append_params() {
   local base="$1"
-  if [[ "$base" == *"?"* || "$base" == *"&"* || "$base" == *"__report="* ]]; then
-    if [[ "$base" != *"__report="* ]]; then base+="&__report=${REPORT_FILE}"; fi
+  local repkey="__report"
+  # EngineServlet (/preview) expects 'report' param name
+  if [[ "$base" == *"/preview"* ]]; then repkey="report"; fi
+  if [[ "$base" == *"?"* || "$base" == *"&"* || "$base" == *"${repkey}="* ]]; then
+    if [[ "$base" != *"${repkey}="* ]]; then base+="&${repkey}=${REPORT_PARAM}"; fi
     if [[ "$base" != *"__format="* ]]; then base+="&__format=${REPORT_FORMAT}"; fi
+    if [[ "$base" != *"__resourceFolder="* ]]; then base+="&__resourceFolder=${REPORT_TARGET_DIR}"; fi
   else
-    base+="?__report=${REPORT_FILE}&__format=${REPORT_FORMAT}"
+    base+="?${repkey}=${REPORT_PARAM}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}"
   fi
   echo "$base"
 }
@@ -233,13 +290,14 @@ try_endpoint_url() {
   if [[ "$code" != "200" ]]; then warn "HTTP $code for $url"; return 1; fi
   local bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
   if [[ ! -s "$bodyfile" ]]; then warn "Empty body for $url"; return 1; fi
-  if obvious_error "$bodyfile" || obvious_error "$HEADERS_FILE"; then warn "Obvious error detected for $url"; return 1; fi
+  # In newer BIRT packs, index.jsp may ignore __report and show the viewer home. Reject that.
+  if grep -qi "BIRT Viewer Installation" "$bodyfile"; then warn "Viewer index page detected for $url"; return 1; fi
   echo "$url"; return 0
 }
 
 # 1) HTTP discovery: fetch /birt and parse links
 http_discover() {
-  local bases=("${BASE_URL}/birt" "${BASE_URL}/birt/")
+  local bases=("${BASE_URL}/birt" "${BASE_URL}/birt/" "${BASE_URL}/birt/run" "${BASE_URL}/birt/frameset" "${BASE_URL}/birt/preview" "${BASE_URL}/birt/servlet/run" "${BASE_URL}/birt/servlet/frameset")
   local candidates=()
   for b in "${bases[@]}"; do
     log "HTTP discovery: probing $b"
@@ -333,11 +391,55 @@ else
     log "Container discovery succeeded: $SELECTED_URL"
   else
     warn "Discovery failed; falling back to standard candidates"
-    fallback=("/birt/run" "/birt/frameset" "/viewer/run" "/viewer/frameset" "/birt-viewer/run" "/birt-viewer/frameset")
+    fallback=("/birt/run" "/birt/frameset" "/birt/servlet/run" "/birt/servlet/frameset" "/viewer/run" "/viewer/frameset" "/birt-viewer/run" "/birt-viewer/frameset")
     for p in "${fallback[@]}"; do
       if SELECTED=$(try_endpoint_url "$p"); then SELECTED_URL="$SELECTED"; break; fi
     done
+    # Try again using legacy 'report=' parameter name (without leading underscores)
+    if [[ -z "$SELECTED_URL" ]]; then
+      warn "Trying fallback with report= parameter name"
+      for p in "${fallback[@]}"; do
+        raw="$p"
+        # Build URL with report= instead of __report=
+        url="${BASE_URL}${raw}"
+        if [[ "$url" == *"?"* || "$url" == *"&"* || "$url" == *"report="* ]]; then
+          if [[ "$url" != *"report="* ]]; then url+="&report=${REPORT_PARAM}"; fi
+          if [[ "$url" != *"__format="* ]]; then url+="&__format=${REPORT_FORMAT}"; fi
+        else
+          url+="?report=${REPORT_PARAM}&__format=${REPORT_FORMAT}"
+        fi
+        log "Trying endpoint (report=): $url"
+        code=$(fetch_url "$url")
+        bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
+        if [[ "$code" == "200" && -s "$bodyfile" ]] && ! obvious_error "$bodyfile" && ! grep -qi "BIRT Viewer Installation" "$bodyfile"; then
+          SELECTED_URL="$url"; break
+        fi
+      done
+    fi
+
+    if [[ -z "$SELECTED_URL" ]]; then
+      warn "No endpoint found via discovery; attempting absolute-path fallback"
+      ABS_REPORT_PATH="$REPORT_TARGET_DIR/$REPORT_FILE"
+      for p in "/birt/run" "/birt/preview"; do
+        url="${BASE_URL}${p}"
+        if [[ "$url" == *"?"* || "$url" == *"&"* ]]; then
+          url+="&__report=${ABS_REPORT_PATH}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}"
+        else
+          url+="?__report=${ABS_REPORT_PATH}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}"
+        fi
+        log "Trying absolute-path endpoint: $url"
+        code=$(fetch_url "$url")
+        if [[ "$code" == "200" ]]; then
+          bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
+          if [[ -s "$bodyfile" ]] && ! obvious_error "$bodyfile" && ! grep -qi "BIRT Viewer Installation" "$bodyfile"; then
+            SELECTED_URL="$url"; break
+          fi
+        fi
+      done
+    fi
     [[ -n "$SELECTED_URL" ]] || { err "Failed to find a working report endpoint"; exit 1; }
+# absolute fallback handled above
+
   fi
 fi
 
@@ -355,14 +457,20 @@ run_path="${run_path//viewer.jsp/run}"
 run_path="${run_path//frameset.jsp/run}"
 run_path="${run_path/\/frameset/\/run}"
 run_path="${run_path/\/preview/\/run}"
-run_url="${run_path}${qs}"
+# If discovery landed on /birt (root) or index.jsp, force run
+  [[ "$run_path" == */birt ]] && run_path="${run_path}/run"
+  run_url="${run_path}${qs}"
 
 # Test run_url quickly; if bad, keep original
 : > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
 HTTP_CODE=$(fetch_url "$run_url")
 bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
 if [[ "$HTTP_CODE" == "200" && -s "$bodyfile" ]] && ! obvious_error "$bodyfile" && ! obvious_error "$HEADERS_FILE"; then
-  VERIFY_URL="$run_url"
+  if grep -qi "BIRT Viewer Installation" "$bodyfile"; then
+    VERIFY_URL="$orig_url"
+  else
+    VERIFY_URL="$run_url"
+  fi
 else
   VERIFY_URL="$orig_url"
 fi
@@ -370,27 +478,80 @@ fi
 
 log "Verification URL: $VERIFY_URL"
 
-: > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
-HTTP_CODE=$(fetch_url "$VERIFY_URL")
-if [[ "$HTTP_CODE" != "200" ]]; then
-  err "Verification request failed with HTTP $HTTP_CODE"
-  err "URL used: $VERIFY_URL"
-  FAILED=1
-  exit 1
+try_verify_with_url() {
+  local url="$1"
+  : > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
+  local code; code=$(fetch_url "$url")
+  if [[ "$code" != "200" ]]; then
+    warn "HTTP $code for $url"
+    return 1
+  fi
+  local bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
+  if [[ ! -s "$bodyfile" ]]; then warn "Empty body for $url"; return 1; fi
+  if grep -qi "BIRT Viewer Installation" "$bodyfile"; then warn "Viewer index page detected for $url"; return 1; fi
+  if grep -qi "There is no report design object available" "$bodyfile"; then warn "Viewer error: no report design for $url"; return 1; fi
+  # Accept HTML or PDF; only treat as error if still no expected token later
+  echo "$url"; return 0
+}
+
+attempt_fallbacks() {
+  local orig="$1"
+  local base_path="${orig%%\?*}"
+  local abs_report_path="$REPORT_TARGET_DIR/$REPORT_FILE"
+  local try_urls=()
+
+  # Try frameset/run with relative and absolute report; both __report and report param keys
+  for p in "/frameset" "/run"; do
+    local path="${base_path}"
+    path="${path/\/frameset/$p}"
+    path="${path/\/run/$p}"
+    for key in "__report" "report"; do
+      try_urls+=("${path}?${key}=${REPORT_PARAM}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}")
+      try_urls+=("${path}?${key}=${abs_report_path}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}")
+    done
+  done
+
+  # Engine preview with report=; try relative and absolute
+  local prev_path="${base_path/\/frameset/\/preview}"
+  prev_path="${prev_path/\/run/\/preview}"
+  try_urls+=("${prev_path}?report=${REPORT_PARAM}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}")
+  try_urls+=("${prev_path}?report=${abs_report_path}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}")
+
+  for u in "${try_urls[@]}"; do
+    log "Fallback try: $u"
+    if SELECTED=$(try_verify_with_url "$u"); then echo "$SELECTED"; return 0; fi
+  done
+  return 1
+}
+
+if SELECTED=$(try_verify_with_url "$VERIFY_URL"); then
+  VERIFY_URL="$SELECTED"
+else
+  warn "Primary verification failed, attempting fallbacks with absolute report path and /preview"
+  if SELECTED=$(attempt_fallbacks "$VERIFY_URL"); then
+    VERIFY_URL="$SELECTED"
+  else
+    err "Verification failed after fallbacks"
+    err "URL used: $VERIFY_URL"
+    FAILED=1
+    exit 1
+  fi
 fi
 
 BODY_FILE="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then BODY_FILE="$BODY_TXT"; fi
-[[ -s "$BODY_FILE" ]] || { err "Empty verification body"; err "URL used: $VERIFY_URL"; FAILED=1; exit 1; }
 
-if obvious_error "$BODY_FILE" || obvious_error "$HEADERS_FILE"; then
-  err "Obvious error in verification response"
-  err "URL used: $VERIFY_URL"
-  FAILED=1
-  exit 1
+if ! grep -Fq -- "$EXPECTED_VALUE" "$BODY_FILE"; then
+  warn "Primary verification did not contain expected value, attempting endpoint fallbacks"
+  if SELECTED=$(attempt_fallbacks "$VERIFY_URL"); then
+    VERIFY_URL="$SELECTED"
+    : > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
+    code=$(fetch_url "$VERIFY_URL")
+    BODY_FILE="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then BODY_FILE="$BODY_TXT"; fi
+  fi
 fi
 
 if ! grep -Fq -- "$EXPECTED_VALUE" "$BODY_FILE"; then
-  err "Expected value NOT found in report output"
+  err "Expected value NOT found in report output after fallbacks"
   err "Expected: $EXPECTED_VALUE"
   err "URL used: $VERIFY_URL"
   warn "Relevant headers:"

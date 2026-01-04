@@ -8,8 +8,8 @@ ARG JAVA_VERSION=17
 ARG TOMCAT_VERSION=9.0.113
 ARG TOMCAT_MAJOR=9
 
-ARG BIRT_VERSION=4.16.0
-ARG BIRT_BUILD=202406141054
+ARG BIRT_VERSION=4.18.0
+ARG BIRT_BUILD=202412050604
 ARG BIRT_CHANNEL=release
 # BIRT base URL will be derived from channel during download (release | latest | milestone)
 ARG ODA_XML_JAR_URL=https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.4.102.201901091730.jar
@@ -30,7 +30,8 @@ RUN wget "https://archive.apache.org/dist/tomcat/tomcat-${TOMCAT_MAJOR}/v${TOMCA
 RUN tar xzvf ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz -C ${TOMCAT_HOME} --strip-components=1
 RUN rm ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz
 
-RUN grep -rl --include \*.xml allow . | xargs sed -i 's/allow/deny/g'
+# NOTE: Removed legacy global XML 'allow'->'deny' replacement as it breaks BIRT 4.18 viewer config
+# RUN grep -rl --include \*.xml allow . | xargs sed -i 's/allow/deny/g'
 
 # Determine BIRT base URL based on channel
 SHELL ["/bin/bash", "-c"]
@@ -88,14 +89,7 @@ RUN update-ca-certificates
 
 RUN rm ${TOMCAT_HOME}/conf/logging.properties
 
-# Modify BIRT viewer settings for reports path issues
-# 1) Set it in WEB-INF/web.xml (robust whitespace-insensitive)
-RUN perl -0777 -i -pe 's|(\<param-name\>\s*BIRT_VIEWER_WORKING_FOLDER\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1/opt/tomcat/webapps/birt/\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml || true
-# 2) Also set it explicitly in WEB-INF/web-viewer.xml (newer packs read from here)
-RUN perl -0777 -i -pe 's|(\<param-name\>\s*BIRT_VIEWER_WORKING_FOLDER\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1/opt/tomcat/webapps/birt/\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true
-# Relax working folder access (some Tomcat 9.0.11x + BIRT combos require it)
-RUN perl -0777 -i -pe 's|(\<param-name\>\s*WORKING_FOLDER_ACCESS_ONLY\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1false\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml || true
-RUN perl -0777 -i -pe 's|(\<param-name\>\s*WORKING_FOLDER_ACCESS_ONLY\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1false\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true
+# Use default BIRT viewer configuration; working/resource folders are provided via request params in verification script
 
 #Start
 CMD ["/opt/tomcat/bin/catalina.sh", "run"]
