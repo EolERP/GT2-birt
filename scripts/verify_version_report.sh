@@ -213,13 +213,13 @@ discover_report_dir() {
   fi
 
   # Heuristic fallbacks commonly used by BIRT viewer
-  for cand in "$BIRT_WEBAPP/work" "$BIRT_WEBAPP/report" "$BIRT_WEBAPP/reports"; do
-    notes+="Trying candidate working folder: $cand\n"
+  for cand in "$BIRT_WEBAPP/report"; do
+    notes+="Using standard report folder: $cand\n"
     docker exec "$CONTAINER_NAME" sh -lc "mkdir -p '$cand'" >/dev/null 2>&1 || true
     echo "$cand"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
   done
 
-  # Last resort: webapp root
+  # Last resort: webapp root (kept for diagnostics consistency)
   notes+="Falling back to webapp root: $BIRT_WEBAPP\n"
   echo "$BIRT_WEBAPP"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
 }

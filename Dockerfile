@@ -24,6 +24,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
         openjdk-${JAVA_VERSION}-jre-headless \
         wget \
         unzip \
+        xmlstarlet \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 RUN wget --tries=5 --waitretry=5 --timeout=30 --retry-connrefused "https://archive.apache.org/dist/tomcat/tomcat-${TOMCAT_MAJOR}/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz" -P ${TOMCAT_HOME}
