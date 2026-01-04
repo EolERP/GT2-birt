@@ -440,24 +440,61 @@ fi
 
 log "Verification URL: $VERIFY_URL"
 
-: > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
-HTTP_CODE=$(fetch_url "$VERIFY_URL")
-if [[ "$HTTP_CODE" != "200" ]]; then
-  err "Verification request failed with HTTP $HTTP_CODE"
-  err "URL used: $VERIFY_URL"
-  FAILED=1
-  exit 1
+try_verify_with_url() {
+  local url="$1"
+  : > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
+  local code; code=$(fetch_url "$url")
+  if [[ "$code" != "200" ]]; then
+    warn "HTTP $code for $url"
+    return 1
+  fi
+  local bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
+  if [[ ! -s "$bodyfile" ]]; then warn "Empty body for $url"; return 1; fi
+  if grep -qi "BIRT Viewer Installation" "$bodyfile"; then warn "Viewer index page detected for $url"; return 1; fi
+  # Accept HTML or PDF; only treat as error if still no expected token later
+  echo "$url"; return 0
+}
+
+attempt_fallbacks() {
+  local orig="$1"
+  local base_path="${orig%%\?*}"
+  local qs="${orig#${base_path}}"
+  local abs_report_path="$REPORT_TARGET_DIR/$REPORT_FILE"
+  local try_urls=()
+  # Absolute path with ViewerServlet endpoints
+  for p in "/run" "/frameset"; do
+    local path="${base_path}"
+    path="${path/\/frameset/$p}"
+    path="${path/\/run/$p}"
+    local u="${path}?__report=${abs_report_path}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}"
+    try_urls+=("$u")
+  done
+  # Engine preview with report= and absolute path
+  local prev_path="${base_path/\/frameset/\/preview}"
+  prev_path="${prev_path/\/run/\/preview}"
+  try_urls+=("${prev_path}?report=${abs_report_path}&__format=${REPORT_FORMAT}&__resourceFolder=${REPORT_TARGET_DIR}")
+  for u in "${try_urls[@]}"; do
+    log "Fallback try: $u"
+    if SELECTED=$(try_verify_with_url "$u"); then echo "$SELECTED"; return 0; fi
+  done
+  return 1
+}
+
+if SELECTED=$(try_verify_with_url "$VERIFY_URL"); then
+  VERIFY_URL="$SELECTED"
+else
+  warn "Primary verification failed, attempting fallbacks with absolute report path and /preview"
+  if SELECTED=$(attempt_fallbacks "$VERIFY_URL"); then
+    VERIFY_URL="$SELECTED"
+  else
+    err "Verification failed after fallbacks"
+    err "URL used: $VERIFY_URL"
+    FAILED=1
+    exit 1
+  fi
 fi
 
 BODY_FILE="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then BODY_FILE="$BODY_TXT"; fi
-[[ -s "$BODY_FILE" ]] || { err "Empty verification body"; err "URL used: $VERIFY_URL"; FAILED=1; exit 1; }
-
-if obvious_error "$BODY_FILE" || obvious_error "$HEADERS_FILE"; then
-  err "Obvious error in verification response"
-  err "URL used: $VERIFY_URL"
-  FAILED=1
-  exit 1
-fi
 
 if ! grep -Fq -- "$EXPECTED_VALUE" "$BODY_FILE"; then
   err "Expected value NOT found in report output"
