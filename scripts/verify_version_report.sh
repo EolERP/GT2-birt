@@ -236,6 +236,7 @@ append_params() {
   if [[ "$base" == *"?"* || "$base" == *"&"* || "$base" == *"__report="* ]]; then
     if [[ "$base" != *"__report="* ]]; then base+="&__report=${REPORT_PARAM}"; fi
     if [[ "$base" != *"__format="* ]]; then base+="&__format=${REPORT_FORMAT}"; fi
+    if [[ "$base" != *"__resourceFolder="* ]]; then base+="&__resourceFolder=${BIRT_WEBAPP}"; fi
   else
     base+="?__report=${REPORT_PARAM}&__format=${REPORT_FORMAT}"
   fi
