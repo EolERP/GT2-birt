@@ -302,7 +302,8 @@ try_endpoint_url() {
 }
 
 # Deterministic endpoint selection for BIRT 4.18+
-SELECTED_URL="${BASE_URL}/birt/run"
+# Use /preview to get direct rendered output (HTML/PDF) without viewer shell
+SELECTED_URL="${BASE_URL}/birt/preview"
 # Build URL with relative report path against report root
 SELECTED_URL=$(append_params "$SELECTED_URL")
 
