@@ -45,6 +45,16 @@ cleanup() {
   local code=$?
   if [[ $FAILED -ne 0 ]]; then
     warn "Collecting diagnostics before cleanup..."
+
+    # Save response artifacts for version report
+    mkdir -p out || true
+    if [[ -s "$BODY_HTML" ]]; then
+      cp -f "$BODY_HTML" out/version_response.html 2>/dev/null || true
+    fi
+    if [[ -s "$BODY_TXT" ]]; then
+      cp -f "$BODY_TXT" out/version_response.txt 2>/dev/null || true
+    fi
+
     if [[ -s "$HEADERS_FILE" ]]; then
       warn "Response headers (first 80 lines):"
       sed -n '1,80p' "$HEADERS_FILE" | sed 's/^/[headers] /' >&2
@@ -68,9 +78,32 @@ cleanup() {
       warn "Report folder discovery notes:"
       sed 's/^/[report-dir] /' "$REPORT_DIR_DISCOVERY_FILE" >&2
     fi
+
     if command -v docker >/dev/null 2>&1; then
-      warn "Docker logs (last 200 lines):"
-      docker logs --tail 200 "$CONTAINER_NAME" 2>&1 | sed 's/^/[docker] /' >&2 || true
+      # A) Confirm reports presence
+      warn "Listing /opt/tomcat/webapps/birt (first 200 entries):"
+      docker exec "$CONTAINER_NAME" sh -lc 'ls -la /opt/tomcat/webapps/birt | head -200' 2>&1 | sed 's/^/[container ls] /' >&2 || true
+      warn "Listing /opt/tomcat/webapps/birt/WEB-INF (first 200 entries):"
+      docker exec "$CONTAINER_NAME" sh -lc 'ls -la /opt/tomcat/webapps/birt/WEB-INF | head -200' 2>&1 | sed 's/^/[container ls] /' >&2 || true
+      warn "Finding report design files (maxdepth 2):"
+      docker exec "$CONTAINER_NAME" sh -lc 'find /opt/tomcat/webapps/birt -maxdepth 2 \( -name "version.rptdesign" -o -name "credix_repayment_schedule.rptdesign" \) -print' 2>&1 | sed 's/^/[container find] /' >&2 || true
+
+      # B) Viewer configuration
+      warn "Viewer config: BIRT_VIEWER_WORKING_FOLDER occurrences:"
+      docker exec "$CONTAINER_NAME" sh -lc 'grep -R "BIRT_VIEWER_WORKING_FOLDER" -n /opt/tomcat/webapps/birt/WEB-INF/web.xml /opt/tomcat/webapps/birt/WEB-INF/web-viewer.xml 2>/dev/null || true' 2>&1 | sed 's/^/[viewer] /' >&2 || true
+      warn "Viewer config: WORKING_FOLDER_ACCESS_ONLY occurrences:"
+      docker exec "$CONTAINER_NAME" sh -lc 'grep -R "WORKING_FOLDER_ACCESS_ONLY" -n /opt/tomcat/webapps/birt/WEB-INF/web.xml /opt/tomcat/webapps/birt/WEB-INF/web-viewer.xml 2>/dev/null || true' 2>&1 | sed 's/^/[viewer] /' >&2 || true
+      warn "Viewer config: REPORT references (first 200 lines):"
+      docker exec "$CONTAINER_NAME" sh -lc 'grep -R "REPORT" -n /opt/tomcat/webapps/birt/WEB-INF/web.xml /opt/tomcat/webapps/birt/WEB-INF/web-viewer.xml 2>/dev/null | head -200 || true' 2>&1 | sed 's/^/[viewer] /' >&2 || true
+
+      # C) Docker logs tail saved to out/
+      docker logs "$CONTAINER_NAME" | tail -400 > out/docker-logs-tail.txt 2>/dev/null || true
+      warn "Saved docker logs tail to out/docker-logs-tail.txt"
+
+      # D) Save Credix response preview if present
+      if [[ -f out/credix_body_preview.txt ]]; then
+        cp -f out/credix_body_preview.txt out/credix_response.txt 2>/dev/null || true
+      fi
     fi
   fi
   if command -v docker >/dev/null 2>&1; then
