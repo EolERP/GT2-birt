@@ -95,30 +95,30 @@ RUN perl -0777 -i -pe 's|(\<param-name\>\s*BIRT_VIEWER_WORKING_FOLDER\s*\<\/para
 RUN perl -0777 -i -pe 's|(\<param-name\>\s*BIRT_VIEWER_WORKING_FOLDER\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1/opt/tomcat/webapps/birt/\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true
 RUN perl -0777 -i -pe 's|(\<param-name\>\s*WORKING_FOLDER_ACCESS_ONLY\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1false\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml || true
 RUN perl -0777 -i -pe 's|(\<param-name\>\s*WORKING_FOLDER_ACCESS_ONLY\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1false\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true
-RUN awk 'BEGIN{print=1} {print} /<\/web-app>/{exit}' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml > /tmp/web.xml && \
-    {
-      echo "  <context-param>";
-      echo "    <param-name>BIRT_VIEWER_WORKING_FOLDER</param-name>";
-      echo "    <param-value>/opt/tomcat/webapps/birt/</param-value>";
-      echo "  </context-param>";
-      echo "  <context-param>";
-      echo "    <param-name>WORKING_FOLDER_ACCESS_ONLY</param-name>";
-      echo "    <param-value>false</param-value>";
-      echo "  </context-param>";
-      echo "</web-app>";
-    } >> /tmp/web.xml && mv /tmp/web.xml ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml
-RUN awk 'BEGIN{print=1} {print} /<\/web-app>/{exit}' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml > /tmp/web-viewer.xml && \
-    {
-      echo "  <context-param>";
-      echo "    <param-name>BIRT_VIEWER_WORKING_FOLDER</param-name>";
-      echo "    <param-value>/opt/tomcat/webapps/birt/</param-value>";
-      echo "  </context-param>";
-      echo "  <context-param>";
-      echo "    <param-name>WORKING_FOLDER_ACCESS_ONLY</param-name>";
-      echo "    <param-value>false</param-value>";
-      echo "  </context-param>";
-      echo "</web-app>";
-    } >> /tmp/web-viewer.xml && mv /tmp/web-viewer.xml ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml
+RUN /bin/sh -lc "awk 'BEGIN{print=1} {print} /<\\/web-app>/{exit}' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml > /tmp/web.xml && \
+  printf '%s\n' \
+    '  <context-param>' \
+    '    <param-name>BIRT_VIEWER_WORKING_FOLDER</param-name>' \
+    '    <param-value>/opt/tomcat/webapps/birt/</param-value>' \
+    '  </context-param>' \
+    '  <context-param>' \
+    '    <param-name>WORKING_FOLDER_ACCESS_ONLY</param-name>' \
+    '    <param-value>false</param-value>' \
+    '  </context-param>' \
+    '</web-app>' >> /tmp/web.xml && \
+  mv /tmp/web.xml ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml"
+RUN /bin/sh -lc "awk 'BEGIN{print=1} {print} /<\\/web-app>/{exit}' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml > /tmp/web-viewer.xml && \
+  printf '%s\n' \
+    '  <context-param>' \
+    '    <param-name>BIRT_VIEWER_WORKING_FOLDER</param-name>' \
+    '    <param-value>/opt/tomcat/webapps/birt/</param-value>' \
+    '  </context-param>' \
+    '  <context-param>' \
+    '    <param-name>WORKING_FOLDER_ACCESS_ONLY</param-name>' \
+    '    <param-value>false</param-value>' \
+    '  </context-param>' \
+    '</web-app>' >> /tmp/web-viewer.xml && \
+  mv /tmp/web-viewer.xml ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml"
 
 #Start
 CMD ["/opt/tomcat/bin/catalina.sh", "run"]
