@@ -62,7 +62,9 @@ RUN set -euo pipefail; \
 
     rm -f ${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}*; \
     rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime; \
-    # Keep default BIRT viewer config; reports are copied into webapp root for 4.18 compatibility
+    # Set working folder to 'documents' to match where reports are copied
+    xmlstarlet ed -L -u "//context-param[param-name='BIRT_VIEWER_WORKING_FOLDER']/param-value" -v "documents" ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml; \
+    xmlstarlet ed -L -u "//context-param[param-name='BIRT_VIEWER_WORKING_FOLDER']/param-value" -v "documents" ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml
 
 #RUN mkdir /usr/share/tomcat && mkdir /etc/tomcat
 RUN cd ${TOMCAT_HOME} && ln -s /etc/tomcat conf
