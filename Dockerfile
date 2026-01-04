@@ -59,6 +59,9 @@ RUN set -euo pipefail; \
       else \
         wget -O ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/$(basename ${ODA_XML_JAR_URL}) "${ODA_XML_JAR_URL}"; \
       fi; \
+    # Set viewer working folder to absolute report directory for deterministic resolution
+    xmlstarlet ed -L -u "/web-app/context-param[param-name='BIRT_VIEWER_WORKING_FOLDER']/param-value" -v "${TOMCAT_HOME}/webapps/birt/report" ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml; \
+    xmlstarlet ed -L -u "/context-param[param-name='BIRT_VIEWER_WORKING_FOLDER']/param-value" -v "${TOMCAT_HOME}/webapps/birt/report" ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true; \
 
     rm -f ${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}*; \
     rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime;
