@@ -241,7 +241,7 @@ try_endpoint_url() {
 
 # 1) HTTP discovery: fetch /birt and parse links
 http_discover() {
-  local bases=("${BASE_URL}/birt" "${BASE_URL}/birt/" "${BASE_URL}/birt/run" "${BASE_URL}/birt/frameset")
+  local bases=("${BASE_URL}/birt" "${BASE_URL}/birt/" "${BASE_URL}/birt/run" "${BASE_URL}/birt/frameset" "${BASE_URL}/birt/servlet/run" "${BASE_URL}/birt/servlet/frameset")
   local candidates=()
   for b in "${bases[@]}"; do
     log "HTTP discovery: probing $b"
@@ -335,7 +335,7 @@ else
     log "Container discovery succeeded: $SELECTED_URL"
   else
     warn "Discovery failed; falling back to standard candidates"
-    fallback=("/birt/run" "/birt/frameset" "/viewer/run" "/viewer/frameset" "/birt-viewer/run" "/birt-viewer/frameset")
+    fallback=("/birt/run" "/birt/frameset" "/birt/servlet/run" "/birt/servlet/frameset" "/viewer/run" "/viewer/frameset" "/birt-viewer/run" "/birt-viewer/frameset")
     for p in "${fallback[@]}"; do
       if SELECTED=$(try_endpoint_url "$p"); then SELECTED_URL="$SELECTED"; break; fi
     done
