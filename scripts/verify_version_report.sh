@@ -287,9 +287,8 @@ fetch_url() {
 
 append_params() {
   local base="$1"
-  # __report for /run and report for /preview
+  # Use standard __report and __format for all endpoints, including /preview
   local repkey="__report"; local fmtkey="__format"
-  if [[ "$base" == *"/preview"* ]]; then repkey="report"; fmtkey="format"; fi
   if [[ "$base" == *"?"* || "$base" == *"&"* || "$base" == *"${repkey}="* ]]; then
     if [[ "$base" != *"${repkey}="* ]]; then base+="&${repkey}=${REPORT_PARAM}"; fi
     if [[ "$base" != *"${fmtkey}="* ]]; then base+="&${fmtkey}=${REPORT_FORMAT}"; fi
