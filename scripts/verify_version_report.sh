@@ -399,16 +399,18 @@ CREDIX_REPORT_NAME=${CREDIX_REPORT_NAME:-credix_repayment_schedule.rptdesign}
 CREDIX_XML_FILE_URL=${CREDIX_XML_FILE_URL:-https://gist.githubusercontent.com/dpodhola-eolerp/16266ad29c3bc8309c6601e2c15ac3d8/raw/4612297f7613d063ce2d0cf64e2f554ef6b03d7b/data.xml}
 CREDIX_EXPECT_1=${CREDIX_EXPECT_1:-E2E_TEST_CredixBankAccount_123}
 CREDIX_EXPECT_2=${CREDIX_EXPECT_2:-E2E_TEST_SCONT_Value_123}
-CREDIX_ENDPOINT_PATH=${CREDIX_ENDPOINT_PATH:-/birt/run}
+CREDIX_ENDPOINT_PATH=${CREDIX_ENDPOINT_PATH:-/birt/preview}
 CREDIX_FORMAT=${CREDIX_FORMAT:-pdf}
 
 log "Credix config: REPORT=$CREDIX_REPORT_NAME XML=$CREDIX_XML_FILE_URL EXPECT_1=$CREDIX_EXPECT_1 EXPECT_2=$CREDIX_EXPECT_2 ENDPOINT=$CREDIX_ENDPOINT_PATH FORMAT=$CREDIX_FORMAT"
 
-# 1) Verify report exists in container
-if ! docker exec "$CONTAINER_NAME" test -f "/opt/tomcat/webapps/birt/$CREDIX_REPORT_NAME"; then
+# 1) Verify report exists in container (support new documents/ baseline)
+if ! docker exec "$CONTAINER_NAME" sh -lc "test -f '/opt/tomcat/webapps/birt/$CREDIX_REPORT_NAME' || test -f '/opt/tomcat/webapps/birt/report/$CREDIX_REPORT_NAME' || test -f '/opt/tomcat/webapps/birt/documents/$CREDIX_REPORT_NAME'"; then
   warn "Listing /opt/tomcat/webapps/birt contents:"
   docker exec "$CONTAINER_NAME" ls -la /opt/tomcat/webapps/birt || true
-  err "Credix report not found in container: /opt/tomcat/webapps/birt/$CREDIX_REPORT_NAME"
+  warn "Listing /opt/tomcat/webapps/birt/report and /documents if present:"
+  docker exec "$CONTAINER_NAME" sh -lc "ls -la /opt/tomcat/webapps/birt/report 2>/dev/null || true; ls -la /opt/tomcat/webapps/birt/documents 2>/dev/null || true" || true
+  err "Credix report not found in expected locations: $CREDIX_REPORT_NAME"
   FAILED=1
   exit 1
 fi
@@ -444,7 +446,7 @@ PY
 # 2) Build URL
 BASE_URL="http://localhost:${HOST_PORT:-8080}"
 ENC_XML="$(credix_urlencode "$CREDIX_XML_FILE_URL")"
-CREDIX_URL="${BASE_URL}${CREDIX_ENDPOINT_PATH}?xml_file=${ENC_XML}&__format=${CREDIX_FORMAT}&__report=${CREDIX_REPORT_NAME}"
+CREDIX_URL="${BASE_URL}${CREDIX_ENDPOINT_PATH}?__report=${CREDIX_REPORT_NAME}&__format=${CREDIX_FORMAT}&xml_file=${ENC_XML}"
 log "Credix request URL: $CREDIX_URL"
 
 # 3) Download output
