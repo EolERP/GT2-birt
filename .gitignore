@@ -1,0 +1,5 @@
+# Ignore local outputs and downloaded artifacts
+out/
+*.zip
+**/out/
+**/*.zip

@@ -1,5 +1,0 @@
-2026-01-04T08:16:16.5020000Z Job is about to start running on the hosted runner: GitHub Actions 1000003910
-2026-01-04T08:16:16.5020000Z Job is waiting for a hosted runner to come online.
-2026-01-04T08:16:16.5020000Z Requested labels: ubuntu-latest
-2026-01-04T08:16:16.5020000Z Job defined at: EolERP/GT2-birt/.github/workflows/birt-e2e.yml@refs/pull/15/merge
-2026-01-04T08:16:16.5020000Z Waiting for a runner to pick up this job...

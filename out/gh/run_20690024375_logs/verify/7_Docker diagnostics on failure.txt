@@ -1,6 +1,0 @@
-﻿2026-01-04T08:17:16.5721437Z ##[group]Run set -euo pipefail
-2026-01-04T08:17:16.5721734Z [36;1mset -euo pipefail[0m
-2026-01-04T08:17:16.5721982Z [36;1mdocker ps -a > docker-ps.txt || true[0m
-2026-01-04T08:17:16.5722777Z [36;1mdocker logs ${CONTAINER_NAME:-birt-e2e-gha} > docker-logs.txt 2>&1 || true[0m
-2026-01-04T08:17:16.5756247Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
-2026-01-04T08:17:16.5756548Z ##[endgroup]
