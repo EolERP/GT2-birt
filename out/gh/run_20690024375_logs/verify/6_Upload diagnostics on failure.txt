@@ -1,0 +1,24 @@
+﻿2026-01-04T08:17:16.0511635Z ##[group]Run actions/upload-artifact@v4
+2026-01-04T08:17:16.0511914Z with:
+2026-01-04T08:17:16.0512076Z   name: e2e-diagnostics
+2026-01-04T08:17:16.0512530Z   path: e2e.log
+out/**
+
+2026-01-04T08:17:16.0512776Z   if-no-files-found: warn
+2026-01-04T08:17:16.0512998Z   compression-level: 6
+2026-01-04T08:17:16.0513190Z   overwrite: false
+2026-01-04T08:17:16.0513372Z   include-hidden-files: false
+2026-01-04T08:17:16.0513586Z ##[endgroup]
+2026-01-04T08:17:16.2735906Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-01-04T08:17:16.2739954Z The least common ancestor is /home/runner/work/GT2-birt/GT2-birt. This will be the root directory of the artifact
+2026-01-04T08:17:16.2740921Z With the provided path, there will be 4 files uploaded
+2026-01-04T08:17:16.2746625Z Artifact name is valid!
+2026-01-04T08:17:16.2747883Z Root directory input is valid!
+2026-01-04T08:17:16.3716550Z Beginning upload of artifact content to blob storage
+2026-01-04T08:17:16.4499016Z Uploaded bytes 73963
+2026-01-04T08:17:16.4660584Z Finished uploading artifact content to blob storage!
+2026-01-04T08:17:16.4663414Z SHA256 digest of uploaded artifact zip is 0dd879cbb3e92d7746fa015fdf5cfce84679bab9018e57454f61561cc591d0a5
+2026-01-04T08:17:16.4666354Z Finalizing artifact upload
+2026-01-04T08:17:16.5610452Z Artifact e2e-diagnostics.zip successfully finalized. Artifact ID 5016792083
+2026-01-04T08:17:16.5611839Z Artifact e2e-diagnostics has been successfully uploaded! Final size is 73963 bytes. Artifact ID is 5016792083
+2026-01-04T08:17:16.5619231Z Artifact download URL: https://github.com/EolERP/GT2-birt/actions/runs/20690024375/artifacts/5016792083

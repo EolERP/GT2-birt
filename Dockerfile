@@ -74,10 +74,12 @@ VOLUME ${TOMCAT_HOME}/webapps/birt
 ADD mundial.ttf /usr/share/fonts/truetype
 ADD arial.ttf /usr/share/fonts/truetype
 
-ADD version.rptdesign ${TOMCAT_HOME}/webapps/birt
-ADD version.txt ${TOMCAT_HOME}/webapps/birt
-ADD index.html ${TOMCAT_HOME}/webapps/birt
-ADD credix_repayment_schedule.rptdesign ${TOMCAT_HOME}/webapps/birt
+# Ensure report root exists for BIRT 4.18 viewer
+RUN mkdir -p ${TOMCAT_HOME}/webapps/birt/report
+ADD version.rptdesign ${TOMCAT_HOME}/webapps/birt/report
+ADD version.txt ${TOMCAT_HOME}/webapps/birt/report
+ADD index.html ${TOMCAT_HOME}/webapps/birt/report
+ADD credix_repayment_schedule.rptdesign ${TOMCAT_HOME}/webapps/birt/report
 
 # remove default pages with dangerous information
 RUN rm -f -r ${TOMCAT_HOME}/webapps/ROOT/index.jsp

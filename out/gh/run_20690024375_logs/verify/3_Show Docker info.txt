@@ -1,0 +1,93 @@
+﻿2026-01-04T08:16:19.8806514Z ##[group]Run docker version
+2026-01-04T08:16:19.8807722Z [36;1mdocker version[0m
+2026-01-04T08:16:19.8808681Z [36;1mdocker info[0m
+2026-01-04T08:16:19.8847760Z shell: /usr/bin/bash -e {0}
+2026-01-04T08:16:19.8848962Z ##[endgroup]
+2026-01-04T08:16:20.0143584Z Client: Docker Engine - Community
+2026-01-04T08:16:20.0145785Z  Version:           28.0.4
+2026-01-04T08:16:20.0147139Z  API version:       1.48
+2026-01-04T08:16:20.0148241Z  Go version:        go1.23.7
+2026-01-04T08:16:20.0149370Z  Git commit:        b8034c0
+2026-01-04T08:16:20.0150563Z  Built:             Tue Mar 25 15:07:16 2025
+2026-01-04T08:16:20.0151872Z  OS/Arch:           linux/amd64
+2026-01-04T08:16:20.0153286Z  Context:           default
+2026-01-04T08:16:20.0153988Z 
+2026-01-04T08:16:20.0154435Z Server: Docker Engine - Community
+2026-01-04T08:16:20.0155607Z  Engine:
+2026-01-04T08:16:20.0156442Z   Version:          28.0.4
+2026-01-04T08:16:20.0157525Z   API version:      1.48 (minimum version 1.24)
+2026-01-04T08:16:20.0158829Z   Go version:       go1.23.7
+2026-01-04T08:16:20.0159997Z   Git commit:       6430e49
+2026-01-04T08:16:20.0160980Z   Built:            Tue Mar 25 15:07:16 2025
+2026-01-04T08:16:20.0162088Z   OS/Arch:          linux/amd64
+2026-01-04T08:16:20.0163350Z   Experimental:     false
+2026-01-04T08:16:20.0164242Z  containerd:
+2026-01-04T08:16:20.0164993Z   Version:          v2.2.0
+2026-01-04T08:16:20.0166117Z   GitCommit:        1c4457e00facac03ce1d75f7b6777a7a851e5c41
+2026-01-04T08:16:20.0167401Z  runc:
+2026-01-04T08:16:20.0168095Z   Version:          1.3.4
+2026-01-04T08:16:20.0169021Z   GitCommit:        v1.3.4-0-gd6d73eb8
+2026-01-04T08:16:20.0170081Z  docker-init:
+2026-01-04T08:16:20.0170828Z   Version:          0.19.0
+2026-01-04T08:16:20.0171734Z   GitCommit:        de40ad0
+2026-01-04T08:16:20.2772994Z Client: Docker Engine - Community
+2026-01-04T08:16:20.2775126Z  Version:    28.0.4
+2026-01-04T08:16:20.2776785Z  Context:    default
+2026-01-04T08:16:20.2778486Z  Debug Mode: false
+2026-01-04T08:16:20.2780128Z  Plugins:
+2026-01-04T08:16:20.2781835Z   buildx: Docker Buildx (Docker Inc.)
+2026-01-04T08:16:20.2784310Z     Version:  v0.30.1
+2026-01-04T08:16:20.2786397Z     Path:     /usr/libexec/docker/cli-plugins/docker-buildx
+2026-01-04T08:16:20.2788863Z   compose: Docker Compose (Docker Inc.)
+2026-01-04T08:16:20.2791071Z     Version:  v2.38.2
+2026-01-04T08:16:20.2792828Z     Path:     /usr/libexec/docker/cli-plugins/docker-compose
+2026-01-04T08:16:20.2793975Z 
+2026-01-04T08:16:20.2794378Z Server:
+2026-01-04T08:16:20.2795090Z  Containers: 0
+2026-01-04T08:16:20.2795808Z   Running: 0
+2026-01-04T08:16:20.2796582Z   Paused: 0
+2026-01-04T08:16:20.2798375Z   Stopped: 0
+2026-01-04T08:16:20.2799479Z  Images: 0
+2026-01-04T08:16:20.2800244Z  Server Version: 28.0.4
+2026-01-04T08:16:20.2801122Z  Storage Driver: overlay2
+2026-01-04T08:16:20.2801984Z   Backing Filesystem: extfs
+2026-01-04T08:16:20.2803353Z   Supports d_type: true
+2026-01-04T08:16:20.2804264Z   Using metacopy: false
+2026-01-04T08:16:20.2805086Z   Native Overlay Diff: false
+2026-01-04T08:16:20.2805957Z   userxattr: false
+2026-01-04T08:16:20.2806736Z  Logging Driver: json-file
+2026-01-04T08:16:20.2807641Z  Cgroup Driver: systemd
+2026-01-04T08:16:20.2808534Z  Cgroup Version: 2
+2026-01-04T08:16:20.2809382Z  Plugins:
+2026-01-04T08:16:20.2810159Z   Volume: local
+2026-01-04T08:16:20.2811142Z   Network: bridge host ipvlan macvlan null overlay
+2026-01-04T08:16:20.2812910Z   Log: awslogs fluentd gcplogs gelf journald json-file local splunk syslog
+2026-01-04T08:16:20.2814363Z  Swarm: inactive
+2026-01-04T08:16:20.2815277Z  Runtimes: io.containerd.runc.v2 runc
+2026-01-04T08:16:20.2816693Z  Default Runtime: runc
+2026-01-04T08:16:20.2817635Z  Init Binary: docker-init
+2026-01-04T08:16:20.2818855Z  containerd version: 1c4457e00facac03ce1d75f7b6777a7a851e5c41
+2026-01-04T08:16:20.2820220Z  runc version: v1.3.4-0-gd6d73eb8
+2026-01-04T08:16:20.2821225Z  init version: de40ad0
+2026-01-04T08:16:20.2822126Z  Security Options:
+2026-01-04T08:16:20.2823220Z   apparmor
+2026-01-04T08:16:20.2823997Z   seccomp
+2026-01-04T08:16:20.2825042Z    Profile: builtin
+2026-01-04T08:16:20.2825887Z   cgroupns
+2026-01-04T08:16:20.2826692Z  Kernel Version: 6.11.0-1018-azure
+2026-01-04T08:16:20.2827753Z  Operating System: Ubuntu 24.04.3 LTS
+2026-01-04T08:16:20.2828806Z  OSType: linux
+2026-01-04T08:16:20.2829638Z  Architecture: x86_64
+2026-01-04T08:16:20.2830505Z  CPUs: 4
+2026-01-04T08:16:20.2831273Z  Total Memory: 15.62GiB
+2026-01-04T08:16:20.2832180Z  Name: runnervmh13bl
+2026-01-04T08:16:20.2833365Z  ID: 0a695d56-123a-42a8-a772-617b83954cb8
+2026-01-04T08:16:20.2834459Z  Docker Root Dir: /var/lib/docker
+2026-01-04T08:16:20.2835448Z  Debug Mode: false
+2026-01-04T08:16:20.2836294Z  Username: githubactions
+2026-01-04T08:16:20.2837190Z  Experimental: false
+2026-01-04T08:16:20.2838050Z  Insecure Registries:
+2026-01-04T08:16:20.2842110Z   ::1/128
+2026-01-04T08:16:20.2843193Z   127.0.0.0/8
+2026-01-04T08:16:20.2844034Z  Live Restore Enabled: false
+2026-01-04T08:16:20.2844653Z 
