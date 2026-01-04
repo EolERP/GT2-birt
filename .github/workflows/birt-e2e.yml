@@ -43,6 +43,18 @@ jobs:
           chmod +x scripts/verify_version_report.sh
           ./scripts/verify_version_report.sh 2>&1 | tee e2e.log
 
+      - name: Print key diagnostics to log (failure)
+        if: failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "--- viewer-effective-params.txt (head 200) ---"
+          if [ -f out/viewer-effective-params.txt ]; then sed -n '1,200p' out/viewer-effective-params.txt; else echo "(missing)"; fi
+          echo "--- viewer-config-head.txt (head 120) ---"
+          if [ -f out/viewer-config-head.txt ]; then sed -n '1,120p' out/viewer-config-head.txt; else echo "(missing)"; fi
+          echo "--- e2e.log (tail 200) ---"
+          if [ -f e2e.log ]; then tail -200 e2e.log; else echo "(missing)"; fi
+
       - name: Upload diagnostics on failure
         if: failure()
         uses: actions/upload-artifact@v4

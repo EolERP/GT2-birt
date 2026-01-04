@@ -134,7 +134,16 @@ cleanup() {
         done;
         cat "$OUT"
       ' > out/viewer-effective-params.txt 2>&1 || true
-      warn "Effective params:"; sed 's/^/[viewer-param] /' out/viewer-effective-params.txt >&2 || true
+
+      # Echo key evidence directly into job log (source of truth)
+      if [[ -f out/viewer-effective-params.txt ]]; then
+        warn "=== Effective viewer params (echo) ==="
+        sed -n '1,200p' out/viewer-effective-params.txt | sed 's/^/[viewer-param] /' >&2 || true
+      fi
+      if [[ -f out/viewer-config-head.txt ]]; then
+        warn "=== Context-param blocks from viewer-config-head (echo) ==="
+        awk '/<context-param>/{p=1} p{print} /<\/context-param>/{p=0}' out/viewer-config-head.txt | sed -n '1,400p' | sed 's/^/[viewer-conf] /' >&2 || true
+      fi
 
       # C) Docker logs tail saved to out/
       docker logs "$CONTAINER_NAME" | tail -400 > out/docker-logs-tail.txt 2>/dev/null || true
@@ -144,6 +153,12 @@ cleanup() {
       if [[ -f out/credix_body_preview.txt ]]; then
         cp -f out/credix_body_preview.txt out/credix_response.txt 2>/dev/null || true
       fi
+    fi
+
+    # Also echo last verification URL and response head directly
+    if [[ -n "${VERIFY_URL:-}" ]]; then warn "Last verification URL: ${VERIFY_URL}"; fi
+    if [[ -s "$BODY_TXT" ]]; then
+      warn "Response text (first 200 lines):"; sed -n '1,200p' "$BODY_TXT" | sed 's/^/[text-ln] /' >&2 || true
     fi
   fi
   if command -v docker >/dev/null 2>&1; then
