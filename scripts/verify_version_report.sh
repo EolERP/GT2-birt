@@ -213,7 +213,7 @@ discover_report_dir() {
   fi
 
   # Heuristic fallbacks commonly used by BIRT viewer
-  for cand in "$BIRT_WEBAPP/documents"; do
+  for cand in "$BIRT_WEBAPP/report"; do
     notes+="Using standard report folder: $cand\n"
     docker exec "$CONTAINER_NAME" sh -lc "mkdir -p '$cand'" >/dev/null 2>&1 || true
     echo "$cand"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
@@ -238,7 +238,7 @@ log "Using discovered report dir: $REPORT_TARGET_DIR"
 REPORT_PARAM="$REPORT_FILE"
 case "$REPORT_TARGET_DIR" in
   "$BIRT_WEBAPP") REPORT_PARAM="$REPORT_FILE";;
-  "$BIRT_WEBAPP/documents") REPORT_PARAM="documents/$REPORT_FILE";;
+  "$BIRT_WEBAPP/report") REPORT_PARAM="report/$REPORT_FILE";;
   "$BIRT_WEBAPP"/*) REPORT_PARAM="${REPORT_TARGET_DIR#${BIRT_WEBAPP}/}/$REPORT_FILE";;
   *) REPORT_PARAM="$REPORT_FILE";;
   esac
