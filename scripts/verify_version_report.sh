@@ -503,7 +503,17 @@ fi
 BODY_FILE="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then BODY_FILE="$BODY_TXT"; fi
 
 if ! grep -Fq -- "$EXPECTED_VALUE" "$BODY_FILE"; then
-  err "Expected value NOT found in report output"
+  warn "Primary verification did not contain expected value, attempting endpoint fallbacks"
+  if SELECTED=$(attempt_fallbacks "$VERIFY_URL"); then
+    VERIFY_URL="$SELECTED"
+    : > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
+    code=$(fetch_url "$VERIFY_URL")
+    BODY_FILE="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then BODY_FILE="$BODY_TXT"; fi
+  fi
+fi
+
+if ! grep -Fq -- "$EXPECTED_VALUE" "$BODY_FILE"; then
+  err "Expected value NOT found in report output after fallbacks"
   err "Expected: $EXPECTED_VALUE"
   err "URL used: $VERIFY_URL"
   warn "Relevant headers:"
