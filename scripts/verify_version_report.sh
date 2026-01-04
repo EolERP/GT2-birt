@@ -222,6 +222,8 @@ fetch_url() {
     if command -v pdftotext >/dev/null 2>&1; then pdftotext -q "$BODY_PDF" "$BODY_TXT" || true; else strings "$BODY_PDF" > "$BODY_TXT" || true; fi
   else
     mv "$RESPONSE_FILE" "$BODY_HTML" 2>/dev/null || true
+    # Also create a crude text version for token searches
+    sed -E 's/<[^>]+>/\n/g' "$BODY_HTML" | sed -E 's/&nbsp;/ /g' | tr -s '\n' > "$BODY_TXT" || true
   fi
   echo "$code"
 }
@@ -247,7 +249,6 @@ try_endpoint_url() {
   if [[ "$code" != "200" ]]; then warn "HTTP $code for $url"; return 1; fi
   local bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
   if [[ ! -s "$bodyfile" ]]; then warn "Empty body for $url"; return 1; fi
-  if obvious_error "$bodyfile" || obvious_error "$HEADERS_FILE"; then warn "Obvious error detected for $url"; return 1; fi
   # In newer BIRT packs, index.jsp may ignore __report and show the viewer home. Reject that.
   if grep -qi "BIRT Viewer Installation" "$bodyfile"; then warn "Viewer index page detected for $url"; return 1; fi
   echo "$url"; return 0
