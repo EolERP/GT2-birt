@@ -86,8 +86,13 @@ cleanup() {
       docker exec "$CONTAINER_NAME" sh -lc 'ls -la /opt/tomcat/webapps/birt | head -200' 2>&1 | sed 's/^/[container ls] /' >&2 || true
       warn "Listing /opt/tomcat/webapps/birt/WEB-INF (first 200 entries):"
       docker exec "$CONTAINER_NAME" sh -lc 'ls -la /opt/tomcat/webapps/birt/WEB-INF | head -200' 2>&1 | sed 's/^/[container ls] /' >&2 || true
+      warn "Listing /opt/tomcat/webapps/birt/documents (if exists):"
+      docker exec "$CONTAINER_NAME" sh -lc 'ls -la /opt/tomcat/webapps/birt/documents 2>/dev/null || echo "(no documents dir)"' 2>&1 | sed 's/^/[container ls] /' >&2 || true
       warn "Finding report design files (maxdepth 2):"
       docker exec "$CONTAINER_NAME" sh -lc 'find /opt/tomcat/webapps/birt -maxdepth 2 \( -name "version.rptdesign" -o -name "credix_repayment_schedule.rptdesign" \) -print' 2>&1 | sed 's/^/[container find] /' >&2 || true
+      # STOP condition debug: inspect version.txt under canonical working folder
+      warn "Inspecting canonical version.txt under /opt/tomcat/webapps/birt/documents (if present)" 
+      docker exec "$CONTAINER_NAME" sh -lc 'if [ -f /opt/tomcat/webapps/birt/documents/version.txt ]; then echo "---- version.txt ----"; cat /opt/tomcat/webapps/birt/documents/version.txt; echo "----------------------"; else echo "version.txt not found in documents"; fi' 2>&1 | sed 's/^/[container cat] /' >&2 || true
 
       # B) Viewer configuration: save head snippets and effective params
       warn "Saving viewer config head to out/viewer-config-head.txt"
