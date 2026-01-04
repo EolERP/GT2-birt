@@ -34,6 +34,7 @@ DISCOVERY_HTML="$TMP_DIR/birt_index.html"
 SERVLET_MAP_FILE="$TMP_DIR/servlet_mappings.txt"
 JSP_LIST_FILE="$TMP_DIR/jsp_list.txt"
 REPORT_DIR_DISCOVERY_FILE="$TMP_DIR/report_dir_discovery.txt"
+WORKING_FOLDER=""
 
 FAILED=1
 
@@ -209,6 +210,7 @@ discover_report_dir() {
     # Make absolute if relative
     if [[ "$wf" != /* ]]; then wf="$BIRT_WEBAPP/$wf"; fi
     docker exec "$CONTAINER_NAME" sh -lc "mkdir -p '$wf'" >/dev/null 2>&1 || true
+    WORKING_FOLDER="$wf"
     echo "$wf"; echo -e "$notes" > "$REPORT_DIR_DISCOVERY_FILE"; return 0
   fi
 
@@ -243,6 +245,11 @@ case "$REPORT_TARGET_DIR" in
   esac
 
 log "Resolved __report param: $REPORT_PARAM"
+# If working folder is set and we use /preview, change param keys
+if [[ -n "$WORKING_FOLDER" ]]; then
+  warn "Detected working folder: $WORKING_FOLDER"
+fi
+
 
 # Copy report assets if missing
 if ! docker exec "$CONTAINER_NAME" test -f "$REPORT_TARGET_DIR/$REPORT_FILE"; then
