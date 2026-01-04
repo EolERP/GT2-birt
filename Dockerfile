@@ -62,6 +62,32 @@ RUN set -euo pipefail; \
     # Set viewer working folder to absolute documents directory for deterministic resolution on 4.18+
     xmlstarlet ed -L -u "//context-param[param-name='BIRT_VIEWER_WORKING_FOLDER']/param-value" -v "${TOMCAT_HOME}/webapps/birt/documents" ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml; \
     xmlstarlet ed -L -u "//context-param[param-name='BIRT_VIEWER_WORKING_FOLDER']/param-value" -v "${TOMCAT_HOME}/webapps/birt/documents" ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true; \
+    # Enforce viewer working folder and access-only flags deterministically (insert if missing, update if present) \
+    for f in "${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml" "${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml"; do \
+      [ -f "$f" ] || continue; \
+      echo "[birt-config] Processing $f"; \
+      # BIRT_VIEWER_WORKING_FOLDER -> ${TOMCAT_HOME}/webapps/birt/documents \
+      if xmlstarlet sel -t -v "count(//*[local-name()='context-param'][*[local-name()='param-name']='BIRT_VIEWER_WORKING_FOLDER'])" "$f" | grep -q '^[1-9]'; then \
+        xmlstarlet ed -L -u "//*[local-name()='context-param'][*[local-name()='param-name']='BIRT_VIEWER_WORKING_FOLDER']/*[local-name()='param-value']" -v "${TOMCAT_HOME}/webapps/birt/documents" "$f"; \
+      else \
+        xmlstarlet ed -L \
+          -s "/*[local-name()='web-app']" -t elem -n "context-param" -v "" \
+          -s "/*[local-name()='web-app']/*[local-name()='context-param'][last()]" -t elem -n "param-name" -v "BIRT_VIEWER_WORKING_FOLDER" \
+          -s "/*[local-name()='web-app']/*[local-name()='context-param'][last()]" -t elem -n "param-value" -v "${TOMCAT_HOME}/webapps/birt/documents" \
+          "$f"; \
+      fi; \
+      # WORKING_FOLDER_ACCESS_ONLY -> false (unify across configs) \
+      if xmlstarlet sel -t -v "count(//*[local-name()='context-param'][*[local-name()='param-name']='WORKING_FOLDER_ACCESS_ONLY'])" "$f" | grep -q '^[1-9]'; then \
+        xmlstarlet ed -L -u "//*[local-name()='context-param'][*[local-name()='param-name']='WORKING_FOLDER_ACCESS_ONLY']/*[local-name()='param-value']" -v "false" "$f"; \
+      else \
+        xmlstarlet ed -L \
+          -s "/*[local-name()='web-app']" -t elem -n "context-param" -v "" \
+          -s "/*[local-name()='web-app']/*[local-name()='context-param'][last()]" -t elem -n "param-name" -v "WORKING_FOLDER_ACCESS_ONLY" \
+          -s "/*[local-name()='web-app']/*[local-name()='context-param'][last()]" -t elem -n "param-value" -v "false" \
+          "$f"; \
+      fi; \
+    done; \
+
 
     rm -f ${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}*; \
     rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime;
