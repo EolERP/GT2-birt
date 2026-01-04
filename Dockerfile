@@ -30,7 +30,8 @@ RUN wget "https://archive.apache.org/dist/tomcat/tomcat-${TOMCAT_MAJOR}/v${TOMCA
 RUN tar xzvf ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz -C ${TOMCAT_HOME} --strip-components=1
 RUN rm ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz
 
-RUN grep -rl --include \*.xml allow . | xargs sed -i 's/allow/deny/g'
+# NOTE: Removed legacy global XML 'allow'->'deny' replacement as it breaks BIRT 4.18 viewer config
+# RUN grep -rl --include \*.xml allow . | xargs sed -i 's/allow/deny/g'
 
 # Determine BIRT base URL based on channel
 SHELL ["/bin/bash", "-c"]
