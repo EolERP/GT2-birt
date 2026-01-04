@@ -358,6 +358,28 @@ else
       if SELECTED=$(try_endpoint_url "$p"); then SELECTED_URL="$SELECTED"; break; fi
     done
     [[ -n "$SELECTED_URL" ]] || { err "Failed to find a working report endpoint"; exit 1; }
+# As a last resort, try using absolute report path
+if [[ -z "$SELECTED_URL" ]]; then
+  ABS_REPORT_PATH="$REPORT_TARGET_DIR/$REPORT_FILE"
+  for p in "/birt/run" "/birt/preview"; do
+    url="${BASE_URL}${p}"
+    if [[ "$url" == *"?"* || "$url" == *"&"* ]]; then
+      url+="&__report=${ABS_REPORT_PATH}&__format=${REPORT_FORMAT}"
+    else
+      url+="?__report=${ABS_REPORT_PATH}&__format=${REPORT_FORMAT}"
+    fi
+    log "Trying absolute-path endpoint: $url"
+    code=$(fetch_url "$url")
+    if [[ "$code" == "200" ]]; then
+      bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
+      if [[ -s "$bodyfile" ]] && ! obvious_error "$bodyfile" && ! grep -qi "BIRT Viewer Installation" "$bodyfile"; then
+        SELECTED_URL="$url"; break
+      fi
+    fi
+  done
+fi
+[[ -n "$SELECTED_URL" ]] || { err "Failed to find a working report endpoint"; exit 1; }
+
   fi
 fi
 
