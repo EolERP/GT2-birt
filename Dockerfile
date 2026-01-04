@@ -61,7 +61,7 @@ RUN set -euo pipefail; \
       fi; \
 
     rm -f ${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}*; \
-    rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime; \
+    rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime;
     # Keep default viewer config; resolve __report relative to webapp root
 
 #RUN mkdir /usr/share/tomcat && mkdir /etc/tomcat
