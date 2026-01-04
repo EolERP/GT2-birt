@@ -255,7 +255,7 @@ try_endpoint_url() {
 
 # 1) HTTP discovery: fetch /birt and parse links
 http_discover() {
-  local bases=("${BASE_URL}/birt" "${BASE_URL}/birt/" "${BASE_URL}/birt/run" "${BASE_URL}/birt/frameset" "${BASE_URL}/birt/servlet/run" "${BASE_URL}/birt/servlet/frameset")
+  local bases=("${BASE_URL}/birt" "${BASE_URL}/birt/" "${BASE_URL}/birt/run" "${BASE_URL}/birt/frameset" "${BASE_URL}/birt/preview" "${BASE_URL}/birt/servlet/run" "${BASE_URL}/birt/servlet/frameset")
   local candidates=()
   for b in "${bases[@]}"; do
     log "HTTP discovery: probing $b"
