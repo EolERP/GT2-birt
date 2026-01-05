@@ -56,8 +56,10 @@ RUN set -euo pipefail; \
     mv "${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample" "${TOMCAT_HOME}/webapps/birt"; \
     if compgen -G "${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar" > /dev/null; then \
         cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/; \
+      elif compgen -G "${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar" > /dev/null; then \
+        cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/; \
       else \
-        wget -O ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/$(basename ${ODA_XML_JAR_URL}) "${ODA_XML_JAR_URL}"; \
+        echo "[WARN] XML ODA plugin not bundled; skipping external download"; \
       fi; \
     # Ensure Flatfile ODA plugin required by version.rptdesign \
     if compgen -G "${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.flatfile_*.jar" > /dev/null; then \
@@ -69,11 +71,6 @@ RUN set -euo pipefail; \
           echo "[WARN] Flatfile ODA plugin not bundled and external URL unavailable; skipping"; \
         fi; \
       fi; \
-    # Pre-populate OSGi platform plugins with ODA bundles (best-effort) \
-    mkdir -p ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins; \
-    cp -n ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/ 2>/dev/null || true; \
-    cp -n ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/org.eclipse.datatools.enablement.oda.flatfile_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/ 2>/dev/null || true; \
-
     # Set viewer working folder to absolute documents directory for deterministic resolution on 4.18+
     xmlstarlet ed -L -u "//context-param[param-name='BIRT_VIEWER_WORKING_FOLDER']/param-value" -v "${TOMCAT_HOME}/webapps/birt/documents" ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml; \
     xmlstarlet ed -L -u "//context-param[param-name='BIRT_VIEWER_WORKING_FOLDER']/param-value" -v "${TOMCAT_HOME}/webapps/birt/documents" ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true; \
