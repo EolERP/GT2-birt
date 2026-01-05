@@ -147,6 +147,47 @@ cleanup() {
       warn "Response text (first 200 lines):"; sed -n '1,200p' "$BODY_TXT" | sed 's/^/[text-ln] /' >&2 || true
     fi
   fi
+
+  if [[ $FAILED -ne 0 ]]; then
+    warn "---- HTTP diagnostics for /birt (on failure) ----"
+    mkdir -p out || true
+    # /birt root
+    curl -sS -D out/http_birt_root_headers.txt "http://localhost:${HOST_PORT}/birt/" -o out/http_birt_root_body.html || true
+    status=$(awk 'NR==1{print $2}' out/http_birt_root_headers.txt 2>/dev/null || true); echo "[http] GET /birt/ -> $status" >&2
+    if [[ -f out/http_birt_root_body.html ]]; then sed -n '1,40p' out/http_birt_root_body.html | sed 's/^/[birt-root] /' >&2 || true; fi
+    # /birt/index.jsp
+    curl -sS -D out/http_birt_index_headers.txt "http://localhost:${HOST_PORT}/birt/index.jsp" -o out/http_birt_index_body.html || true
+    status=$(awk 'NR==1{print $2}' out/http_birt_index_headers.txt 2>/dev/null || true); echo "[http] GET /birt/index.jsp -> $status" >&2
+    if [[ -f out/http_birt_index_body.html ]]; then sed -n '1,40p' out/http_birt_index_body.html | sed 's/^/[birt-index] /' >&2 || true; fi
+    # /birt/preview (no query)
+    curl -sS -D out/http_birt_preview_headers.txt "http://localhost:${HOST_PORT}/birt/preview" -o out/http_birt_preview_body.html || true
+    status=$(awk 'NR==1{print $2}' out/http_birt_preview_headers.txt 2>/dev/null || true); echo "[http] GET /birt/preview -> $status" >&2
+    if [[ -f out/http_birt_preview_body.html ]]; then sed -n '1,40p' out/http_birt_preview_body.html | sed 's/^/[birt-preview] /' >&2 || true; fi
+    # /birt/preview with query
+    curl -sS -D out/http_birt_preview_query_headers.txt "http://localhost:${HOST_PORT}/birt/preview?__report=version.rptdesign&__format=html" -o out/http_birt_preview_query_body.html || true
+    status=$(awk 'NR==1{print $2}' out/http_birt_preview_query_headers.txt 2>/dev/null || true); echo "[http] GET /birt/preview?__report=version.rptdesign&__format=html -> $status" >&2
+    if [[ -f out/http_birt_preview_query_body.html ]]; then sed -n '1,40p' out/http_birt_preview_query_body.html | sed 's/^/[birt-preview-q] /' >&2 || true; fi
+
+    # Servlet mappings evidence from container
+    warn "---- Servlet mappings evidence ----"
+    docker exec "$CONTAINER_NAME" sh -lc 'grep -n "url-pattern" -n /opt/tomcat/webapps/birt/WEB-INF/web.xml | head -200' 2>&1 | sed 's/^/[webxml-url] /' >&2 || true
+    docker exec "$CONTAINER_NAME" sh -lc 'grep -n "EngineServlet\\|ViewerServlet\\|Preview" -n /opt/tomcat/webapps/birt/WEB-INF/web.xml | head -200' 2>&1 | sed 's/^/[webxml-srv] /' >&2 || true
+    docker exec "$CONTAINER_NAME" sh -lc 'sed -n "1,220p" /opt/tomcat/webapps/birt/WEB-INF/web.xml' > out/webxml_head.txt 2>/dev/null || true
+    docker exec "$CONTAINER_NAME" sh -lc 'sed -n "1,220p" /opt/tomcat/webapps/birt/WEB-INF/web-viewer.xml' > out/webviewer_head.txt 2>/dev/null || true
+
+    # Webapps layout
+    docker exec "$CONTAINER_NAME" sh -lc 'ls -la /opt/tomcat/webapps' > out/webapps_ls.txt 2>/dev/null || true
+    docker exec "$CONTAINER_NAME" sh -lc 'ls -la /opt/tomcat/webapps/birt' > out/birt_ls.txt 2>/dev/null || true
+    docker exec "$CONTAINER_NAME" sh -lc 'ls -la /opt/tomcat/webapps/birt/WEB-INF' > out/birt_webinf_ls.txt 2>/dev/null || true
+
+    # Echo summaries into job log
+    warn "---- HEAD of web.xml ----"; if [[ -f out/webxml_head.txt ]]; then sed -n '1,80p' out/webxml_head.txt | sed 's/^/[webxml] /' >&2; fi
+    warn "---- HEAD of web-viewer.xml ----"; if [[ -f out/webviewer_head.txt ]]; then sed -n '1,80p' out/webviewer_head.txt | sed 's/^/[webviewer] /' >&2; fi
+    warn "---- webapps ls ----"; if [[ -f out/webapps_ls.txt ]]; then sed -n '1,80p' out/webapps_ls.txt | sed 's/^/[ls-webapps] /' >&2; fi
+    warn "---- birt ls ----"; if [[ -f out/birt_ls.txt ]]; then sed -n '1,80p' out/birt_ls.txt | sed 's/^/[ls-birt] /' >&2; fi
+    warn "---- birt/WEB-INF ls ----"; if [[ -f out/birt_webinf_ls.txt ]]; then sed -n '1,80p' out/birt_webinf_ls.txt | sed 's/^/[ls-webinf] /' >&2; fi
+  fi
+
   if command -v docker >/dev/null 2>&1; then
     docker rm -f "$CONTAINER_NAME" >/dev/null 2>&1 || true
   fi
