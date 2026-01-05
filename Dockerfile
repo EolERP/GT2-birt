@@ -63,7 +63,7 @@ RUN set -euo pipefail; \
     if compgen -G "${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.flatfile_*.jar" > /dev/null; then \
         cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.flatfile_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/; \
       else \
-        wget -O ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/org.eclipse.datatools.enablement.oda.flatfile_1.4.102.201901091730.jar "https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.flatfile_1.4.102.201901091730.jar"; \
+        wget -O ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/org.eclipse.datatools.enablement.oda.flatfile_1.4.102.201901091730.jar "https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.flatfile_1.4.102.201901091730.jar" || true; \
       fi; \
     # Pre-populate OSGi platform plugins with ODA bundles (best-effort) \
     mkdir -p ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins; \
