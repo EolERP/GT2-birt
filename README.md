@@ -18,6 +18,32 @@
 
 ## E2E verification
 
+### Smoke test for CRX-10 (JSESSIONID Secure behind reverse proxy)
+
+To verify Tomcat treats the request as secure when behind a reverse proxy and sets the Secure flag on JSESSIONID:
+
+1) Build and run the container locally
+```
+docker build -t birt .
+docker run --rm -d --name birt -p 8080:8080 birt
+```
+
+2) Make a request with reverse-proxy headers
+```
+curl -i -H 'X-Forwarded-Proto: https' -H 'X-Forwarded-Port: 443' http://localhost:8080/birt/
+```
+
+3) Verify response headers contain Secure on JSESSIONID
+- Look for a header like: `Set-Cookie: JSESSIONID=...; Path=/birt; HttpOnly; Secure`
+
+If Secure is not present even with the headers, consider adding proxy attributes on the HTTP Connector in /etc/tomcat/server.xml:
+```
+<Connector port="8080" protocol="org.apache.coyote.http11.Http11NioProtocol"
+           proxyPort="443" scheme="https" secure="true" />
+```
+Note: Keep TLS termination at the ingress; do not enable TLS directly in Tomcat.
+
+
 One-shot end-to-end verification (build image, run container, auto-detect endpoint, fetch report, verify content):
 
 ```

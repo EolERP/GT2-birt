@@ -61,11 +61,17 @@ RUN set -euo pipefail; \
     rm -f ${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}*; \
     rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime
 
-#RUN mkdir /usr/share/tomcat && mkdir /etc/tomcat
-RUN cd ${TOMCAT_HOME} && ln -s /etc/tomcat conf
+# Prepare Tomcat configuration in /etc/tomcat and symlink conf
+RUN mkdir -p /etc/tomcat \
+    && cp -a ${TOMCAT_HOME}/conf/. /etc/tomcat/ \
+    && rm -rf ${TOMCAT_HOME}/conf \
+    && ln -s /etc/tomcat ${TOMCAT_HOME}/conf
+
+# Patch server.xml idempotently to respect reverse proxy headers
+COPY scripts/patch_server_xml.sh /usr/local/bin/patch_server_xml.sh
+RUN chmod +x /usr/local/bin/patch_server_xml.sh && /usr/local/bin/patch_server_xml.sh /etc/tomcat/server.xml
+
 # RUN ln -s /opt/tomcat/webapps/ /usr/share/tomcat/webapps
-
-
 
 # Map Reports folder
 VOLUME ${TOMCAT_HOME}/webapps/birt
