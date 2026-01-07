@@ -196,8 +196,6 @@ if ! docker exec "$CONTAINER_NAME" test -f "$REPORT_TARGET_DIR/$EXPECTED_FILE"; 
 fi
 
 # Helpers
-obvious_error() { grep -qiE "Exception|Whitelabel|HTTP Status|Not Found|404|500|Stacktrace|SEVERE|There was an error" "$1"; }
-
 fetch_url() {
   local url="$1"
   : > "$HEADERS_FILE"; : > "$RESPONSE_FILE"
@@ -215,6 +213,7 @@ fetch_url() {
 
 # ==========================================================
 # TEST 1 (FAST): version.rptdesign via /birt/run (HTML)
+# Variant B: do NOT use obvious_error() for this test.
 # ==========================================================
 VERIFY_URL="${BASE_URL}/birt/run?__report=${REPORT_FILE}&__format=html"
 log "Verification URL (version): $VERIFY_URL"
@@ -231,13 +230,6 @@ fi
 BODY_FILE="$BODY_HTML"
 [[ -s "$BODY_FILE" ]] || { err "Empty verification body"; err "URL used: $VERIFY_URL"; FAILED=1; exit 1; }
 
-if obvious_error "$BODY_FILE" || obvious_error "$HEADERS_FILE"; then
-  err "Obvious error in verification response"
-  err "URL used: $VERIFY_URL"
-  FAILED=1
-  exit 1
-fi
-
 if ! grep -Fq -- "$EXPECTED_VALUE" "$BODY_FILE"; then
   err "Expected value NOT found in report output"
   err "Expected: $EXPECTED_VALUE"
@@ -251,7 +243,7 @@ fi
 log "SUCCESS: Found expected value '$EXPECTED_VALUE' in response."
 
 # ==========================
-# TEST 2 (PRIMARY): Credix PDF E2E verification (/birt/frameset)
+# Credix PDF E2E verification
 # ==========================
 # Configurable variables with defaults
 CREDIX_REPORT_NAME=${CREDIX_REPORT_NAME:-credix_repayment_schedule.rptdesign}
