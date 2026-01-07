@@ -58,7 +58,7 @@ RUN set -euo pipefail; \
         wget -O ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/$(basename ${ODA_XML_JAR_URL}) "${ODA_XML_JAR_URL}"; \
       fi; \
 
-    rm -f ${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}*; \
+    rm -f ${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}*; 
     rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime
 
 # Prepare Tomcat configuration in /etc/tomcat and symlink conf
