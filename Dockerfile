@@ -3,7 +3,7 @@ FROM ubuntu:${UBUNTU_VERSION}
 
 # --- Version / constants (keep everything else the same) ---
 
-ARG JAVA_VERSION=17
+ARG JAVA_VERSION=21
 
 ARG TOMCAT_VERSION=9.0.113
 ARG TOMCAT_MAJOR=9
