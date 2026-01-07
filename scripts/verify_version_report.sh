@@ -128,6 +128,26 @@ wait_ready() {
 log "Waiting for service readiness (timeout ${TIMEOUT_SEC}s)"
 wait_ready || { err "Service did not become ready in ${TIMEOUT_SEC}s"; exit 1; }
 
+# Check logs for fatal errors during startup
+if docker logs "$CONTAINER_NAME" 2>&1 | grep -Eqi 'fatal|fatalerror'; then
+  err "Detected fatal error in Tomcat logs during startup"
+  docker logs "$CONTAINER_NAME" | sed 's/^/[docker] /' >&2 || true
+  exit 1
+fi
+
+# Extra test: verify Secure attribute on session cookie behind reverse proxy
+COOKIE_HDRS="$TMP_DIR/cookie_headers.txt"
+if curl -fsSLI -D "$COOKIE_HDRS" -H 'X-Forwarded-Proto: https' "$BASE_URL/birt/" -o /dev/null; then
+  if grep -Eqi '^Set-Cookie:.*;[[:space:]]*Secure' "$COOKIE_HDRS"; then
+    log "Secure attribute PRESENT on Set-Cookie when X-Forwarded-Proto=https"
+  else
+    warn "Secure attribute NOT present on Set-Cookie despite X-Forwarded-Proto=https"
+    warn "Note: Consider setting scheme=\"https\", secure=\"true\", and proxyPort on the HTTP Connector in server.xml if application requires secure cookies. RemoteIpValve is configured."
+  fi
+else
+  warn "Curl to /birt/ for cookie check failed"
+fi
+
 # Determine BIRT webapp root
 BIRT_WEBAPP="/opt/tomcat/webapps/birt"
 if ! docker exec "$CONTAINER_NAME" test -d "$BIRT_WEBAPP"; then
