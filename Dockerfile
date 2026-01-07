@@ -14,7 +14,6 @@ ARG BIRT_CHANNEL=release
 # BIRT base URL will be derived from channel during download (release | latest | milestone)
 ARG ODA_XML_JAR_URL=https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.4.102.201901091730.jar
 
-
 ENV TOMCAT_HOME=/opt/tomcat
 
 # Pre-Installation and system packages
@@ -26,6 +25,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
         unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
 RUN wget "https://archive.apache.org/dist/tomcat/tomcat-${TOMCAT_MAJOR}/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz" -P ${TOMCAT_HOME}
 RUN tar xzvf ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz -C ${TOMCAT_HOME} --strip-components=1
 RUN rm ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz
@@ -53,13 +53,12 @@ RUN set -euo pipefail; \
     unzip "${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}" -d ${TOMCAT_HOME}/webapps/birt-runtime; \
     mv "${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample" "${TOMCAT_HOME}/webapps/birt"; \
     if compgen -G "${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar" > /dev/null; then \
-        cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/; \
-      else \
-        wget -O ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/$(basename ${ODA_XML_JAR_URL}) "${ODA_XML_JAR_URL}"; \
-      fi; \
-
-    rm -f ${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}*; 
-    rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime
+      cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/; \
+    else \
+      wget -O ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/$(basename ${ODA_XML_JAR_URL}) "${ODA_XML_JAR_URL}"; \
+    fi; \
+    rm -f ${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}*; \
+    rm -rf ${TOMCAT_HOME}/webapps/birt-runtime
 
 # Prepare Tomcat configuration in /etc/tomcat and symlink conf
 RUN mkdir -p /etc/tomcat \
@@ -70,9 +69,7 @@ RUN mkdir -p /etc/tomcat \
 # Patch server.xml idempotently to respect reverse proxy headers
 COPY scripts/patch_server_xml.sh /usr/local/bin/patch_server_xml.sh
 RUN chmod +x /usr/local/bin/patch_server_xml.sh \
- && /usr/local/bin/patch_server_xml.sh /etc/tomcat/server.xml
-
-# RUN ln -s /opt/tomcat/webapps/ /usr/share/tomcat/webapps
+    && /usr/local/bin/patch_server_xml.sh /etc/tomcat/server.xml
 
 # Map Reports folder
 VOLUME ${TOMCAT_HOME}/webapps/birt
@@ -86,14 +83,14 @@ ADD index.html ${TOMCAT_HOME}/webapps/birt
 ADD credix_repayment_schedule.rptdesign ${TOMCAT_HOME}/webapps/birt
 
 # remove default pages with dangerous information
-RUN rm -f -r ${TOMCAT_HOME}/webapps/ROOT/index.jsp
+RUN rm -rf ${TOMCAT_HOME}/webapps/ROOT/index.jsp
 ADD error.html ${TOMCAT_HOME}/webapps/ROOT
 COPY web.xml ${TOMCAT_HOME}/webapps/ROOT/WEB-INF
 
 ADD /cert/*.crt /usr/local/share/ca-certificates/
 RUN update-ca-certificates
 
-RUN rm ${TOMCAT_HOME}/conf/logging.properties
+RUN rm -f ${TOMCAT_HOME}/conf/logging.properties
 
 # Modify BIRT viewer settings for reports path issues
 # 1) Set it in WEB-INF/web.xml (robust whitespace-insensitive)
@@ -104,8 +101,8 @@ RUN perl -0777 -i -pe 's|(\<param-name\>\s*BIRT_VIEWER_WORKING_FOLDER\s*\<\/para
 RUN perl -0777 -i -pe 's|(\<param-name\>\s*WORKING_FOLDER_ACCESS_ONLY\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1false\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml || true
 RUN perl -0777 -i -pe 's|(\<param-name\>\s*WORKING_FOLDER_ACCESS_ONLY\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1false\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true
 
-#Start
+# Start
 CMD ["/opt/tomcat/bin/catalina.sh", "run"]
 
-#Port
+# Port
 EXPOSE 8080
