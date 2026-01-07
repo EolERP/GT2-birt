@@ -69,7 +69,8 @@ RUN mkdir -p /etc/tomcat \
 
 # Patch server.xml idempotently to respect reverse proxy headers
 COPY scripts/patch_server_xml.sh /usr/local/bin/patch_server_xml.sh
-RUN chmod +x /usr/local/bin/patch_server_xml.sh && /usr/local/bin/patch_server_xml.sh /etc/tomcat/server.xml
+RUN chmod +x /usr/local/bin/patch_server_xml.sh \
+ && /usr/local/bin/patch_server_xml.sh /etc/tomcat/server.xml
 
 # RUN ln -s /opt/tomcat/webapps/ /usr/share/tomcat/webapps
 
