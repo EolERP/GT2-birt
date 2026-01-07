@@ -213,162 +213,11 @@ fetch_url() {
   echo "$code"
 }
 
-append_params() {
-  local base="$1"
-  if [[ "$base" == *"?"* || "$base" == *"&"* || "$base" == *"__report="* ]]; then
-    if [[ "$base" != *"__report="* ]]; then base+="&__report=${REPORT_FILE}"; fi
-    if [[ "$base" != *"__format="* ]]; then base+="&__format=${REPORT_FORMAT}"; fi
-  else
-    base+="?__report=${REPORT_FILE}&__format=${REPORT_FORMAT}"
-  fi
-  echo "$base"
-}
-
-try_endpoint_url() {
-  local raw="$1"; local url
-  if [[ "$raw" == http* ]]; then url="$raw"; else url="${BASE_URL}${raw}"; fi
-  url=$(append_params "$url")
-  log "Trying endpoint: $url"
-  local code; code=$(fetch_url "$url")
-  if [[ "$code" != "200" ]]; then warn "HTTP $code for $url"; return 1; fi
-  local bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
-  if [[ ! -s "$bodyfile" ]]; then warn "Empty body for $url"; return 1; fi
-  if obvious_error "$bodyfile" || obvious_error "$HEADERS_FILE"; then warn "Obvious error detected for $url"; return 1; fi
-  echo "$url"; return 0
-}
-
-# 1) HTTP discovery: fetch /birt and parse links
-http_discover() {
-  local bases=("${BASE_URL}/birt" "${BASE_URL}/birt/")
-  local candidates=()
-  for b in "${bases[@]}"; do
-    log "HTTP discovery: probing $b"
-    local code; code=$(fetch_url "$b")
-    local ct; ct=$(grep -i '^Content-Type:' "$HEADERS_FILE" | tail -n1 | awk '{print tolower($0)}')
-    if [[ "$code" == "200" ]] && echo "$ct" | grep -q 'text/html'; then
-      cp -f "$BODY_HTML" "$DISCOVERY_HTML" 2>/dev/null || true
-      local links
-      links=$(grep -Eoi 'href\s*=\s*"[^"]+"|src\s*=\s*"[^"]+"' "$DISCOVERY_HTML" | sed -E 's/^[^\"]+"(.*)"/\1/' | sed 's/#.*$//' | sort -u)
-      while IFS= read -r L; do
-        [[ -z "$L" ]] && continue
-        if echo "$L" | grep -Eqi 'frameset|run|preview|report|viewer|servlet|__report|__format'; then
-          local path="$L"
-          if [[ "$path" == http* ]]; then
-            :
-          elif [[ "$path" == /* ]]; then
-            path="$path"
-          else
-            path="/birt/${path}"
-          fi
-          path="${path%%\?*}"
-          if [[ "$path" == http* || "$path" == /birt/* ]]; then
-            candidates+=("$path")
-          fi
-        fi
-      done <<< "$links"
-    fi
-  done
-  if [[ ${#candidates[@]} -gt 0 ]]; then
-    local seen=()
-    local ordered=()
-    # Prefer non-JSP endpoints (run/frameset) before JSP index pages
-    for p in "${candidates[@]}"; do [[ "$p" != *.jsp* ]] && ordered+=("$p"); done
-    for p in "${candidates[@]}"; do [[ "$p" == *.jsp* ]] && ordered+=("$p"); done
-    for p in "${ordered[@]}"; do
-      [[ " ${seen[*]} " == *" $p "* ]] && continue
-      seen+=("$p")
-      if SELECTED=$(try_endpoint_url "$p"); then echo "$SELECTED"; return 0; fi
-    done
-  fi
-  return 1
-}
-
-# 2) Container discovery: use gathered mappings and JSPs
-container_discover() {
-  log "Container discovery: analyzing servlet mappings and JSPs"
-  local patterns
-  patterns=$(grep -Eo '<url-pattern>[^<]+' "$SERVLET_MAP_FILE" | sed 's/<url-pattern>//g' | tr -d '\r' | sed 's/\s\+$//' | sort -u) || true
-  local candidates=()
-  while IFS= read -r pat; do
-    [[ -z "$pat" ]] && continue
-    if ! echo "$pat" | grep -Eqi 'frameset|run|preview|report|viewer'; then
-      continue
-    fi
-    local base="$pat"
-    case "$base" in
-      */\*) base="${base%/\*}";;
-      *\*) base="${base%\*}";;
-    esac
-    [[ "$base" != /* ]] && base="/$base"
-    candidates+=("/birt${base}")
-  done <<< "$patterns"
-
-  for name in frameset.jsp run.jsp viewer.jsp report.jsp index.jsp; do
-    if grep -q "/$name$" "$JSP_LIST_FILE"; then candidates+=("/birt/$name"); fi
-  done
-
-  if [[ ${#candidates[@]} -gt 0 ]]; then
-    local seen=()
-    local uniq=()
-    for p in "${candidates[@]}"; do
-      [[ " ${seen[*]} " == *" $p "* ]] && continue
-      seen+=("$p"); uniq+=("$p")
-    done
-    for p in "${uniq[@]}"; do
-      if SELECTED=$(try_endpoint_url "$p"); then echo "$SELECTED"; return 0; fi
-    done
-  fi
-  return 1
-}
-
-SELECTED_URL=""
-if [[ -n "$REPORT_PATH" ]]; then
-  log "REPORT_PATH provided: $REPORT_PATH (skipping discovery)"
-  if SELECTED_URL=$(try_endpoint_url "$REPORT_PATH"); then :; else err "Provided REPORT_PATH is not working"; exit 1; fi
-else
-  log "Starting endpoint discovery"
-  if SELECTED_URL=$(http_discover); then
-    log "HTTP discovery succeeded: $SELECTED_URL"
-  elif SELECTED_URL=$(container_discover); then
-    log "Container discovery succeeded: $SELECTED_URL"
-  else
-    warn "Discovery failed; falling back to standard candidates"
-    fallback=("/birt/run" "/birt/frameset" "/viewer/run" "/viewer/frameset" "/birt-viewer/run" "/birt-viewer/frameset")
-    for p in "${fallback[@]}"; do
-      if SELECTED=$(try_endpoint_url "$p"); then SELECTED_URL="$SELECTED"; break; fi
-    done
-    [[ -n "$SELECTED_URL" ]] || { err "Failed to find a working report endpoint"; exit 1; }
-  fi
-fi
-
-log "Selected endpoint: $SELECTED_URL"
-
-# Verification request
-VERIFY_URL="$SELECTED_URL"
-# Try to prefer non-framed, non-index endpoints for content verification, but fall back if not valid
-orig_url="$VERIFY_URL"
-path="${orig_url%%\?*}"
-qs="${orig_url#${path}}"
-run_path="$path"
-run_path="${run_path//index.jsp/run}"
-run_path="${run_path//viewer.jsp/run}"
-run_path="${run_path//frameset.jsp/run}"
-run_path="${run_path/\/frameset/\/run}"
-run_path="${run_path/\/preview/\/run}"
-run_url="${run_path}${qs}"
-
-# Test run_url quickly; if bad, keep original
-: > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
-HTTP_CODE=$(fetch_url "$run_url")
-bodyfile="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then bodyfile="$BODY_TXT"; fi
-if [[ "$HTTP_CODE" == "200" && -s "$bodyfile" ]] && ! obvious_error "$bodyfile" && ! obvious_error "$HEADERS_FILE"; then
-  VERIFY_URL="$run_url"
-else
-  VERIFY_URL="$orig_url"
-fi
-
-
-log "Verification URL: $VERIFY_URL"
+# ==========================================================
+# TEST 1 (FAST): version.rptdesign via /birt/run (HTML)
+# ==========================================================
+VERIFY_URL="${BASE_URL}/birt/run?__report=${REPORT_FILE}&__format=html"
+log "Verification URL (version): $VERIFY_URL"
 
 : > "$HEADERS_FILE"; : > "$BODY_HTML"; : > "$BODY_TXT"; : > "$BODY_PDF"
 HTTP_CODE=$(fetch_url "$VERIFY_URL")
@@ -379,7 +228,7 @@ if [[ "$HTTP_CODE" != "200" ]]; then
   exit 1
 fi
 
-BODY_FILE="$BODY_HTML"; if [[ -s "$BODY_TXT" && "$REPORT_FORMAT" == "pdf" ]]; then BODY_FILE="$BODY_TXT"; fi
+BODY_FILE="$BODY_HTML"
 [[ -s "$BODY_FILE" ]] || { err "Empty verification body"; err "URL used: $VERIFY_URL"; FAILED=1; exit 1; }
 
 if obvious_error "$BODY_FILE" || obvious_error "$HEADERS_FILE"; then
@@ -402,7 +251,7 @@ fi
 log "SUCCESS: Found expected value '$EXPECTED_VALUE' in response."
 
 # ==========================
-# Credix PDF E2E verification
+# TEST 2 (PRIMARY): Credix PDF E2E verification (/birt/frameset)
 # ==========================
 # Configurable variables with defaults
 CREDIX_REPORT_NAME=${CREDIX_REPORT_NAME:-credix_repayment_schedule.rptdesign}
@@ -495,4 +344,3 @@ fi
 log "SUCCESS: Credix PDF report contains expected strings."
 FAILED=0
 exit 0
-
