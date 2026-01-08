@@ -8,8 +8,8 @@ ARG JAVA_VERSION=21
 ARG TOMCAT_VERSION=9.0.113
 ARG TOMCAT_MAJOR=9
 
-ARG BIRT_VERSION=4.21.0
-ARG BIRT_BUILD=202509121029
+ARG BIRT_VERSION=4.22.0
+ARG BIRT_BUILD=202512100727
 ARG BIRT_CHANNEL=release
 # BIRT base URL will be derived from channel during download (release | latest | milestone)
 ARG ODA_XML_JAR_URL=https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.4.102.201901091730.jar
