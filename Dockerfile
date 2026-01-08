@@ -85,6 +85,11 @@ COPY scripts/patch_server_xml.sh /usr/local/bin/patch_server_xml.sh
 RUN chmod +x /usr/local/bin/patch_server_xml.sh \
     && /usr/local/bin/patch_server_xml.sh /etc/tomcat/server.xml
 
+# ODA runtime self-report at startup
+COPY scripts/oda_selfcheck.sh /usr/local/bin/oda_selfcheck.sh
+RUN chmod +x /usr/local/bin/oda_selfcheck.sh \
+    && printf '#!/usr/bin/env bash\n/usr/bin/env bash /usr/local/bin/oda_selfcheck.sh || true\n' > ${TOMCAT_HOME}/bin/setenv.sh \
+    && chmod +x ${TOMCAT_HOME}/bin/setenv.sh
 
 # Map Reports folder
 VOLUME ${TOMCAT_HOME}/webapps/birt
