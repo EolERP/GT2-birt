@@ -12,7 +12,7 @@ ARG BIRT_VERSION=4.22.0
 ARG BIRT_BUILD=202512100727
 ARG BIRT_CHANNEL=release
 # BIRT base URL will be derived from channel during download (release | latest | milestone)
-ARG ODA_XML_JAR_URL=https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.4.102.201901091730.jar
+ARG ODA_XML_JAR_URL=https://download.eclipse.org/releases/2025-09/202509171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.6.0.202411281604.jar
 
 ENV TOMCAT_HOME=/opt/tomcat
 
@@ -52,10 +52,41 @@ RUN set -euo pipefail; \
     fi; \
     unzip "${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}" -d ${TOMCAT_HOME}/webapps/birt-runtime; \
     mv "${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample" "${TOMCAT_HOME}/webapps/birt"; \
-    if compgen -G "${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar" > /dev/null; then \
-      cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/; \
+    mkdir -p ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins; \
+    # Restore core platform plugins if org.eclipse.osgi is missing in the webapp
+    if ! compgen -G "${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/org.eclipse.osgi_*.jar" > /dev/null; then \
+      if compgen -G "${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins/org.eclipse.osgi_*.jar" > /dev/null; then \
+        echo "Restoring WEB-INF/platform/plugins from ReportEngine/plugins"; \
+        cp -a -n ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins/* ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/ || true; \
+      else \
+        echo "WARN: ReportEngine/plugins does not contain org.eclipse.osgi_* (unexpected)"; \
+      fi; \
+    fi; \
+    # ODA XML fallback/placement (non-destructive)
+    if compgen -G "${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar" > /dev/null || \
+       compgen -G "${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar" > /dev/null; then \
+      echo "Using ODA XML already present in webapp"; \
+    elif compgen -G "${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar" > /dev/null; then \
+      cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/ || true; \
+      cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/ || true; \
+    elif compgen -G "${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar" > /dev/null; then \
+      cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/ || true; \
+      cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/ || true; \
     else \
-      wget -O ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/$(basename ${ODA_XML_JAR_URL}) "${ODA_XML_JAR_URL}" || echo "WARN: ODA XML fallback unavailable (non-fatal)"; \
+      echo "ODA XML not found in runtime; attempting fallback download"; \
+      if wget -O "/tmp/$(basename ${ODA_XML_JAR_URL})" "${ODA_XML_JAR_URL}"; then \
+        cp "/tmp/$(basename ${ODA_XML_JAR_URL})" ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/ || true; \
+        cp "/tmp/$(basename ${ODA_XML_JAR_URL})" ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/ || true; \
+      else \
+        echo "WARN: ODA XML fallback unavailable (non-fatal)"; \
+      fi; \
+    fi; \
+    # Sanity check: org.eclipse.osgi must be present in platform/plugins
+    if ! compgen -G "${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/org.eclipse.osgi_*.jar" > /dev/null; then \
+      echo "ERROR: Missing org.eclipse.osgi in ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins"; \
+      ls -la ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform || true; \
+      ls -la ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins || true; \
+      exit 1; \
     fi; \
     rm -f ${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}*; \
     rm -rf ${TOMCAT_HOME}/webapps/birt-runtime
@@ -70,6 +101,12 @@ RUN mkdir -p /etc/tomcat \
 COPY scripts/patch_server_xml.sh /usr/local/bin/patch_server_xml.sh
 RUN chmod +x /usr/local/bin/patch_server_xml.sh \
     && /usr/local/bin/patch_server_xml.sh /etc/tomcat/server.xml
+
+# ODA runtime self-report at startup
+COPY scripts/oda_selfcheck.sh /usr/local/bin/oda_selfcheck.sh
+RUN chmod +x /usr/local/bin/oda_selfcheck.sh \
+    && printf '#!/usr/bin/env bash\n/usr/bin/env bash /usr/local/bin/oda_selfcheck.sh || true\n' > ${TOMCAT_HOME}/bin/setenv.sh \
+    && chmod +x ${TOMCAT_HOME}/bin/setenv.sh
 
 # Map Reports folder
 VOLUME ${TOMCAT_HOME}/webapps/birt
