@@ -3,13 +3,13 @@ FROM ubuntu:${UBUNTU_VERSION}
 
 # --- Version / constants (keep everything else the same) ---
 
-ARG JAVA_VERSION=17
+ARG JAVA_VERSION=21
 
 ARG TOMCAT_VERSION=9.0.113
 ARG TOMCAT_MAJOR=9
 
-ARG BIRT_VERSION=4.16.0
-ARG BIRT_BUILD=202406141054
+ARG BIRT_VERSION=4.20.0
+ARG BIRT_BUILD=202506110821
 ARG BIRT_CHANNEL=release
 # BIRT base URL will be derived from channel during download (release | latest | milestone)
 ARG ODA_XML_JAR_URL=https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.4.102.201901091730.jar
@@ -55,7 +55,7 @@ RUN set -euo pipefail; \
     if compgen -G "${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar" > /dev/null; then \
       cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/; \
     else \
-      wget -O ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/$(basename ${ODA_XML_JAR_URL}) "${ODA_XML_JAR_URL}"; \
+      wget -O ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/$(basename ${ODA_XML_JAR_URL}) "${ODA_XML_JAR_URL}" || echo "WARN: ODA XML fallback unavailable (non-fatal)"; \
     fi; \
     rm -f ${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}*; \
     rm -rf ${TOMCAT_HOME}/webapps/birt-runtime
