@@ -1,5 +1,8 @@
 # GT2-birt
 
+What we use for local testing:
+- http://localhost:8080/birt/frameset?xml_file=https%3A%2F%2Fgist.githubusercontent.com%2Fdpodhola-eolerp%2F16266ad29c3bc8309c6601e2c15ac3d8%2Fraw%2F4612297f7613d063ce2d0cf64e2f554ef6b03d7b%2Fdata.xml&__format=pdf&__report=credix_repayment_schedule.rptdesign
+
 `docker builder prune`
 
 `az login`
