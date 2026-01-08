@@ -53,6 +53,16 @@ RUN set -euo pipefail; \
     unzip "${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}" -d ${TOMCAT_HOME}/webapps/birt-runtime; \
     mv "${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample" "${TOMCAT_HOME}/webapps/birt"; \
     mkdir -p ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins; \
+    # Restore core platform plugins if org.eclipse.osgi is missing in the webapp
+    if ! compgen -G "${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/org.eclipse.osgi_*.jar" > /dev/null; then \
+      if compgen -G "${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins/org.eclipse.osgi_*.jar" > /dev/null; then \
+        echo "Restoring WEB-INF/platform/plugins from ReportEngine/plugins"; \
+        cp -a -n ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins/* ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/ || true; \
+      else \
+        echo "WARN: ReportEngine/plugins does not contain org.eclipse.osgi_* (unexpected)"; \
+      fi; \
+    fi; \
+    # ODA XML fallback/placement (non-destructive)
     if compgen -G "${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar" > /dev/null || \
        compgen -G "${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar" > /dev/null; then \
       echo "Using ODA XML already present in webapp"; \
@@ -70,6 +80,13 @@ RUN set -euo pipefail; \
       else \
         echo "WARN: ODA XML fallback unavailable (non-fatal)"; \
       fi; \
+    fi; \
+    # Sanity check: org.eclipse.osgi must be present in platform/plugins
+    if ! compgen -G "${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/org.eclipse.osgi_*.jar" > /dev/null; then \
+      echo "ERROR: Missing org.eclipse.osgi in ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins"; \
+      ls -la ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform || true; \
+      ls -la ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins || true; \
+      exit 1; \
     fi; \
     rm -f ${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}*; \
     rm -rf ${TOMCAT_HOME}/webapps/birt-runtime
