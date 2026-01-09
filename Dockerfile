@@ -51,42 +51,57 @@ RUN set -euo pipefail; \
       sha512sum -c "${RUNTIME_ZIP}.sha512"; \
     fi; \
     unzip "${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}" -d ${TOMCAT_HOME}/webapps/birt-runtime; \
-    mv "${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample" "${TOMCAT_HOME}/webapps/birt"; \
-    mkdir -p ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins; \
-    # Restore core platform plugins if org.eclipse.osgi is missing in the webapp
-    if ! compgen -G "${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/org.eclipse.osgi_*.jar" > /dev/null; then \
-      if compgen -G "${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins/org.eclipse.osgi_*.jar" > /dev/null; then \
-        echo "Restoring WEB-INF/platform/plugins from ReportEngine/plugins"; \
-        cp -a -n ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins/* ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/ || true; \
+    # Detect viewer webapp directory (prefer birt-viewer-osgi, then WebViewerExample)
+    if [[ -d "${TOMCAT_HOME}/webapps/birt-runtime/birt-viewer-osgi" ]]; then \
+      VIEWER_SRC="${TOMCAT_HOME}/webapps/birt-runtime/birt-viewer-osgi"; \
+    elif [[ -d "${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample" ]]; then \
+      VIEWER_SRC="${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample"; \
+    else \
+      echo "ERROR: No viewer webapp found in runtime zip"; \
+      find ${TOMCAT_HOME}/webapps/birt-runtime -maxdepth 2 -type d || true; \
+      exit 1; \
+    fi; \
+    mv "$VIEWER_SRC" "${TOMCAT_HOME}/webapps/birt"; \
+    # Do NOT create or overwrite WEB-INF/platform/plugins; preserve what the viewer contains
+    # Sanity check: Ensure org.eclipse.osgi exists somewhere inside the deployed viewer
+    if compgen -G "${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/org.eclipse.osgi_*.jar" > /dev/null; then \
+      echo "Detected org.eclipse.osgi under WEB-INF/platform/plugins"; \
+    else \
+      if find ${TOMCAT_HOME}/webapps/birt -maxdepth 6 -name 'org.eclipse.osgi_*.jar' -print | grep -q .; then \
+        echo "Detected org.eclipse.osgi elsewhere under the birt webapp"; \
       else \
-        echo "WARN: ReportEngine/plugins does not contain org.eclipse.osgi_* (unexpected)"; \
+        echo "ERROR: org.eclipse.osgi not found in deployed viewer webapp"; \
+        echo "Selected viewer: $(basename "$VIEWER_SRC")"; \
+        ls -la ${TOMCAT_HOME}/webapps/birt/WEB-INF || true; \
+        ls -la ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform || true; \
+        ls -la ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins || true; \
+        exit 1; \
       fi; \
     fi; \
-    # ODA XML fallback/placement (non-destructive)
+    # Minimal ODA XML handling (non-destructive): prefer placing into WEB-INF/lib only
     if compgen -G "${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar" > /dev/null || \
        compgen -G "${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar" > /dev/null; then \
       echo "Using ODA XML already present in webapp"; \
     elif compgen -G "${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar" > /dev/null; then \
       cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/ || true; \
-      cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/ || true; \
+      if [[ -d "${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins" ]] && compgen -G "${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/org.eclipse.osgi_*.jar" > /dev/null; then \
+        cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/ || true; \
+      fi; \
     elif compgen -G "${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar" > /dev/null; then \
       cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/ || true; \
-      cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/ || true; \
+      if [[ -d "${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins" ]] && compgen -G "${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/org.eclipse.osgi_*.jar" > /dev/null; then \
+        cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/plugins/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/ || true; \
+      fi; \
     else \
       echo "ODA XML not found in runtime; attempting fallback download"; \
       if wget -O "/tmp/$(basename ${ODA_XML_JAR_URL})" "${ODA_XML_JAR_URL}"; then \
         cp "/tmp/$(basename ${ODA_XML_JAR_URL})" ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/ || true; \
-        cp "/tmp/$(basename ${ODA_XML_JAR_URL})" ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/ || true; \
+        if [[ -d "${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins" ]] && compgen -G "${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/org.eclipse.osgi_*.jar" > /dev/null; then \
+          cp "/tmp/$(basename ${ODA_XML_JAR_URL})" ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/ || true; \
+        fi; \
       else \
         echo "WARN: ODA XML fallback unavailable (non-fatal)"; \
       fi; \
-    fi; \
-    # Sanity check: org.eclipse.osgi must be present in platform/plugins
-    if ! compgen -G "${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/org.eclipse.osgi_*.jar" > /dev/null; then \
-      echo "ERROR: Missing org.eclipse.osgi in ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins"; \
-      ls -la ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform || true; \
-      ls -la ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins || true; \
-      exit 1; \
     fi; \
     rm -f ${TOMCAT_HOME}/webapps/${RUNTIME_ZIP}*; \
     rm -rf ${TOMCAT_HOME}/webapps/birt-runtime
