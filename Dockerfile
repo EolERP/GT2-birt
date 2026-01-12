@@ -85,6 +85,7 @@ RUN chmod +x /usr/local/bin/patch_server_xml.sh \
 RUN set -euo pipefail; \
     mkdir -p "${BIRT_FONTS_DIR}"
 
+ADD arial.ttf /usr/share/fonts/truetype/arial.ttf
 ADD mundial.ttf /usr/share/fonts/truetype/mundial.ttf
 RUN fc-cache -f >/dev/null 2>&1 || true
 
