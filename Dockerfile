@@ -17,12 +17,17 @@ ARG ODA_XML_JAR_URL=https://download.eclipse.org/releases/2021-03/202103171000/p
 ENV TOMCAT_HOME=/opt/tomcat
 
 # Pre-Installation and system packages
+# NOTE: we explicitly install fontconfig + fonts to prevent missing glyphs (e.g., "Č" -> " ").
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
         openjdk-${JAVA_VERSION}-jre-headless \
         wget \
         unzip \
+        fontconfig \
+        libfreetype6 \
+        fonts-dejavu-core \
+        fonts-liberation \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -76,6 +81,9 @@ VOLUME ${TOMCAT_HOME}/webapps/birt
 
 ADD mundial.ttf /usr/share/fonts/truetype
 ADD arial.ttf /usr/share/fonts/truetype
+
+# IMPORTANT: refresh font cache after adding custom TTFs
+RUN fc-cache -f -v
 
 ADD version.rptdesign ${TOMCAT_HOME}/webapps/birt
 ADD version.txt ${TOMCAT_HOME}/webapps/birt

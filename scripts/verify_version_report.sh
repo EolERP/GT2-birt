@@ -18,6 +18,10 @@ CREDIX_REPORT_NAME=${CREDIX_REPORT_NAME:-credix_repayment_schedule.rptdesign}
 CREDIX_XML_FILE_URL=${CREDIX_XML_FILE_URL:-https://gist.githubusercontent.com/dpodhola-eolerp/16266ad29c3bc8309c6601e2c15ac3d8/raw/4612297f7613d063ce2d0cf64e2f554ef6b03d7b/data.xml}
 CREDIX_EXPECT_1=${CREDIX_EXPECT_1:-E2E_TEST_CredixBankAccount_123}
 CREDIX_EXPECT_2=${CREDIX_EXPECT_2:-E2E_TEST_SCONT_Value_123}
+
+# NEW: diacritics check (hard fail)
+CREDIX_EXPECT_CZ=${CREDIX_EXPECT_CZ:-Číslo}
+
 CREDIX_ENDPOINT_PATH=${CREDIX_ENDPOINT_PATH:-/birt/frameset}
 CREDIX_FORMAT=${CREDIX_FORMAT:-pdf}
 
@@ -28,8 +32,6 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 TMP_DIR=${TMP_DIR:-"$(mktemp -d)"}
 HEADERS_FILE="$TMP_DIR/headers.txt"
 BODY_HTML="$TMP_DIR/body.html"
-BODY_PDF="$TMP_DIR/body.pdf"
-BODY_TXT="$TMP_DIR/body.txt"
 
 FAILED=1
 
@@ -48,9 +50,6 @@ cleanup() {
     if [[ -s "$BODY_HTML" ]]; then
       warn "Response body (first 2000 chars HTML):"
       head -c 2000 "$BODY_HTML" | sed 's/^/[body] /' >&2 || true
-    elif [[ -s "$BODY_TXT" ]]; then
-      warn "Response text (first 2000 chars):"
-      head -c 2000 "$BODY_TXT" | sed 's/^/[text] /' >&2 || true
     fi
     if command -v docker >/dev/null 2>&1; then
       warn "Docker logs (last 200 lines):"
@@ -129,15 +128,13 @@ if docker logs "$CONTAINER_NAME" 2>&1 | grep -Eqi 'fatal|fatalerror'; then
   exit 1
 fi
 
-# Extra test: verify Secure attribute on session cookie behind reverse proxy
-# (best-effort: should not fail the build, but should warn loudly)
+# Extra test: verify Secure attribute on session cookie behind reverse proxy (best-effort)
 COOKIE_HDRS="$TMP_DIR/cookie_headers.txt"
 if curl -fsSLI -D "$COOKIE_HDRS" -H 'X-Forwarded-Proto: https' "$BASE_URL/birt/" -o /dev/null; then
   if grep -Eqi '^Set-Cookie:.*;[[:space:]]*Secure' "$COOKIE_HDRS"; then
     log "Secure attribute PRESENT on Set-Cookie when X-Forwarded-Proto=https"
   else
     warn "Secure attribute NOT present on Set-Cookie despite X-Forwarded-Proto=https"
-    warn "Note: Consider setting scheme=\"https\", secure=\"true\", and proxyPort on the HTTP Connector in server.xml if application requires secure cookies."
   fi
 else
   warn "Curl to /birt/ for cookie check failed"
@@ -202,7 +199,7 @@ fi
 # ==========================================================
 # 2) AUTHORITATIVE production-like check: Credix PDF via /birt/frameset
 # ==========================================================
-log "Credix config: REPORT=$CREDIX_REPORT_NAME XML=$CREDIX_XML_FILE_URL EXPECT_1=$CREDIX_EXPECT_1 EXPECT_2=$CREDIX_EXPECT_2 ENDPOINT=$CREDIX_ENDPOINT_PATH FORMAT=$CREDIX_FORMAT"
+log "Credix config: REPORT=$CREDIX_REPORT_NAME XML=$CREDIX_XML_FILE_URL EXPECT_1=$CREDIX_EXPECT_1 EXPECT_2=$CREDIX_EXPECT_2 EXPECT_CZ=$CREDIX_EXPECT_CZ ENDPOINT=$CREDIX_ENDPOINT_PATH FORMAT=$CREDIX_FORMAT"
 
 # Verify report exists in container (hard fail)
 if ! docker exec "$CONTAINER_NAME" test -f "$BIRT_DIR/$CREDIX_REPORT_NAME"; then
@@ -247,41 +244,74 @@ log "Credix request URL: $CREDIX_URL"
 OUT_DIR="$REPO_ROOT/out"
 mkdir -p "$OUT_DIR"
 
+PDF_FILE="$OUT_DIR/credix_report.pdf"
+TXT_FILE="$OUT_DIR/credix_report.txt"
+FONTS_FILE="$OUT_DIR/credix_fonts.txt"
+
 # Download PDF (hard fail)
-if ! curl -fsSL -D "$OUT_DIR/credix_headers.txt" "$CREDIX_URL" -o "$OUT_DIR/credix_report.pdf"; then
+if ! curl -fsSL -D "$OUT_DIR/credix_headers.txt" "$CREDIX_URL" -o "$PDF_FILE"; then
   err "curl download failed for Credix report"
   FAILED=1
   exit 1
 fi
 
 # Verify PDF magic (hard fail)
-if ! head -c 5 "$OUT_DIR/credix_report.pdf" | grep -q "%PDF-"; then
-  head -c 2000 "$OUT_DIR/credix_report.pdf" > "$OUT_DIR/credix_body_preview.txt" 2>/dev/null || true
+if ! head -c 5 "$PDF_FILE" | grep -q "%PDF-"; then
+  head -c 2000 "$PDF_FILE" > "$OUT_DIR/credix_body_preview.txt" 2>/dev/null || true
   err "Credix response is not a PDF"
   FAILED=1
   exit 1
 fi
 
-# Extract text (best-effort)
+# Extract text (best-effort, but required for content assertions)
 if command -v pdftotext >/dev/null 2>&1; then
-  pdftotext -q "$OUT_DIR/credix_report.pdf" "$OUT_DIR/credix_report.txt" || true
+  pdftotext -q "$PDF_FILE" "$TXT_FILE" || true
 else
-  strings -a "$OUT_DIR/credix_report.pdf" > "$OUT_DIR/credix_report.txt" || true
+  strings -a "$PDF_FILE" > "$TXT_FILE" || true
+  warn "pdftotext not available; used strings fallback (less reliable)"
 fi
 
 # Verify expected strings in PDF (hard fail)
-if ! grep -Fq -- "$CREDIX_EXPECT_1" "$OUT_DIR/credix_report.txt"; then
+if ! grep -Fq -- "$CREDIX_EXPECT_1" "$TXT_FILE"; then
   err "Expected string 1 not found in PDF: $CREDIX_EXPECT_1"
   FAILED=1
   exit 1
 fi
-if ! grep -Fq -- "$CREDIX_EXPECT_2" "$OUT_DIR/credix_report.txt"; then
+if ! grep -Fq -- "$CREDIX_EXPECT_2" "$TXT_FILE"; then
   err "Expected string 2 not found in PDF: $CREDIX_EXPECT_2"
   FAILED=1
   exit 1
 fi
 
-log "SUCCESS: Credix PDF report contains expected strings."
+# NEW: Verify Czech diacritics survived PDF rendering (hard fail)
+if ! grep -Fq -- "$CREDIX_EXPECT_CZ" "$TXT_FILE"; then
+  err "Czech diacritics check failed: expected '$CREDIX_EXPECT_CZ' not found in extracted PDF text"
+  warn "If you see 'íslo' instead of 'Číslo', your image likely lacks usable fonts/fontconfig or BIRT font mapping."
+  FAILED=1
+  exit 1
+fi
+
+# NEW: Verify fonts are embedded (best-effort but can be made strict)
+if command -v pdffonts >/dev/null 2>&1; then
+  pdffonts "$PDF_FILE" > "$FONTS_FILE" || true
+
+  # Expect at least one embedded font ("yes" in the 'emb' column)
+  if ! awk 'NR>2 {print}' "$FONTS_FILE" | grep -Eq '(^|[[:space:]])yes([[:space:]]|$)'; then
+    err "Font embedding check failed: no embedded fonts detected in PDF"
+    warn "This often correlates with missing glyphs for diacritics."
+    FAILED=1
+    exit 1
+  fi
+
+  # Soft check: common families
+  if ! grep -Eq 'DejaVu|Liberation|Arial' "$FONTS_FILE"; then
+    warn "No DejaVu/Liberation/Arial detected by pdffonts (may still be OK depending on BIRT mapping)."
+  fi
+else
+  warn "pdffonts not available; skipping PDF font embedding check (install poppler-utils for stronger coverage)"
+fi
+
+log "SUCCESS: Credix PDF report contains expected strings, Czech diacritics, and has embedded fonts (when pdffonts available)."
 
 FAILED=0
 exit 0
