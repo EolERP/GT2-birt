@@ -1,6 +1,7 @@
 ARG UBUNTU_VERSION=24.04
 FROM ubuntu:${UBUNTU_VERSION}
 
+# --- Version / constants (keep everything else the same) ---
 ARG JAVA_VERSION=21
 
 ARG TOMCAT_VERSION=9.0.113
@@ -9,10 +10,13 @@ ARG TOMCAT_MAJOR=9
 ARG BIRT_VERSION=4.22.0
 ARG BIRT_BUILD=202512100727
 ARG BIRT_CHANNEL=release
+# BIRT base URL will be derived from channel during download (release | latest | milestone)
 ARG ODA_XML_JAR_URL=https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.4.102.201901091730.jar
 
 ENV TOMCAT_HOME=/opt/tomcat
 
+# Pre-Installation and system packages
+# NOTE: install fontconfig + fonts explicitly, otherwise PDF renderer may lose glyphs (Č -> nothing).
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
@@ -23,16 +27,19 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
         libfreetype6 \
         fonts-dejavu-core \
         fonts-liberation \
+        perl \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
+# Tomcat
 RUN wget "https://archive.apache.org/dist/tomcat/tomcat-${TOMCAT_MAJOR}/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz" -P ${TOMCAT_HOME}
 RUN tar xzvf ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz -C ${TOMCAT_HOME} --strip-components=1
 RUN rm ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz
 
+# Harden: flip allow -> deny in any XML (as you had it)
 RUN grep -rl --include \*.xml allow . | xargs sed -i 's/allow/deny/g'
 
-# Determine BIRT base URL based on channel, download runtime, unpack viewer
+# Determine BIRT base URL based on channel and download runtime
 SHELL ["/bin/bash", "-c"]
 RUN set -euo pipefail; \
     if [[ "${BIRT_CHANNEL}" == "latest" ]]; then \
@@ -74,7 +81,7 @@ RUN chmod +x /usr/local/bin/patch_server_xml.sh \
 # Map Reports folder
 VOLUME ${TOMCAT_HOME}/webapps/birt
 
-# Add your fonts
+# Add your fonts (as before)
 ADD mundial.ttf /usr/share/fonts/truetype
 ADD arial.ttf /usr/share/fonts/truetype
 
@@ -82,50 +89,60 @@ ADD arial.ttf /usr/share/fonts/truetype
 RUN fc-cache -f -v
 
 # ---- CRITICAL: Make BIRT PDF engine actually SEE the fonts ----
-# BIRT viewer uses OSGi plugins under WEB-INF/platform/plugins.
-# If fontsConfig.xml has <font-paths>, system font dirs may be ignored.
-# So: copy TTFs into the BIRT font plugin + add font paths + alias Arial -> DejaVu Sans.
+# Robust: locate fontsConfig.xml via find (BIRT plugin names/layout may change by version)
 RUN set -euo pipefail; \
-    FONT_PLUGIN_DIR="$(ls -d ${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins/org.eclipse.birt.report.engine.fonts_* | head -n1)"; \
-    echo "BIRT font plugin: ${FONT_PLUGIN_DIR}"; \
+    PLUGINS_DIR="${TOMCAT_HOME}/webapps/birt/WEB-INF/platform/plugins"; \
+    if [[ ! -d "${PLUGINS_DIR}" ]]; then \
+      echo "ERROR: BIRT plugins directory not found: ${PLUGINS_DIR}"; \
+      echo "Listing ${TOMCAT_HOME}/webapps/birt/WEB-INF:"; \
+      ls -la "${TOMCAT_HOME}/webapps/birt/WEB-INF" || true; \
+      exit 1; \
+    fi; \
+    \
+    FC_XML="$(find "${PLUGINS_DIR}" -maxdepth 3 -type f -name 'fontsConfig.xml' | head -n1)"; \
+    if [[ -z "${FC_XML}" ]]; then \
+      echo "ERROR: fontsConfig.xml not found under ${PLUGINS_DIR}"; \
+      echo "Available plugins (top level):"; \
+      ls -1 "${PLUGINS_DIR}" | head -n 200 || true; \
+      echo "Searching for anything font-related:"; \
+      find "${PLUGINS_DIR}" -maxdepth 2 -type d -iname '*font*' -o -type f -iname '*font*' | head -n 200 || true; \
+      exit 1; \
+    fi; \
+    \
+    FONT_PLUGIN_DIR="$(dirname "${FC_XML}")"; \
+    echo "BIRT fontsConfig.xml: ${FC_XML}"; \
+    echo "BIRT font plugin dir: ${FONT_PLUGIN_DIR}"; \
     mkdir -p "${FONT_PLUGIN_DIR}/fonts"; \
-    # Copy your custom fonts into the plugin fonts folder
-    cp -f /usr/share/fonts/truetype/*.ttf "${FONT_PLUGIN_DIR}/fonts/" || true; \
-    # Also copy DejaVu/Liberation (safe, small enough, and fixes CE glyphs reliably)
-    cp -f /usr/share/fonts/truetype/dejavu/*.ttf "${FONT_PLUGIN_DIR}/fonts/" || true; \
-    cp -f /usr/share/fonts/truetype/liberation/*.ttf "${FONT_PLUGIN_DIR}/fonts/" || true; \
     \
-    # Patch fontsConfig.xml to include useful paths and alias Arial -> DejaVu Sans
-    FC_XML="${FONT_PLUGIN_DIR}/fontsConfig.xml"; \
-    test -f "$FC_XML" || (echo "ERROR: fontsConfig.xml not found at $FC_XML" && exit 1); \
+    # Copy your custom + common fonts into the plugin folder (so PDF engine can't ignore them)
+    cp -f /usr/share/fonts/truetype/*.ttf "${FONT_PLUGIN_DIR}/fonts/" 2>/dev/null || true; \
+    cp -f /usr/share/fonts/truetype/dejavu/*.ttf "${FONT_PLUGIN_DIR}/fonts/" 2>/dev/null || true; \
+    cp -f /usr/share/fonts/truetype/liberation/*.ttf "${FONT_PLUGIN_DIR}/fonts/" 2>/dev/null || true; \
     \
-    # 1) Ensure these font paths are present inside <font-paths>
-    # Add idempotently: only insert if not already there
+    # 1) Ensure these font paths are present inside <font-paths> (idempotent)
     for P in "fonts" "/usr/share/fonts" "/usr/share/fonts/truetype" "/usr/share/fonts/truetype/dejavu" "/usr/share/fonts/truetype/liberation"; do \
-      if ! grep -Fq "path=\"${P}\"" "$FC_XML"; then \
-        if grep -q "<font-paths>" "$FC_XML"; then \
-          perl -0777 -i -pe "s|<font-paths>|<font-paths>\\n    <path path=\\\"${P}\\\"/>|s" "$FC_XML"; \
+      if ! grep -Fq "path=\"${P}\"" "${FC_XML}"; then \
+        if grep -q "<font-paths>" "${FC_XML}"; then \
+          perl -0777 -i -pe "s|<font-paths>|<font-paths>\\n    <path path=\\\"${P}\\\"/>|s" "${FC_XML}"; \
         else \
-          # If font-paths section doesn't exist, create it near the top (best-effort)
-          perl -0777 -i -pe "s|(<configuration[^>]*>)|\\1\\n  <font-paths>\\n    <path path=\\\"${P}\\\"/>\\n  </font-paths>|s" "$FC_XML" || true; \
+          perl -0777 -i -pe "s|(<configuration[^>]*>)|\\1\\n  <font-paths>\\n    <path path=\\\"${P}\\\"/>\\n  </font-paths>|s" "${FC_XML}"; \
         fi; \
       fi; \
     done; \
     \
-    # 2) Add alias Arial -> DejaVu Sans (so BIRT stops picking a broken Arial variant)
-    # Idempotent insert: if "Arial" already mentioned, leave it
-    if ! grep -Eq "<alias[^>]+name=\\\"Arial\\\"" "$FC_XML"; then \
-      if grep -q "<font-aliases>" "$FC_XML"; then \
-        perl -0777 -i -pe 's|<font-aliases>|<font-aliases>\n    <alias name="Arial" font="DejaVu Sans"/>\n    <alias name="Arial Unicode MS" font="DejaVu Sans"/>|s' "$FC_XML"; \
+    # 2) Add alias Arial -> DejaVu Sans (idempotent)
+    if ! grep -Eq "<alias[^>]+name=\\\"Arial\\\"" "${FC_XML}"; then \
+      if grep -q "<font-aliases>" "${FC_XML}"; then \
+        perl -0777 -i -pe 's|<font-aliases>|<font-aliases>\n    <alias name="Arial" font="DejaVu Sans"/>\n    <alias name="Arial Unicode MS" font="DejaVu Sans"/>|s' "${FC_XML}"; \
       else \
-        # If no aliases section exists, inject one (best-effort)
-        perl -0777 -i -pe 's|(</font-paths>)|$1\n  <font-aliases>\n    <alias name="Arial" font="DejaVu Sans"/>\n    <alias name="Arial Unicode MS" font="DejaVu Sans"/>\n  </font-aliases>|s' "$FC_XML" || true; \
+        perl -0777 -i -pe 's|(</font-paths>)|$1\n  <font-aliases>\n    <alias name="Arial" font="DejaVu Sans"/>\n    <alias name="Arial Unicode MS" font="DejaVu Sans"/>\n  </font-aliases>|s' "${FC_XML}"; \
       fi; \
     fi; \
     \
-    echo "Patched $FC_XML (showing font-paths and aliases):"; \
-    grep -nE "font-paths|<path |font-aliases|<alias " "$FC_XML" | head -n 120 || true
+    echo "Patched ${FC_XML} (showing font-paths and aliases):"; \
+    grep -nE "font-paths|<path |font-aliases|<alias " "${FC_XML}" | head -n 200 || true
 
+# App assets
 ADD version.rptdesign ${TOMCAT_HOME}/webapps/birt
 ADD version.txt ${TOMCAT_HOME}/webapps/birt
 ADD index.html ${TOMCAT_HOME}/webapps/birt
@@ -147,5 +164,8 @@ RUN perl -0777 -i -pe 's|(\<param-name\>\s*BIRT_VIEWER_WORKING_FOLDER\s*\<\/para
 RUN perl -0777 -i -pe 's|(\<param-name\>\s*WORKING_FOLDER_ACCESS_ONLY\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1false\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml || true
 RUN perl -0777 -i -pe 's|(\<param-name\>\s*WORKING_FOLDER_ACCESS_ONLY\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1false\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true
 
+# Start
 CMD ["/opt/tomcat/bin/catalina.sh", "run"]
+
+# Port
 EXPOSE 8080
