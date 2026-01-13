@@ -9,7 +9,7 @@ on:
 
 concurrency:
   group: birt-e2e-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   verify:
