@@ -12,17 +12,19 @@ ARG BIRT_VERSION=4.14.0
 ARG BIRT_DROP=snapshot
 ARG BIRT_RUNTIME_DATE=202306081749
 
-
 ENV TOMCAT_HOME=/opt/tomcat
 
 # Pre-Installation and system packages
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
     && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        perl \
         openjdk-${JAVA_VERSION}-jre-headless \
         wget \
         unzip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
+
 RUN wget "https://archive.apache.org/dist/tomcat/tomcat-${TOMCAT_MAJOR}/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz" -P ${TOMCAT_HOME}
 RUN tar xzvf ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz -C ${TOMCAT_HOME} --strip-components=1
 RUN rm ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz
@@ -37,11 +39,17 @@ RUN cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datat
 RUN rm ${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip
 RUN rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime
 
-#RUN mkdir /usr/share/tomcat && mkdir /etc/tomcat
-RUN cd ${TOMCAT_HOME} && ln -s /etc/tomcat conf
-# RUN ln -s /opt/tomcat/webapps/ /usr/share/tomcat/webapps
+# ----------------------------------------------------------
+# Tomcat conf into /etc/tomcat + patch server.xml (Secure cookies)
+# ----------------------------------------------------------
+RUN mkdir -p /etc/tomcat \
+    && cp -a ${TOMCAT_HOME}/conf/. /etc/tomcat/ \
+    && rm -rf ${TOMCAT_HOME}/conf \
+    && ln -s /etc/tomcat ${TOMCAT_HOME}/conf
 
-
+COPY scripts/patch_server_xml.sh /usr/local/bin/patch_server_xml.sh
+RUN chmod +x /usr/local/bin/patch_server_xml.sh \
+    && /usr/local/bin/patch_server_xml.sh /etc/tomcat/server.xml
 
 # Map Reports folder
 VOLUME ${TOMCAT_HOME}/webapps/birt
@@ -73,8 +81,8 @@ RUN perl -0777 -i -pe 's|(\<param-name\>\s*BIRT_VIEWER_WORKING_FOLDER\s*\<\/para
 RUN perl -0777 -i -pe 's|(\<param-name\>\s*WORKING_FOLDER_ACCESS_ONLY\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1false\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml || true
 RUN perl -0777 -i -pe 's|(\<param-name\>\s*WORKING_FOLDER_ACCESS_ONLY\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1false\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true
 
-#Start
+# Start
 CMD ["/opt/tomcat/bin/catalina.sh", "run"]
 
-#Port
+# Port
 EXPOSE 8080
