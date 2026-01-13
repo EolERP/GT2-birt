@@ -20,6 +20,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
         ca-certificates \
         perl \
         openjdk-${JAVA_VERSION}-jre-headless \
+        fontconfig \
         wget \
         unzip \
     && apt-get clean \
