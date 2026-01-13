@@ -1,4 +1,4 @@
-ARG UBUNTU_VERSION=20.04
+ARG UBUNTU_VERSION=24.04
 FROM ubuntu:${UBUNTU_VERSION}
 
 # --- Version / constants (keep everything else the same) ---
@@ -8,9 +8,9 @@ ARG JAVA_VERSION=17
 ARG TOMCAT_VERSION=9.0.113
 ARG TOMCAT_MAJOR=9
 
-ARG BIRT_VERSION=4.14.0
-ARG BIRT_DROP=snapshot
-ARG BIRT_RUNTIME_DATE=202306081749
+ARG BIRT_VERSION=4.13.0
+ARG BIRT_DROP=R-R1-4.13.0-202303022006
+ARG BIRT_RUNTIME_DATE=20230302
 
 ENV TOMCAT_HOME=/opt/tomcat
 
@@ -20,6 +20,7 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
         ca-certificates \
         perl \
         openjdk-${JAVA_VERSION}-jre-headless \
+        fontconfig \
         wget \
         unzip \
     && apt-get clean \
