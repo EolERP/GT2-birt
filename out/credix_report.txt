@@ -1,0 +1,55 @@
+E2E_TEST_SUBJ_FullName_123
+Číslo smlouvy (VS)
+Kontakty
+Limit
+Úroková sazba (fixní)
+Podpis smluv
+Splatnost
+Číslo účtu pro splácení
+
+Datum
+2026-02-01
+
+E2E_TEST_DEAL_CharID_123
+E2E_TEST_SCONT_Value_123
+123456.78
+9.99%
+2026-01-01
+2027-01-01
+E2E_TEST_CredixBankAccount_123
+
+Zůstatek jistiny
+100000.00
+
+Splátka jistina
+1000.00
+
+čerpání
+
+datum
+
+1
+
+2026-01-05
+
+částka
+9999.00
+
+K čerpání: 9999.00
+
+Splátka úrok
+500.00
+
+Poplatky
+50.00
+
+Sankce
+0.00
+
+Celková platba
+1550.00
+
+Počet dní
+31
+
+
