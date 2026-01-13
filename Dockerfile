@@ -8,9 +8,9 @@ ARG JAVA_VERSION=17
 ARG TOMCAT_VERSION=9.0.113
 ARG TOMCAT_MAJOR=9
 
-ARG BIRT_VERSION=4.13.0
+ARG BIRT_VERSION=4.16.0
 ARG BIRT_DROP=R-R1-4.13.0-202303022006
-ARG BIRT_RUNTIME_DATE=20230302
+ARG BIRT_RUNTIME_DATE=202406141054
 
 ENV TOMCAT_HOME=/opt/tomcat
 
@@ -32,7 +32,7 @@ RUN rm ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz
 
 RUN grep -rl --include \*.xml allow . | xargs sed -i 's/allow/deny/g'
 
-RUN wget "https://download.eclipse.org/birt/downloads/drops/${BIRT_DROP}/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip" -P ${TOMCAT_HOME}/webapps
+RUN wget "https://download.eclipse.org/birt/updates/release/${BIRT_VERSION}/downloads/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip" -P ${TOMCAT_HOME}/webapps
 RUN unzip "${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip" -d ${TOMCAT_HOME}/webapps/birt-runtime
 RUN mv "${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample" "${TOMCAT_HOME}/webapps/birt"
 # Copy ODA XML driver provided by BIRT runtime into the webapp lib
