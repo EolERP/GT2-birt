@@ -9,7 +9,8 @@ ARG TOMCAT_VERSION=9.0.113
 ARG TOMCAT_MAJOR=9
 
 ARG BIRT_VERSION=4.13.0
-ARG BIRT_DROP=R-R1-4.13.0-202303022006
+# Switch to release-channel style (archive) without changing version
+ARG BIRT_CHANNEL=archive
 ARG BIRT_RUNTIME_DATE=20230302
 
 ENV TOMCAT_HOME=/opt/tomcat
@@ -32,13 +33,20 @@ RUN rm ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz
 
 RUN grep -rl --include \*.xml allow . | xargs sed -i 's/allow/deny/g'
 
-RUN wget "https://download.eclipse.org/birt/downloads/drops/${BIRT_DROP}/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip" -P ${TOMCAT_HOME}/webapps
-RUN unzip "${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip" -d ${TOMCAT_HOME}/webapps/birt-runtime
+# Download from release channel (archive) without changing BIRT version
+RUN wget "https://www.eclipse.org/downloads/download.php?file=/birt/archive/${BIRT_VERSION}.zip" -O ${TOMCAT_HOME}/webapps/birt-archive-${BIRT_VERSION}.zip
+RUN unzip -q "${TOMCAT_HOME}/webapps/birt-archive-${BIRT_VERSION}.zip" -d ${TOMCAT_HOME}/webapps/birt-archive
+# Locate the runtime zip inside the archive and extract the WebViewer
+RUN RUNTIME_ZIP="$(find ${TOMCAT_HOME}/webapps/birt-archive -type f -name "birt-runtime-${BIRT_VERSION}-*.zip" | head -n1)" \
+    && if [ -z "$RUNTIME_ZIP" ]; then echo "BIRT runtime zip not found in archive" >&2; exit 1; fi \
+    && unzip -q "$RUNTIME_ZIP" -d ${TOMCAT_HOME}/webapps/birt-runtime
 RUN mv "${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample" "${TOMCAT_HOME}/webapps/birt"
 # Copy ODA XML driver provided by BIRT runtime into the webapp lib
 RUN cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/
-RUN rm ${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip
-RUN rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime
+# Cleanup
+RUN rm -f ${TOMCAT_HOME}/webapps/birt-archive-${BIRT_VERSION}.zip \
+    && rm -rf ${TOMCAT_HOME}/webapps/birt-archive \
+    && rm -rf ${TOMCAT_HOME}/webapps/birt-runtime
 
 # ----------------------------------------------------------
 # Tomcat conf into /etc/tomcat + patch server.xml (Secure cookies)
