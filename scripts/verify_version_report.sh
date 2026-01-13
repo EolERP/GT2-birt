@@ -23,7 +23,6 @@ CREDIX_FORMAT=${CREDIX_FORMAT:-pdf}
 
 # Czech glyph/font check (authoritative)
 # Use a stable token that must appear in the PDF when fonts are correct.
-# You can override via env if you want.
 CREDIX_CZ_MUST_HAVE=${CREDIX_CZ_MUST_HAVE:-Číslo}
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -35,6 +34,7 @@ HEADERS_FILE="$TMP_DIR/headers.txt"
 BODY_HTML="$TMP_DIR/body.html"
 BODY_PDF="$TMP_DIR/body.pdf"
 BODY_TXT="$TMP_DIR/body.txt"
+COOKIE_HDRS="$TMP_DIR/cookie_headers.txt"
 
 FAILED=1
 
@@ -57,6 +57,10 @@ cleanup() {
       warn "Response text (first 2000 chars):"
       head -c 2000 "$BODY_TXT" | sed 's/^/[text] /' >&2 || true
     fi
+    if [[ -s "$COOKIE_HDRS" ]]; then
+      warn "Cookie check headers (first 80 lines):"
+      sed -n '1,80p' "$COOKIE_HDRS" | sed 's/^/[cookie] /' >&2 || true
+    fi
     if command -v docker >/dev/null 2>&1; then
       warn "Docker logs (last 200 lines):"
       docker logs --tail 200 "$CONTAINER_NAME" 2>&1 | sed 's/^/[docker] /' >&2 || true
@@ -74,7 +78,6 @@ require() { command -v "$1" >/dev/null 2>&1 || { err "Required command '$1' not 
 
 require docker
 require curl
-
 # NOTE: We REQUIRE pdftotext now because strings is not Unicode-safe and will miss diacritics.
 require pdftotext
 
@@ -138,20 +141,6 @@ if docker logs "$CONTAINER_NAME" 2>&1 | grep -Eqi 'fatal|fatalerror'; then
   exit 1
 fi
 
-# Extra test: verify Secure attribute on session cookie behind reverse proxy
-# (best-effort: should not fail the build, but should warn loudly)
-COOKIE_HDRS="$TMP_DIR/cookie_headers.txt"
-if curl -fsSLI -D "$COOKIE_HDRS" -H 'X-Forwarded-Proto: https' "$BASE_URL/birt/" -o /dev/null; then
-  if grep -Eqi '^Set-Cookie:.*;[[:space:]]*Secure' "$COOKIE_HDRS"; then
-    log "Secure attribute PRESENT on Set-Cookie when X-Forwarded-Proto=https"
-  else
-    warn "Secure attribute NOT present on Set-Cookie despite X-Forwarded-Proto=https"
-    warn "Note: Consider setting scheme=\"https\", secure=\"true\", and proxyPort on the HTTP Connector in server.xml if application requires secure cookies."
-  fi
-else
-  warn "Curl to /birt/ for cookie check failed"
-fi
-
 # Fixed location (no discovery)
 BIRT_DIR="/opt/tomcat/webapps/birt"
 log "BIRT webapp root: $BIRT_DIR"
@@ -173,6 +162,69 @@ fetch_html() {
   code=$(curl -sS -L -D "$HEADERS_FILE" -o "$BODY_HTML" --max-time 90 "$url" -w "%{http_code}" || true)
   echo "$code"
 }
+
+# URL-encode XML file URL only
+credix_urlencode() {
+  local s="$1"
+  if command -v python3 >/dev/null 2>&1; then
+    python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$s"
+  elif command -v python >/dev/null 2>&1; then
+    python - "$s" <<'PY'
+import sys
+try:
+    from urllib.parse import quote
+except Exception:
+    from urllib import quote
+print(quote(sys.argv[1], safe=''))
+PY
+  else
+    local i out="" c
+    for (( i=0; i<${#s}; i++ )); do
+      c=${s:i:1}
+      case "$c" in
+        [a-zA-Z0-9._~-]) out+="$c";;
+        *) printf -v hex '%%%02X' "'${c}"; out+="$hex";;
+      esac
+    done
+    echo -n "$out"
+  fi
+}
+
+# ==========================================================
+# CRX-10 (HARD FAIL): Secure cookie must be present behind reverse proxy
+# We validate on the REAL production-like endpoint (Credix PDF).
+# ==========================================================
+ENC_XML="$(credix_urlencode "$CREDIX_XML_FILE_URL")"
+CREDIX_URL="${BASE_URL}${CREDIX_ENDPOINT_PATH}?xml_file=${ENC_XML}&__format=${CREDIX_FORMAT}&__report=${CREDIX_REPORT_NAME}"
+log "CRX-10 cookie check URL (via PDF endpoint): $CREDIX_URL"
+
+: > "$COOKIE_HDRS"
+if ! curl -fsSL -D "$COOKIE_HDRS" -o /dev/null -H 'X-Forwarded-Proto: https' "$CREDIX_URL"; then
+  err "CRX-10 cookie check FAILED: curl to PDF endpoint failed"
+  FAILED=1
+  exit 1
+fi
+
+# We require that the session cookie is actually set, otherwise we cannot prove it's secure.
+if ! grep -Eqi '^Set-Cookie:.*JSESSIONID=' "$COOKIE_HDRS"; then
+  err "CRX-10 cookie check FAILED: no JSESSIONID cookie was set by the PDF endpoint (cannot prove Secure is enforced)"
+  err "Headers seen:"
+  sed -n '1,80p' "$COOKIE_HDRS" | sed 's/^/[cookie] /' >&2 || true
+  FAILED=1
+  exit 1
+fi
+
+if grep -Eqi '^Set-Cookie:.*JSESSIONID=.*;[[:space:]]*Secure' "$COOKIE_HDRS"; then
+  log "CRX-10 OK: Secure attribute PRESENT on JSESSIONID when X-Forwarded-Proto=https"
+else
+  err "CRX-10 FAILED: Secure attribute NOT present on JSESSIONID despite X-Forwarded-Proto=https"
+  err "This means session cookies can be issued without Secure, enabling downgrade/MITM cookie capture scenarios."
+  err "Typical fix: set scheme=\"https\" secure=\"true\" proxyPort=\"443\" on the HTTP Connector in server.xml and ensure RemoteIpValve is active + ingress forwards correct headers."
+  err "Headers seen:"
+  sed -n '1,80p' "$COOKIE_HDRS" | sed 's/^/[cookie] /' >&2 || true
+  FAILED=1
+  exit 1
+fi
 
 # ==========================================================
 # 1) FAST version check (BEST-EFFORT): /birt/run (HTML)
@@ -223,39 +275,10 @@ if ! docker exec "$CONTAINER_NAME" test -f "$BIRT_DIR/$CREDIX_REPORT_NAME"; then
   exit 1
 fi
 
-# URL-encode XML file URL only
-credix_urlencode() {
-  local s="$1"
-  if command -v python3 >/dev/null 2>&1; then
-    python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1], safe=''))" "$s"
-  elif command -v python >/dev/null 2>&1; then
-    python - "$s" <<'PY'
-import sys
-try:
-    from urllib.parse import quote
-except Exception:
-    from urllib import quote
-print(quote(sys.argv[1], safe=''))
-PY
-  else
-    local i out="" c
-    for (( i=0; i<${#s}; i++ )); do
-      c=${s:i:1}
-      case "$c" in
-        [a-zA-Z0-9._~-]) out+="$c";;
-        *) printf -v hex '%%%02X' "'${c}"; out+="$hex";;
-      esac
-    done
-    echo -n "$out"
-  fi
-}
-
-ENC_XML="$(credix_urlencode "$CREDIX_XML_FILE_URL")"
-CREDIX_URL="${BASE_URL}${CREDIX_ENDPOINT_PATH}?xml_file=${ENC_XML}&__format=${CREDIX_FORMAT}&__report=${CREDIX_REPORT_NAME}"
-log "Credix request URL: $CREDIX_URL"
-
 OUT_DIR="$REPO_ROOT/out"
 mkdir -p "$OUT_DIR"
+
+log "Credix request URL: $CREDIX_URL"
 
 # Download PDF (hard fail)
 if ! curl -fsSL -D "$OUT_DIR/credix_headers.txt" "$CREDIX_URL" -o "$OUT_DIR/credix_report.pdf"; then
