@@ -21,6 +21,11 @@ CREDIX_EXPECT_2=${CREDIX_EXPECT_2:-E2E_TEST_SCONT_Value_123}
 CREDIX_ENDPOINT_PATH=${CREDIX_ENDPOINT_PATH:-/birt/frameset}
 CREDIX_FORMAT=${CREDIX_FORMAT:-pdf}
 
+# Czech glyph/font check (authoritative)
+# Use a stable token that must appear in the PDF when fonts are correct.
+# You can override via env if you want.
+CREDIX_CZ_MUST_HAVE=${CREDIX_CZ_MUST_HAVE:-Číslo}
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
@@ -66,8 +71,12 @@ cleanup() {
 trap cleanup EXIT INT TERM
 
 require() { command -v "$1" >/dev/null 2>&1 || { err "Required command '$1' not found in PATH"; exit 1; }; }
+
 require docker
 require curl
+
+# NOTE: We REQUIRE pdftotext now because strings is not Unicode-safe and will miss diacritics.
+require pdftotext
 
 # Validate inputs exist in repo (they may still be copied into container later)
 if [[ ! -f "$REPO_ROOT/$REPORT_FILE" ]]; then
@@ -203,6 +212,7 @@ fi
 # 2) AUTHORITATIVE production-like check: Credix PDF via /birt/frameset
 # ==========================================================
 log "Credix config: REPORT=$CREDIX_REPORT_NAME XML=$CREDIX_XML_FILE_URL EXPECT_1=$CREDIX_EXPECT_1 EXPECT_2=$CREDIX_EXPECT_2 ENDPOINT=$CREDIX_ENDPOINT_PATH FORMAT=$CREDIX_FORMAT"
+log "Czech glyph check token: '$CREDIX_CZ_MUST_HAVE'"
 
 # Verify report exists in container (hard fail)
 if ! docker exec "$CONTAINER_NAME" test -f "$BIRT_DIR/$CREDIX_REPORT_NAME"; then
@@ -262,12 +272,13 @@ if ! head -c 5 "$OUT_DIR/credix_report.pdf" | grep -q "%PDF-"; then
   exit 1
 fi
 
-# Extract text (best-effort)
-if command -v pdftotext >/dev/null 2>&1; then
-  pdftotext -q "$OUT_DIR/credix_report.pdf" "$OUT_DIR/credix_report.txt" || true
-else
-  strings -a "$OUT_DIR/credix_report.pdf" > "$OUT_DIR/credix_report.txt" || true
-fi
+# Extract text (hard fail if extraction fails, because our checks depend on it)
+# -enc UTF-8 is critical for diacritics
+pdftotext -q -enc UTF-8 -nopgbrk "$OUT_DIR/credix_report.pdf" "$OUT_DIR/credix_report.txt" || {
+  err "pdftotext failed to extract text from Credix PDF"
+  FAILED=1
+  exit 1
+}
 
 # Verify expected strings in PDF (hard fail)
 if ! grep -Fq -- "$CREDIX_EXPECT_1" "$OUT_DIR/credix_report.txt"; then
@@ -281,7 +292,16 @@ if ! grep -Fq -- "$CREDIX_EXPECT_2" "$OUT_DIR/credix_report.txt"; then
   exit 1
 fi
 
-log "SUCCESS: Credix PDF report contains expected strings."
+# Czech glyph/font presence check (hard fail)
+if ! grep -Fq -- "$CREDIX_CZ_MUST_HAVE" "$OUT_DIR/credix_report.txt"; then
+  err "Czech glyph check FAILED: missing '$CREDIX_CZ_MUST_HAVE' in extracted PDF text (fonts likely missing / wrong)."
+  warn "PDF text preview (first 200 lines):"
+  sed -n '1,200p' "$OUT_DIR/credix_report.txt" | sed 's/^/[pdftext] /' >&2 || true
+  FAILED=1
+  exit 1
+fi
+
+log "SUCCESS: Credix PDF report contains expected strings and Czech glyph token '$CREDIX_CZ_MUST_HAVE'."
 
 FAILED=0
 exit 0
