@@ -8,9 +8,10 @@ ARG JAVA_VERSION=21
 ARG TOMCAT_VERSION=9.0.113
 ARG TOMCAT_MAJOR=9
 
-ARG BIRT_VERSION=4.13.0
-ARG BIRT_DROP=R-R1-4.13.0-202303022006
-ARG BIRT_RUNTIME_DATE=20230302
+ARG BIRT_VERSION=4.22.0
+ARG BIRT_BUILD=202512100727
+ARG BIRT_CHANNEL=release
+ENV BIRT_BASE_URL=https://download.eclipse.org/birt/updates/${BIRT_CHANNEL}/${BIRT_VERSION}/downloads
 
 ENV TOMCAT_HOME=/opt/tomcat
 
@@ -32,12 +33,22 @@ RUN rm ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz
 
 RUN grep -rl --include \*.xml allow . | xargs sed -i 's/allow/deny/g'
 
-RUN wget "https://download.eclipse.org/birt/downloads/drops/${BIRT_DROP}/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip" -P ${TOMCAT_HOME}/webapps
-RUN unzip "${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip" -d ${TOMCAT_HOME}/webapps/birt-runtime
+RUN wget -q "${BIRT_BASE_URL}/birt-runtime-${BIRT_VERSION}-${BIRT_BUILD}.zip" -P ${TOMCAT_HOME}/webapps \
+    && wget -q "${BIRT_BASE_URL}/birt-runtime-${BIRT_VERSION}-${BIRT_BUILD}.zip.sha512" -O ${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_BUILD}.zip.sha512 \
+    && cd ${TOMCAT_HOME}/webapps && sha512sum -c "birt-runtime-${BIRT_VERSION}-${BIRT_BUILD}.zip.sha512"
+RUN unzip "${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_BUILD}.zip" -d ${TOMCAT_HOME}/webapps/birt-runtime
 RUN mv "${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample" "${TOMCAT_HOME}/webapps/birt"
-# Copy ODA XML driver provided by BIRT runtime into the webapp lib
-RUN cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/
-RUN rm ${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip
+# Copy ODA XML driver provided by BIRT runtime into the webapp lib (prefer shipped jar)
+RUN cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/ || true
+# Fallback: if ODA XML jar is not present in runtime addons, fetch from Eclipse DTP 1.16.3 update site
+RUN if ! ls ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/org.eclipse.datatools.enablement.oda.xml_*.jar >/dev/null 2>&1; then \
+      echo "ODA XML driver missing in runtime; fetching from DTP update site" && \
+      DTP_PLUGINS_INDEX_URL="https://download.eclipse.org/datatools/updates/release/1.16.3/plugins/" && \
+      FILE=$(wget -qO- "$DTP_PLUGINS_INDEX_URL" | grep -o 'org.eclipse.datatools.enablement.oda.xml_[^"]*\.jar' | head -n1) && \
+      wget -q "https://www.eclipse.org/downloads/download.php?file=/datatools/updates/release/1.16.3/plugins/$FILE" -O "/tmp/$FILE" && \
+      cp "/tmp/$FILE" "${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/"; \
+    fi
+RUN rm ${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_BUILD}.zip
 RUN rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime
 
 # ----------------------------------------------------------
