@@ -1,0 +1,25 @@
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Build output
+out/
+
+# CI/CD artifacts
+ci/
+
+# Certificates (sensitive)
+cert/
+
+# OS specific
+.DS_Store
+Thumbs.db
+*~
+
+# Docker
+*.log
+
+# Git
+.git/
