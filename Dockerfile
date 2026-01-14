@@ -70,14 +70,14 @@ COPY web.xml ${TOMCAT_HOME}/webapps/ROOT/WEB-INF
 
 ADD /cert/*.crt /usr/local/share/ca-certificates/
 RUN update-ca-certificates
-# Apply CSP filter at webapp level (BIRT required, ROOT optional). Idempotent insertion before </web-app>
+# Apply CSP header via ResponseHeaderFilter at webapp level (BIRT required, ROOT optional). Idempotent insertion before </web-app>
 RUN for f in "${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml" "${TOMCAT_HOME}/webapps/ROOT/WEB-INF/web.xml"; do \
       if [ -f "$f" ]; then \
-        if ! grep -q '<filter-name>HttpHeaderSecurity</filter-name>' "$f"; then \
-          echo "Inserting HttpHeaderSecurityFilter into $f"; \
-          perl -0777 -i -pe "s#</web-app>#  <filter>\n    <filter-name>HttpHeaderSecurity</filter-name>\n    <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>\n    <init-param>\n      <param-name>contentSecurityPolicy</param-name>\n      <param-value>default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://eclipse-birt.github.io; font-src 'self' data:; connect-src 'self'; frame-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests</param-value>\n    </init-param>\n  </filter>\n  <filter-mapping>\n    <filter-name>HttpHeaderSecurity</filter-name>\n    <url-pattern>/*</url-pattern>\n  </filter-mapping>\n</web-app>#s" "$f"; \
+        if ! grep -q '<filter-name>CSPFilter</filter-name>' "$f"; then \
+          echo "Inserting CSP ResponseHeaderFilter into $f"; \
+          perl -0777 -i -pe "s#</web-app>#  <filter>\n    <filter-name>CSPFilter</filter-name>\n    <filter-class>org.apache.catalina.filters.ResponseHeaderFilter</filter-class>\n    <init-param>\n      <param-name>name</param-name>\n      <param-value>Content-Security-Policy</param-value>\n    </init-param>\n    <init-param>\n      <param-name>value</param-name>\n      <param-value>\n        default-src 'self';\n        base-uri 'self';\n        object-src 'none';\n        frame-ancestors 'self';\n        form-action 'self';\n        script-src 'self' 'unsafe-inline' 'unsafe-eval';\n        style-src 'self' 'unsafe-inline';\n        img-src 'self' data: blob: https://eclipse-birt.github.io;\n        font-src 'self' data:;\n        connect-src 'self';\n        frame-src 'self';\n        worker-src 'self' blob:;\n        upgrade-insecure-requests\n      </param-value>\n    </init-param>\n  </filter>\n  <filter-mapping>\n    <filter-name>CSPFilter</filter-name>\n    <url-pattern>/*</url-pattern>\n  </filter-mapping>\n</web-app>#s" "$f"; \
         else \
-          echo "HttpHeaderSecurityFilter already present in $f; skipping"; \
+          echo "CSP ResponseHeaderFilter already present in $f; skipping"; \
         fi; \
       fi; \
     done
