@@ -227,6 +227,62 @@ else
 fi
 
 # ==========================================================
+# CRX-11 (HARD FAIL): Content-Security-Policy must be present and contain required directives
+# Check on production-like Credix PDF endpoint and also on /birt/ root
+# ==========================================================
+
+csp_requirements=(
+  "default-src 'self'"
+  "object-src 'none'"
+  "frame-ancestors 'self'"
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+  "style-src 'self' 'unsafe-inline'"
+  "img-src 'self' data: blob:"
+  "font-src 'self' data:"
+  "connect-src 'self'"
+  "base-uri 'self'"
+  "form-action 'self'"
+  "upgrade-insecure-requests"
+)
+
+check_csp() {
+  local url="$1"
+  local headers_file="$2"
+  : > "$headers_file"
+  if ! curl -fsSL -D "$headers_file" -o /dev/null "$url"; then
+    err "CRX-11 FAILED: curl failed for $url"
+    sed -n '1,80p' "$headers_file" | sed 's/^/[headers] /' >&2 || true
+    FAILED=1
+    exit 1
+  fi
+  local csp
+  csp=$(grep -i '^Content-Security-Policy:' "$headers_file" | head -n1 | cut -d':' -f2- | tr -d '\r' | sed -e 's/^ *//')
+  if [[ -z "$csp" ]]; then
+    err "CRX-11 FAILED: Content-Security-Policy header missing for $url"
+    sed -n '1,80p' "$headers_file" | sed 's/^/[headers] /' >&2 || true
+    FAILED=1
+    exit 1
+  fi
+  for req in "${csp_requirements[@]}"; do
+    if ! echo "$csp" | grep -Fqi -- "$req"; then
+      err "CRX-11 FAILED: CSP missing required directive fragment: $req"
+      warn "Observed CSP: $csp"
+      sed -n '1,80p' "$headers_file" | sed 's/^/[headers] /' >&2 || true
+      FAILED=1
+      exit 1
+    fi
+  done
+  log "CRX-11 OK: CSP header present and matches required directives"
+}
+
+log "CRX-11 CSP check URL (PDF endpoint): $CREDIX_URL"
+check_csp "$CREDIX_URL" "$TMP_DIR/csp_pdf_headers.txt"
+
+BIRT_ROOT_URL="${BASE_URL}/birt/"
+log "CRX-11 CSP check URL (/birt/): $BIRT_ROOT_URL"
+check_csp "$BIRT_ROOT_URL" "$TMP_DIR/csp_birt_headers.txt"
+
+# ==========================================================
 # 1) FAST version check (BEST-EFFORT): /birt/run (HTML)
 #    This MUST NOT fail the build. Ever.
 # ==========================================================
