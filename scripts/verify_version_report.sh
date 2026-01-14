@@ -362,6 +362,13 @@ log "Credix request URL: $CREDIX_URL"
 # Download PDF (hard fail)
 if ! curl -fsSL -D "$OUT_DIR/credix_headers.txt" "$CREDIX_URL" -o "$OUT_DIR/credix_report.pdf"; then
   err "curl download failed for Credix report"
+  # Explicit diagnostics for deployment issues
+  if command -v docker >/dev/null 2>&1; then
+    warn "Docker logs (last 200 lines):"
+    docker logs --tail 200 "$CONTAINER_NAME" 2>&1 | sed 's/^/[docker] /' >&2 || true
+    warn "Grep for BIRT context startup failures:"
+    docker logs "$CONTAINER_NAME" 2>&1 | grep -E "Context \[/birt\] startup failed|ClassNotFoundException" | sed 's/^/[grep] /' >&2 || true
+  fi
   FAILED=1
   exit 1
 fi

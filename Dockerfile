@@ -70,18 +70,16 @@ COPY web.xml ${TOMCAT_HOME}/webapps/ROOT/WEB-INF
 
 ADD /cert/*.crt /usr/local/share/ca-certificates/
 RUN update-ca-certificates
-# Apply CSP header via ResponseHeaderFilter at webapp level (BIRT required, ROOT optional). Idempotent insertion before </web-app>
-RUN for f in "${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml" "${TOMCAT_HOME}/webapps/ROOT/WEB-INF/web.xml"; do \
-      if [ -f "$f" ]; then \
-        if ! grep -q '<filter-name>CSPFilter</filter-name>' "$f"; then \
-          echo "Inserting CSP ResponseHeaderFilter into $f"; \
-          perl -0777 -i -pe "s#</web-app>#  <filter>\n    <filter-name>CSPFilter</filter-name>\n    <filter-class>org.apache.catalina.filters.ResponseHeaderFilter</filter-class>\n    <init-param>\n      <param-name>name</param-name>\n      <param-value>Content-Security-Policy</param-value>\n    </init-param>\n    <init-param>\n      <param-name>value</param-name>\n      <param-value>\n        default-src 'self';\n        base-uri 'self';\n        object-src 'none';\n        frame-ancestors 'self';\n        form-action 'self';\n        script-src 'self' 'unsafe-inline' 'unsafe-eval';\n        style-src 'self' 'unsafe-inline';\n        img-src 'self' data: blob: https://eclipse-birt.github.io;\n        font-src 'self' data:;\n        connect-src 'self';\n        frame-src 'self';\n        worker-src 'self' blob:;\n        upgrade-insecure-requests\n      </param-value>\n    </init-param>\n  </filter>\n  <filter-mapping>\n    <filter-name>CSPFilter</filter-name>\n    <url-pattern>/*</url-pattern>\n  </filter-mapping>\n</web-app>#s" "$f"; \
-        else \
-          echo "CSP ResponseHeaderFilter already present in $f; skipping"; \
-        fi; \
-      fi; \
-    done
-
+# Configure CSP via RewriteValve at Host level and rewrite.config
+# 1) Ensure RewriteValve is present under <Host> (idempotent)
+RUN if ! grep -q 'org.apache.catalina.valves.rewrite.RewriteValve' /etc/tomcat/server.xml; then \
+      awk 'BEGIN{ins=0} /<Host[[:space:]]/{host=1} host && /<\/[[:space:]]*Host>/{print "    <Valve className=\"org.apache.catalina.valves.rewrite.RewriteValve\" />"; ins=1; host=0} {print} END{if(ins==0) exit 0}' /etc/tomcat/server.xml > /etc/tomcat/server.xml.new && mv /etc/tomcat/server.xml.new /etc/tomcat/server.xml; \
+    fi
+# 2) Provide CSP rewrite rules (global or at least covering /birt/*)
+RUN printf '%s\n' \
+    'RewriteRule \.\* - [E=CSP:default-src '\''self'\''; base-uri '\''self'\''; object-src '\''none'\''; frame-ancestors '\''self'\''; form-action '\''self'\''; script-src '\''self'\'' '\''unsafe-inline'\'' '\''unsafe-eval'\''; style-src '\''self'\'' '\''unsafe-inline'\''; img-src '\''self'\'' data: blob: https://eclipse-birt.github.io; font-src '\''self'\'' data:; connect-src '\''self'\''; frame-src '\''self'\''; worker-src '\''self'\'' blob:; upgrade-insecure-requests]' \
+    'Header set Content-Security-Policy "%{CSP}e"' \
+    > /etc/tomcat/rewrite.config
 
 RUN rm ${TOMCAT_HOME}/conf/logging.properties
 
