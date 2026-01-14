@@ -303,6 +303,48 @@ pdftotext -q -enc UTF-8 -nopgbrk "$OUT_DIR/credix_report.pdf" "$OUT_DIR/credix_r
   exit 1
 }
 
+# --- Diagnostics (best-effort; DO NOT affect pass/fail) ---
+# 1) pdfinfo / pdffonts
+if command -v pdfinfo >/dev/null 2>&1; then
+  { echo "[verify] pdfinfo (Credix PDF):"; pdfinfo "$OUT_DIR/credix_report.pdf"; } 2>&1 | sed 's/^/[pdfinfo] /' || true
+  pdfinfo "$OUT_DIR/credix_report.pdf" > "$OUT_DIR/credix_pdfinfo.txt" 2>/dev/null || true
+fi
+if command -v pdffonts >/dev/null 2>&1; then
+  { echo "[verify] pdffonts (Credix PDF):"; pdffonts "$OUT_DIR/credix_report.pdf"; } 2>&1 | sed 's/^/[pdffonts] /' || true
+  pdffonts "$OUT_DIR/credix_report.pdf" > "$OUT_DIR/credix_pdffonts.txt" 2>/dev/null || true
+fi
+
+# 2) Alternate extraction via mutool draw -F text
+MUTOOL_OUT="$OUT_DIR/credix_mutool_text.txt"
+MUTOOL_HAS=unknown
+if command -v mutool >/dev/null 2>&1; then
+  mutool draw -F text "$OUT_DIR/credix_report.pdf" > "$MUTOOL_OUT" 2>/dev/null || true
+  if [[ -s "$MUTOOL_OUT" ]]; then
+    head -n 200 "$MUTOOL_OUT" | sed 's/^/[mutool] /' >&2 || true
+    if grep -Fq -- "$CREDIX_CZ_MUST_HAVE" "$MUTOOL_OUT"; then
+      MUTOOL_HAS=yes
+    else
+      MUTOOL_HAS=no
+    fi
+  else
+    MUTOOL_HAS=empty
+  fi
+else
+  warn "mutool not available; skipping alternate extraction"
+fi
+
+# 3) Compare with pdftotext presence for classification (best-effort)
+PDFTOTEXT_HAS=no
+if grep -Fq -- "$CREDIX_CZ_MUST_HAVE" "$OUT_DIR/credix_report.txt"; then
+  PDFTOTEXT_HAS=yes
+fi
+if [[ "$MUTOOL_HAS" == "yes" && "$PDFTOTEXT_HAS" == "no" ]]; then
+  warn "Classification: Extraction/encoding issue (mutool contains '$CREDIX_CZ_MUST_HAVE', pdftotext does not)."
+elif [[ "$MUTOOL_HAS" == "no" || "$MUTOOL_HAS" == "empty" ]]; then
+  warn "Classification: Rendering/font issue likely (alternate extraction missing '$CREDIX_CZ_MUST_HAVE')."
+fi
+# --- End diagnostics ---
+
 # Verify expected strings in PDF (hard fail)
 if ! grep -Fq -- "$CREDIX_EXPECT_1" "$OUT_DIR/credix_report.txt"; then
   err "Expected string 1 not found in PDF: $CREDIX_EXPECT_1"
