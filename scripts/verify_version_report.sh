@@ -260,6 +260,13 @@ check_csp() {
   if [[ -z "$csp" ]]; then
     err "CRX-11 FAILED: Content-Security-Policy header missing for $url"
     sed -n '1,80p' "$headers_file" | sed 's/^/[headers] /' >&2 || true
+    # Extra Tomcat rewrite diagnostics
+    if command -v docker >/dev/null 2>&1; then
+      warn "Listing /opt/tomcat/conf/Catalina/localhost/ inside container:"
+      docker exec "$CONTAINER_NAME" sh -lc 'ls -la /opt/tomcat/conf/Catalina/localhost/ || true' | sed 's/^/[ls] /' >&2 || true
+      warn "rewrite.config contents (if present):"
+      docker exec "$CONTAINER_NAME" sh -lc 'cat /opt/tomcat/conf/Catalina/localhost/rewrite.config 2>/dev/null || true' | sed 's/^/[rewrite] /' >&2 || true
+    fi
     FAILED=1
     exit 1
   fi
