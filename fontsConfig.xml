@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- BIRT PDF font configuration: force Arial with embedding and alias Times* to Arial -->
+<font-config>
+  <font-family name="Arial">
+    <font file="/usr/share/fonts/truetype/arial.ttf"/>
+    <embed>true</embed>
+  </font-family>
+  <aliases>
+    <alias name="Times-Roman" value="Arial"/>
+    <alias name="Times-Bold" value="Arial"/>
+    <alias name="Times" value="Arial"/>
+    <alias name="Serif" value="Arial"/>
+  </aliases>
+</font-config>
