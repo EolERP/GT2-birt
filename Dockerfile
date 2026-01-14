@@ -50,8 +50,7 @@ RUN mkdir -p /etc/tomcat \
 
 COPY scripts/patch_server_xml.sh /usr/local/bin/patch_server_xml.sh
 RUN chmod +x /usr/local/bin/patch_server_xml.sh \
-    && /usr/local/bin/patch_server_xml.sh /etc/tomcat/server.xml \
-    && perl -0777 -i -pe "s#</web-app>#  <filter>\n    <filter-name>HttpHeaderSecurity</filter-name>\n    <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>\n    <init-param>\n      <param-name>contentSecurityPolicy</param-name>\n      <param-value>default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://eclipse-birt.github.io; font-src 'self' data:; connect-src 'self'; frame-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests</param-value>\n    </init-param>\n  </filter>\n  <filter-mapping>\n    <filter-name>HttpHeaderSecurity</filter-name>\n    <url-pattern>/*</url-pattern>\n  </filter-mapping>\n</web-app>#s" /etc/tomcat/web.xml
+    && /usr/local/bin/patch_server_xml.sh /etc/tomcat/server.xml
 
 # Map Reports folder
 VOLUME ${TOMCAT_HOME}/webapps/birt
@@ -71,6 +70,18 @@ COPY web.xml ${TOMCAT_HOME}/webapps/ROOT/WEB-INF
 
 ADD /cert/*.crt /usr/local/share/ca-certificates/
 RUN update-ca-certificates
+# Apply CSP filter at webapp level (BIRT required, ROOT optional). Idempotent insertion before </web-app>
+RUN for f in "${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml" "${TOMCAT_HOME}/webapps/ROOT/WEB-INF/web.xml"; do \
+      if [ -f "$f" ]; then \
+        if ! grep -q '<filter-name>HttpHeaderSecurity</filter-name>' "$f"; then \
+          echo "Inserting HttpHeaderSecurityFilter into $f"; \
+          perl -0777 -i -pe "s#</web-app>#  <filter>\n    <filter-name>HttpHeaderSecurity</filter-name>\n    <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>\n    <init-param>\n      <param-name>contentSecurityPolicy</param-name>\n      <param-value>default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://eclipse-birt.github.io; font-src 'self' data:; connect-src 'self'; frame-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests</param-value>\n    </init-param>\n  </filter>\n  <filter-mapping>\n    <filter-name>HttpHeaderSecurity</filter-name>\n    <url-pattern>/*</url-pattern>\n  </filter-mapping>\n</web-app>#s" "$f"; \
+        else \
+          echo "HttpHeaderSecurityFilter already present in $f; skipping"; \
+        fi; \
+      fi; \
+    done
+
 
 RUN rm ${TOMCAT_HOME}/conf/logging.properties
 
