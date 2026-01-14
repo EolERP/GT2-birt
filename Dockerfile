@@ -78,8 +78,7 @@ RUN if ! grep -q 'org.apache.catalina.valves.rewrite.RewriteValve' /opt/tomcat/c
 RUN set -eux; \
     mkdir -p /opt/tomcat/conf/Catalina/localhost; \
     printf '%s\n' \
-"RewriteRule .* - [E=CSP:default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://eclipse-birt.github.io
-; font-src 'self' data:; connect-src 'self'; frame-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests]" \
+"RewriteRule .* - [E=CSP:default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://eclipse-birt.github.io; font-src 'self' data:; connect-src 'self'; frame-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests]" \
 'Header set Content-Security-Policy "%{CSP}e"' \
 > /opt/tomcat/conf/Catalina/localhost/rewrite.config; \
     sed -i 's/\r$//' /opt/tomcat/conf/Catalina/localhost/rewrite.config; \
