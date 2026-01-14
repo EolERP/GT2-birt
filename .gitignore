@@ -1,0 +1,13 @@
+# IDE
+.idea/
+
+# Build output
+out/
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.log
