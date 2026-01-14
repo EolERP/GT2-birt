@@ -275,6 +275,15 @@ check_csp() {
       err "CRX-11 FAILED: CSP missing required directive fragment: $req"
       warn "Observed CSP: $csp"
       sed -n '1,80p' "$headers_file" | sed 's/^/[headers] /' >&2 || true
+      # Extra Tomcat rewrite diagnostics
+      if command -v docker >/dev/null 2>&1; then
+        warn "Check RewriteValve presence in server.xml:"
+        docker exec "$CONTAINER_NAME" sh -lc 'grep -n "RewriteValve" /opt/tomcat/conf/server.xml || true' | sed 's/^/[grep] /' >&2 || true
+        warn "Listing /opt/tomcat/conf/Catalina/localhost/ inside container:"
+        docker exec "$CONTAINER_NAME" sh -lc 'ls -la /opt/tomcat/conf/Catalina/localhost/ || true' | sed 's/^/[ls] /' >&2 || true
+        warn "rewrite.config first 120 lines (if present):"
+        docker exec "$CONTAINER_NAME" sh -lc 'sed -n "1,120p" /opt/tomcat/conf/Catalina/localhost/rewrite.config 2>/dev/null || true' | sed 's/^/[rewrite] /' >&2 || true
+      fi
       FAILED=1
       exit 1
     fi

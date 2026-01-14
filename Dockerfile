@@ -50,7 +50,7 @@ RUN mkdir -p /etc/tomcat \
 
 COPY scripts/patch_server_xml.sh /usr/local/bin/patch_server_xml.sh
 RUN chmod +x /usr/local/bin/patch_server_xml.sh \
-    && /usr/local/bin/patch_server_xml.sh /etc/tomcat/server.xml
+    && /usr/local/bin/patch_server_xml.sh /opt/tomcat/conf/server.xml
 
 # Map Reports folder
 VOLUME ${TOMCAT_HOME}/webapps/birt
