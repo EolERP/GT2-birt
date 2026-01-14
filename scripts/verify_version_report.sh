@@ -384,6 +384,8 @@ if ! curl -fsSL -D "$OUT_DIR/credix_headers.txt" "$CREDIX_URL" -o "$OUT_DIR/cred
     docker logs --tail 200 "$CONTAINER_NAME" 2>&1 | sed 's/^/[docker] /' >&2 || true
     warn "Grep for BIRT context startup failures:"
     docker logs "$CONTAINER_NAME" 2>&1 | grep -E "Context \[/birt\] startup failed|ClassNotFoundException" | sed 's/^/[grep] /' >&2 || true
+    # Best-effort: show first lines of rewrite.config if present
+    docker exec "$CONTAINER_NAME" sh -lc 'sed -n "1,5p" /opt/tomcat/conf/Catalina/localhost/rewrite.config 2>/dev/null || true' | sed 's/^/[rewrite head] /' >&2 || true
   fi
   FAILED=1
   exit 1

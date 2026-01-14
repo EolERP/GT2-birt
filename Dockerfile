@@ -76,10 +76,9 @@ RUN if ! grep -q 'org.apache.catalina.valves.rewrite.RewriteValve' /opt/tomcat/c
       awk 'BEGIN{ins=0} /<Host[[:space:]]/{host=1} host && /<\/[[:space:]]*Host>/{print "    <Valve className=\"org.apache.catalina.valves.rewrite.RewriteValve\" />"; ins=1; host=0} {print} END{if(ins==0) exit 0}' /opt/tomcat/conf/server.xml > /opt/tomcat/conf/server.xml.new && mv /opt/tomcat/conf/server.xml.new /opt/tomcat/conf/server.xml; \
     fi
 RUN mkdir -p /opt/tomcat/conf/Catalina/localhost \
-    && printf '%s\n' \
-      'RewriteRule \.\* - [E=CSP:default-src '\''self'\''; base-uri '\''self'\''; object-src '\''none'\''; frame-ancestors '\''self'\''; form-action '\''self'\''; script-src '\''self'\'' '\''unsafe-inline'\'' '\''unsafe-eval'\''; style-src '\''self'\'' '\''unsafe-inline'\''; img-src '\''self'\'' data: blob: https://eclipse-birt.github.io; font-src '\''self'\'' data:; connect-src '\''self'\''; frame-src '\''self'\''; worker-src '\''self'\'' blob:; upgrade-insecure-requests]' \
-      'Header set Content-Security-Policy "%{CSP}e"' \
-      > /opt/tomcat/conf/Catalina/localhost/rewrite.config
+    && cat > /opt/tomcat/conf/Catalina/localhost/rewrite.config <<'EOF'
+Header set Content-Security-Policy "default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://eclipse-birt.github.io; font-src 'self' data:; connect-src 'self'; frame-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests"
+EOF
 
 RUN rm ${TOMCAT_HOME}/conf/logging.properties
 
