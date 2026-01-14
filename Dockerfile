@@ -1,60 +1,90 @@
-FROM ubuntu:20.04
+ARG UBUNTU_VERSION=24.04
+FROM ubuntu:${UBUNTU_VERSION}
 
-#Update
-RUN apt-get update
-RUN apt-get -y upgrade
+# --- Version / constants (keep everything else the same) ---
 
-#Pre-Installation
-RUN apt -y install openjdk-11-jdk
-RUN apt -y install wget
-RUN wget "https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.106/bin/apache-tomcat-9.0.106.tar.gz" -P /opt/tomcat
-RUN tar xzvf /opt/tomcat/apache-tomcat-9*tar.gz -C /opt/tomcat --strip-components=1
-RUN rm /opt/tomcat/apache-tomcat-9.0.106.tar.gz
+ARG JAVA_VERSION=17
+
+ARG TOMCAT_VERSION=9.0.113
+ARG TOMCAT_MAJOR=9
+
+ARG BIRT_VERSION=4.19.0
+ARG BIRT_DROP=R-R1-4.13.0-202303022006
+ARG BIRT_RUNTIME_DATE=202503120947
+
+ENV TOMCAT_HOME=/opt/tomcat
+
+# Pre-Installation and system packages
+RUN DEBIAN_FRONTEND=noninteractive apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        perl \
+        openjdk-${JAVA_VERSION}-jre-headless \
+        fontconfig \
+        wget \
+        unzip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN wget "https://archive.apache.org/dist/tomcat/tomcat-${TOMCAT_MAJOR}/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz" -P ${TOMCAT_HOME}
+RUN tar xzvf ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz -C ${TOMCAT_HOME} --strip-components=1
+RUN rm ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz
 
 RUN grep -rl --include \*.xml allow . | xargs sed -i 's/allow/deny/g'
 
-RUN apt -y install unzip
-RUN wget "http://download.eclipse.org/birt/downloads/drops/R-R1-4.13.0-202303022006/birt-runtime-4.13.0-20230302.zip" -P /opt/tomcat/webapps
-RUN unzip "/opt/tomcat/webapps/birt-runtime-4.13.0-20230302.zip" -d /opt/tomcat/webapps/birt-runtime
-RUN mv "/opt/tomcat/webapps/birt-runtime/WebViewerExample" "/opt/tomcat/webapps/birt"
-RUN rm /opt/tomcat/webapps/birt-runtime-4.13.0-20230302.zip
-RUN rm -f -r /opt/tomcat/webapps/birt-runtime
+RUN wget "https://download.eclipse.org/birt/updates/release/${BIRT_VERSION}/downloads/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip" -P ${TOMCAT_HOME}/webapps
+RUN unzip "${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip" -d ${TOMCAT_HOME}/webapps/birt-runtime
+RUN mv "${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample" "${TOMCAT_HOME}/webapps/birt"
+# Copy ODA XML driver provided by BIRT runtime into the webapp lib
+RUN cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/
+RUN rm ${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip
+RUN rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime
 
-#RUN mkdir /usr/share/tomcat && mkdir /etc/tomcat
-RUN cd /opt/tomcat && ln -s /etc/tomcat conf
-# RUN ln -s /opt/tomcat/webapps/ /usr/share/tomcat/webapps
+# ----------------------------------------------------------
+# Tomcat conf into /etc/tomcat + patch server.xml (Secure cookies)
+# ----------------------------------------------------------
+RUN mkdir -p /etc/tomcat \
+    && cp -a ${TOMCAT_HOME}/conf/. /etc/tomcat/ \
+    && rm -rf ${TOMCAT_HOME}/conf \
+    && ln -s /etc/tomcat ${TOMCAT_HOME}/conf
 
-#Add JDBC
-RUN wget "http://dev.mysql.com/get/Downloads/Connector-J/mysql-connector-java-8.0.15.tar.gz" -P /opt/tomcat/webapps/birt/WEB-INF/lib
-RUN tar xzvf "/opt/tomcat/webapps/birt/WEB-INF/lib/mysql-connector-java-8.0.15.tar.gz" -C /opt/tomcat/webapps/birt/WEB-INF/lib/ --strip-components=1 mysql-connector-java-8.0.15/mysql-connector-java-8.0.15.jar
-RUN wget "https://download.eclipse.org/releases/2021-03/202103171000/plugins/org.eclipse.datatools.enablement.oda.xml_1.4.102.201901091730.jar" -P /opt/tomcat/webapps/birt/WEB-INF/lib
-
+COPY scripts/patch_server_xml.sh /usr/local/bin/patch_server_xml.sh
+RUN chmod +x /usr/local/bin/patch_server_xml.sh \
+    && /usr/local/bin/patch_server_xml.sh /etc/tomcat/server.xml
 
 # Map Reports folder
-VOLUME /opt/tomcat/webapps/birt
+VOLUME ${TOMCAT_HOME}/webapps/birt
 
+# Fonts (Ekorent had these)
 ADD mundial.ttf /usr/share/fonts/truetype
 ADD arial.ttf /usr/share/fonts/truetype
 
-ADD version.rptdesign /opt/tomcat/webapps/birt
-ADD version.txt /opt/tomcat/webapps/birt
-ADD index.html /opt/tomcat/webapps/birt
+# Reports/assets (Ekorent had ONLY these three)
+ADD version.rptdesign ${TOMCAT_HOME}/webapps/birt
+ADD version.txt ${TOMCAT_HOME}/webapps/birt
+ADD index.html ${TOMCAT_HOME}/webapps/birt
 
 # remove default pages with dangerous information
-RUN rm -f -r /opt/tomcat/webapps/ROOT/index.jsp
-ADD error.html /opt/tomcat/webapps/ROOT
-COPY web.xml /opt/tomcat/webapps/ROOT/WEB-INF
+RUN rm -f -r ${TOMCAT_HOME}/webapps/ROOT/index.jsp
+ADD error.html ${TOMCAT_HOME}/webapps/ROOT
+COPY web.xml ${TOMCAT_HOME}/webapps/ROOT/WEB-INF
 
 ADD /cert/*.crt /usr/local/share/ca-certificates/
 RUN update-ca-certificates
 
-RUN rm /opt/tomcat/conf/logging.properties
+RUN rm ${TOMCAT_HOME}/conf/logging.properties
 
-# Modify birt viewer setting for reports path issue
-RUN perl -i -p0e "s/BIRT_VIEWER_WORKING_FOLDER<\/param-name>\n\t\t<param-value>/BIRT_VIEWER_WORKING_FOLDER<\/param-name>\n\t\t<param-value>\/opt\/tomcat\/webapps\/birt\//smg" /opt/tomcat/webapps/birt/WEB-INF/web.xml
+# Modify BIRT viewer settings for reports path issues
+# 1) Set it in WEB-INF/web.xml (robust whitespace-insensitive)
+RUN perl -0777 -i -pe 's|(\<param-name\>\s*BIRT_VIEWER_WORKING_FOLDER\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1/opt/tomcat/webapps/birt/\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml || true
+# 2) Also set it explicitly in WEB-INF/web-viewer.xml (newer packs read from here)
+RUN perl -0777 -i -pe 's|(\<param-name\>\s*BIRT_VIEWER_WORKING_FOLDER\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1/opt/tomcat/webapps/birt/\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true
+# Relax working folder access (some Tomcat 9.0.11x + BIRT combos require it)
+RUN perl -0777 -i -pe 's|(\<param-name\>\s*WORKING_FOLDER_ACCESS_ONLY\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1false\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml || true
+RUN perl -0777 -i -pe 's|(\<param-name\>\s*WORKING_FOLDER_ACCESS_ONLY\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1false\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true
 
-#Start
+# Start
 CMD ["/opt/tomcat/bin/catalina.sh", "run"]
 
-#Port
+# Port
 EXPOSE 8080
