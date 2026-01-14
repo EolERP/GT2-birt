@@ -58,6 +58,9 @@ VOLUME ${TOMCAT_HOME}/webapps/birt
 ADD mundial.ttf /usr/share/fonts/truetype
 ADD arial.ttf /usr/share/fonts/truetype
 
+# Rebuild font cache so BIRT can discover installed TTFs (Arial, Mundial)
+RUN fc-cache -f -v
+
 ADD version.rptdesign ${TOMCAT_HOME}/webapps/birt
 ADD version.txt ${TOMCAT_HOME}/webapps/birt
 ADD index.html ${TOMCAT_HOME}/webapps/birt
