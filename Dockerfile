@@ -66,10 +66,14 @@ ADD version.txt ${TOMCAT_HOME}/webapps/birt
 ADD index.html ${TOMCAT_HOME}/webapps/birt
 ADD credix_repayment_schedule.rptdesign ${TOMCAT_HOME}/webapps/birt
 
-# Provide BIRT PDF font configuration (best-effort mapping to Arial)
-ADD fontsConfig.xml ${TOMCAT_HOME}/webapps/birt/WEB-INF/fontsConfig.xml
-# Ensure BIRT picks it up by setting system property at startup via setenv.sh
-RUN bash -lc 'echo "export CATALINA_OPTS=\"$CATALINA_OPTS -Dbirt.pdf.config=${TOMCAT_HOME}/webapps/birt/WEB-INF/fontsConfig.xml\"" > ${TOMCAT_HOME}/bin/setenv.sh && chmod +x ${TOMCAT_HOME}/bin/setenv.sh'
+# Provide BIRT PDF font configuration (map Times* -> Arial, embed)
+RUN mkdir -p ${TOMCAT_HOME}/webapps/birt/WEB-INF/fonts
+ADD fontsConfig.xml ${TOMCAT_HOME}/webapps/birt/WEB-INF/fonts/fontsConfig.xml
+# Copy TTFs into the BIRT fonts directory so the engine can find and embed them
+RUN cp /usr/share/fonts/truetype/arial.ttf ${TOMCAT_HOME}/webapps/birt/WEB-INF/fonts/ || true
+RUN cp /usr/share/fonts/truetype/mundial.ttf ${TOMCAT_HOME}/webapps/birt/WEB-INF/fonts/ || true
+# Ensure BIRT picks it up: point engine to fonts directory containing fontsConfig.xml
+RUN bash -lc 'echo "export CATALINA_OPTS=\"$CATALINA_OPTS -Dorg.eclipse.birt.report.engine.fonts=${TOMCAT_HOME}/webapps/birt/WEB-INF/fonts\"" > ${TOMCAT_HOME}/bin/setenv.sh && chmod +x ${TOMCAT_HOME}/bin/setenv.sh'
 
 # remove default pages with dangerous information
 RUN rm -f -r ${TOMCAT_HOME}/webapps/ROOT/index.jsp
