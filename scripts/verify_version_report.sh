@@ -118,21 +118,38 @@ docker build -t "$IMAGE_NAME" "$REPO_ROOT"
 log "Starting container '$CONTAINER_NAME' (port $HOST_PORT -> 8080)"
 docker run -d --name "$CONTAINER_NAME" -p "$HOST_PORT:8080" "$IMAGE_NAME" >/dev/null
 
-# Wait until ready (Tomcat started)
+# Wait until ready (HTTP-based): poll BIRT root; accept 200/302/303/401/403 as ready
 wait_ready() {
   local start_ts
   start_ts=$(date +%s)
   local deadline=$((start_ts + TIMEOUT_SEC))
+  local url="${BASE_URL}/birt/"
   while (( $(date +%s) <= deadline )); do
-    if docker logs "$CONTAINER_NAME" 2>&1 | grep -q "Server startup in"; then
-      return 0
-    fi
+    local code
+    code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 5 "$url" || true)
+    case "$code" in
+      200|302|303|401|403)
+        return 0 ;;
+    esac
     sleep 2
   done
   return 1
 }
-log "Waiting for service readiness (timeout ${TIMEOUT_SEC}s)"
-wait_ready || { err "Service did not become ready in ${TIMEOUT_SEC}s"; exit 1; }
+log "Waiting for service readiness (HTTP polling, timeout ${TIMEOUT_SEC}s)"
+if ! wait_ready; then
+  err "Service did not become ready in ${TIMEOUT_SEC}s (HTTP)"
+  if command -v docker >/dev/null 2>&1; then
+    warn "Docker logs (last 300 lines):"
+    docker logs --tail 300 "$CONTAINER_NAME" 2>&1 | sed 's/^/[docker] /' >&2 || true
+    warn "Container processes (head):"
+    docker exec "$CONTAINER_NAME" sh -lc 'ps aux | head' 2>&1 | sed 's/^/[ps] /' >&2 || true
+    warn "Listening TCP sockets (head):"
+    docker exec "$CONTAINER_NAME" sh -lc 'command -v ss >/dev/null 2>&1 && ss -lntp | head || true' 2>&1 | sed 's/^/[ss] /' >&2 || true
+  fi
+  warn "curl -v ${BASE_URL}/birt/ (best-effort):"
+  curl -v --max-time 10 "${BASE_URL}/birt/" >/dev/null 2>&1 || true
+  exit 1
+fi
 
 # Check logs for fatal errors during startup
 if docker logs "$CONTAINER_NAME" 2>&1 | grep -Eqi 'fatal|fatalerror'; then
