@@ -22,8 +22,14 @@ CREDIX_ENDPOINT_PATH=${CREDIX_ENDPOINT_PATH:-/birt/frameset}
 CREDIX_FORMAT=${CREDIX_FORMAT:-pdf}
 
 # Czech glyph/font check (authoritative)
-# Use a stable token that must appear in the PDF when fonts are correct.
 CREDIX_CZ_MUST_HAVE=${CREDIX_CZ_MUST_HAVE:-Číslo}
+
+# ==========================================================
+# CSP MODE
+# ==========================================================
+# We run BIRT only for PDF export, so we enforce an extremely strict CSP.
+# If you embed PDFs in iframes in your own UI, change frame-ancestors to 'self'.
+CSP_MODE=${CSP_MODE:-pdf_strict}  # allowed: pdf_strict
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -78,7 +84,6 @@ require() { command -v "$1" >/dev/null 2>&1 || { err "Required command '$1' not 
 
 require docker
 require curl
-# NOTE: We REQUIRE pdftotext now because strings is not Unicode-safe and will miss diacritics.
 require pdftotext
 
 # Validate inputs exist in repo (they may still be copied into container later)
@@ -135,6 +140,7 @@ wait_ready() {
   done
   return 1
 }
+
 log "Waiting for service readiness (HTTP polling, timeout ${TIMEOUT_SEC}s)"
 if ! wait_ready; then
   err "Service did not become ready in ${TIMEOUT_SEC}s (HTTP)"
@@ -209,7 +215,7 @@ PY
 
 # ==========================================================
 # CRX-10 (HARD FAIL): Secure cookie must be present behind reverse proxy
-# We validate on the REAL production-like endpoint (Credix PDF).
+# Validate on the production-like endpoint (Credix PDF).
 # ==========================================================
 ENC_XML="$(credix_urlencode "$CREDIX_XML_FILE_URL")"
 CREDIX_URL="${BASE_URL}${CREDIX_ENDPOINT_PATH}?xml_file=${ENC_XML}&__format=${CREDIX_FORMAT}&__report=${CREDIX_REPORT_NAME}"
@@ -244,23 +250,39 @@ else
 fi
 
 # ==========================================================
-# CRX-11 (HARD FAIL): Content-Security-Policy must be present and contain required directives
-# Check on production-like Credix PDF endpoint and also on /birt/ root
+# CRX-11 (HARD FAIL): Content-Security-Policy must be present and match PDF-only strict CSP
+# Check on production-like Credix PDF endpoint
 # ==========================================================
 
-csp_requirements=(
-  "default-src 'self'"
+# PDF-only strict requirements (fragments)
+# NOTE: We purposely allow 'upgrade-insecure-requests' and 'block-all-mixed-content' as extra hardening.
+csp_requirements_pdf_strict=(
+  "default-src 'none'"
+  "base-uri 'none'"
   "object-src 'none'"
-  "frame-ancestors 'self'"
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
-  "style-src 'self' 'unsafe-inline'"
-  "img-src 'self'"
-  "font-src 'self'"
-  "connect-src 'self'"
-  "base-uri 'self'"
-  "form-action 'self'"
+  "frame-ancestors 'none'"
+  "form-action 'none'"
+  "script-src 'none'"
+  "style-src 'none'"
+  "img-src 'none'"
+  "font-src 'none'"
+  "connect-src 'none'"
+  "media-src 'none'"
+  "frame-src 'none'"
+  "worker-src 'none'"
+  "manifest-src 'none'"
+  "prefetch-src 'none'"
   "upgrade-insecure-requests"
+  "block-all-mixed-content"
 )
+
+case "$CSP_MODE" in
+  pdf_strict) csp_requirements=("${csp_requirements_pdf_strict[@]}") ;;
+  *)
+    err "Unknown CSP_MODE='$CSP_MODE' (allowed: pdf_strict)"
+    exit 1
+    ;;
+esac
 
 check_csp() {
   local url="$1"
@@ -277,13 +299,6 @@ check_csp() {
   if [[ -z "$csp" ]]; then
     err "CRX-11 FAILED: Content-Security-Policy header missing for $url"
     sed -n '1,80p' "$headers_file" | sed 's/^/[headers] /' >&2 || true
-    # Extra Tomcat rewrite diagnostics
-    if command -v docker >/dev/null 2>&1; then
-      warn "Listing /opt/tomcat/conf/Catalina/localhost/ inside container:"
-      docker exec "$CONTAINER_NAME" sh -lc 'ls -la /opt/tomcat/conf/Catalina/localhost/ || true' | sed 's/^/[ls] /' >&2 || true
-      warn "rewrite.config contents (if present):"
-      docker exec "$CONTAINER_NAME" sh -lc 'cat /opt/tomcat/conf/Catalina/localhost/rewrite.config 2>/dev/null || true' | sed 's/^/[rewrite] /' >&2 || true
-    fi
     FAILED=1
     exit 1
   fi
@@ -292,28 +307,20 @@ check_csp() {
       err "CRX-11 FAILED: CSP missing required directive fragment: $req"
       warn "Observed CSP: $csp"
       sed -n '1,80p' "$headers_file" | sed 's/^/[headers] /' >&2 || true
-      # Extra Tomcat rewrite diagnostics
-      if command -v docker >/dev/null 2>&1; then
-        warn "Check RewriteValve presence in server.xml:"
-        docker exec "$CONTAINER_NAME" sh -lc 'grep -n "RewriteValve" /opt/tomcat/conf/server.xml || true' | sed 's/^/[grep] /' >&2 || true
-        warn "Listing /opt/tomcat/conf/Catalina/localhost/ inside container:"
-        docker exec "$CONTAINER_NAME" sh -lc 'ls -la /opt/tomcat/conf/Catalina/localhost/ || true' | sed 's/^/[ls] /' >&2 || true
-        warn "rewrite.config first 120 lines (if present):"
-        docker exec "$CONTAINER_NAME" sh -lc 'sed -n "1,120p" /opt/tomcat/conf/Catalina/localhost/rewrite.config 2>/dev/null || true' | sed 's/^/[rewrite] /' >&2 || true
-      fi
       FAILED=1
       exit 1
     fi
   done
-  log "CRX-11 OK: CSP header present and matches required directives"
+  log "CRX-11 OK: CSP header present and matches required directives (mode=$CSP_MODE)"
 }
 
 log "CRX-11 CSP check URL (PDF endpoint): $CREDIX_URL"
 check_csp "$CREDIX_URL" "$TMP_DIR/csp_pdf_headers.txt"
 
+# Best-effort check on /birt/ root: just ensure CSP exists (if it does, we can validate too)
 BIRT_ROOT_URL="${BASE_URL}/birt/"
 log "CRX-11 CSP check URL (/birt/): $BIRT_ROOT_URL (best-effort)"
-# Best-effort: if CSP header missing on /birt/, do not fail the pipeline; if present, validate directives
+
 check_csp_optional() {
   local url="$1"; local headers_file="$2"
   : > "$headers_file"
@@ -334,13 +341,13 @@ check_csp_optional() {
       return 0
     fi
   done
-  log "CRX-11 OK: CSP header present and matches required directives"
+  log "CRX-11 OK: CSP header present and matches required directives on /birt/ (mode=$CSP_MODE)"
 }
 check_csp_optional "$BIRT_ROOT_URL" "$TMP_DIR/csp_birt_headers.txt"
 
 # ==========================================================
 # 1) FAST version check (BEST-EFFORT): /birt/run (HTML)
-#    This MUST NOT fail the build. Ever.
+# This MUST NOT fail the build. Ever.
 # ==========================================================
 if [[ -n "$EXPECTED_VALUE" ]]; then
   VERSION_URL_RUN="${BASE_URL}/birt/run?__report=${REPORT_FILE}&__format=html"
@@ -395,14 +402,11 @@ log "Credix request URL: $CREDIX_URL"
 # Download PDF (hard fail)
 if ! curl -fsSL -D "$OUT_DIR/credix_headers.txt" "$CREDIX_URL" -o "$OUT_DIR/credix_report.pdf"; then
   err "curl download failed for Credix report"
-  # Explicit diagnostics for deployment issues
   if command -v docker >/dev/null 2>&1; then
     warn "Docker logs (last 200 lines):"
     docker logs --tail 200 "$CONTAINER_NAME" 2>&1 | sed 's/^/[docker] /' >&2 || true
     warn "Grep for BIRT context startup failures:"
     docker logs "$CONTAINER_NAME" 2>&1 | grep -E "Context \[/birt\] startup failed|ClassNotFoundException" | sed 's/^/[grep] /' >&2 || true
-    # Best-effort: show first lines of rewrite.config if present
-    docker exec "$CONTAINER_NAME" sh -lc 'sed -n "1,5p" /opt/tomcat/conf/Catalina/localhost/rewrite.config 2>/dev/null || true' | sed 's/^/[rewrite head] /' >&2 || true
   fi
   FAILED=1
   exit 1
@@ -416,8 +420,7 @@ if ! head -c 5 "$OUT_DIR/credix_report.pdf" | grep -q "%PDF-"; then
   exit 1
 fi
 
-# Extract text (hard fail if extraction fails, because our checks depend on it)
-# -enc UTF-8 is critical for diacritics
+# Extract text (hard fail if extraction fails)
 pdftotext -q -enc UTF-8 -nopgbrk "$OUT_DIR/credix_report.pdf" "$OUT_DIR/credix_report.txt" || {
   err "pdftotext failed to extract text from Credix PDF"
   FAILED=1
