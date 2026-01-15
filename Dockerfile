@@ -1,3 +1,5 @@
+ARG UBUNTU_VERSION=24.04
+
 # --- build stage: tiny filter that sets an arbitrary response header (Tomcat 9 / javax.*) ---
 FROM eclipse-temurin:17-jdk AS cspfilter-build
 WORKDIR /src
@@ -44,7 +46,6 @@ RUN javac -cp /tmp/servlet-api.jar org/apache/catalina/filters/ResponseHeaderFil
 # --------------------------------------------------------------------
 # main image
 # --------------------------------------------------------------------
-ARG UBUNTU_VERSION=24.04
 FROM ubuntu:${UBUNTU_VERSION}
 
 ARG JAVA_VERSION=17
