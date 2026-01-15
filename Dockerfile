@@ -115,10 +115,11 @@ ADD /cert/*.crt /usr/local/share/ca-certificates/
 RUN update-ca-certificates
 
 # ----------------------------------------------------------
-# CSP: set globally via Tomcat ResponseHeaderFilter (NO RewriteValve)
+# CSP: PDF-only strict mode (global header)
+# NOTE: frame-ancestors 'none' is the strictest. If you embed PDFs in your own UI, change to 'self'.
 # ----------------------------------------------------------
 RUN set -eux; \
-    export CSP="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://eclipse-birt.github.io; font-src 'self' data:; connect-src 'self'; frame-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests"; \
+    export CSP="default-src 'none'; base-uri 'none'; object-src 'none'; frame-ancestors 'none'; form-action 'none'; script-src 'none'; style-src 'none'; img-src 'none'; font-src 'none'; connect-src 'none'; media-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; prefetch-src 'none'; upgrade-insecure-requests; block-all-mixed-content"; \
     WEBXML="/opt/tomcat/conf/web.xml"; \
     # remove any previous CSP filter block (idempotent cleanup)
     perl -0777 -i -pe 's|\s*<filter>\s*<filter-name>CSPResponseHeaderFilter</filter-name>.*?</filter>\s*||smg' "$WEBXML"; \
