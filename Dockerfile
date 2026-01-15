@@ -77,14 +77,14 @@ RUN if ! grep -q 'org.apache.catalina.valves.rewrite.RewriteValve' /opt/tomcat/c
     fi
 RUN set -eux; \
     mkdir -p /opt/tomcat/conf/Catalina/localhost; \
-    printf '%s\n' \
-"RewriteRule .* - [E=CSP:default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://eclipse-birt.github.io; font-src 'self' data:; connect-src 'self'; frame-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests]" \
-'Header set Content-Security-Policy "%{CSP}e"' \
-> /opt/tomcat/conf/Catalina/localhost/rewrite.config; \
+    printf '%s\n' "Header set Content-Security-Policy \"default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://eclipse-birt.github.io; font-src 'self' data:; connect-src 'self'; frame-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests\"" \
+      > /opt/tomcat/conf/Catalina/localhost/rewrite.config; \
     sed -i 's/\r$//' /opt/tomcat/conf/Catalina/localhost/rewrite.config; \
     sed -i '/^[[:space:]]*$/d' /opt/tomcat/conf/Catalina/localhost/rewrite.config; \
-    echo "=== rewrite.config ==="; \
-    cat /opt/tomcat/conf/Catalina/localhost/rewrite.config
+    echo "=== rewrite.config (numbered) ==="; \
+    nl -ba /opt/tomcat/conf/Catalina/localhost/rewrite.config; \
+    lines=$(wc -l < /opt/tomcat/conf/Catalina/localhost/rewrite.config); \
+    if [ "$lines" -ne 1 ]; then echo "rewrite.config must have exactly 1 line, found $lines" >&2; exit 1; fi
 
 RUN rm ${TOMCAT_HOME}/conf/logging.properties
 
