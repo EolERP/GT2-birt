@@ -1,10 +1,7 @@
 ARG UBUNTU_VERSION=24.04
 FROM ubuntu:${UBUNTU_VERSION}
 
-# --- Version / constants (keep everything else the same) ---
-
 ARG JAVA_VERSION=17
-
 ARG TOMCAT_VERSION=9.0.113
 ARG TOMCAT_MAJOR=9
 
@@ -14,7 +11,6 @@ ARG BIRT_RUNTIME_DATE=202503120947
 
 ENV TOMCAT_HOME=/opt/tomcat
 
-# Pre-Installation and system packages
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
@@ -35,7 +31,6 @@ RUN grep -rl --include \*.xml allow . | xargs sed -i 's/allow/deny/g'
 RUN wget "https://download.eclipse.org/birt/updates/release/${BIRT_VERSION}/downloads/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip" -P ${TOMCAT_HOME}/webapps
 RUN unzip "${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip" -d ${TOMCAT_HOME}/webapps/birt-runtime
 RUN mv "${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample" "${TOMCAT_HOME}/webapps/birt"
-# Copy ODA XML driver provided by BIRT runtime into the webapp lib
 RUN cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/
 RUN rm ${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip
 RUN rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime
@@ -52,7 +47,6 @@ COPY scripts/patch_server_xml.sh /usr/local/bin/patch_server_xml.sh
 RUN chmod +x /usr/local/bin/patch_server_xml.sh \
     && /usr/local/bin/patch_server_xml.sh /opt/tomcat/conf/server.xml
 
-# Map Reports folder
 VOLUME ${TOMCAT_HOME}/webapps/birt
 
 ADD mundial.ttf /usr/share/fonts/truetype
@@ -63,42 +57,35 @@ ADD version.txt ${TOMCAT_HOME}/webapps/birt
 ADD index.html ${TOMCAT_HOME}/webapps/birt
 ADD credix_repayment_schedule.rptdesign ${TOMCAT_HOME}/webapps/birt
 
-# remove default pages with dangerous information
 RUN rm -f -r ${TOMCAT_HOME}/webapps/ROOT/index.jsp
 ADD error.html ${TOMCAT_HOME}/webapps/ROOT
 COPY web.xml ${TOMCAT_HOME}/webapps/ROOT/WEB-INF
 
 ADD /cert/*.crt /usr/local/share/ca-certificates/
 RUN update-ca-certificates
-# Configure CSP via RewriteValve at Host level and rewrite.config
-# 1) Ensure RewriteValve is present under <Host> (idempotent)
-RUN if ! grep -q 'org.apache.catalina.valves.rewrite.RewriteValve' /opt/tomcat/conf/server.xml; then \
-      awk 'BEGIN{ins=0} /<Host[[:space:]]/{host=1} host && /<\/[[:space:]]*Host>/{print "    <Valve className=\"org.apache.catalina.valves.rewrite.RewriteValve\" />"; ins=1; host=0} {print} END{if(ins==0) exit 0}' /opt/tomcat/conf/server.xml > /opt/tomcat/conf/server.xml.new && mv /opt/tomcat/conf/server.xml.new /opt/tomcat/conf/server.xml; \
-    fi
+
+# ----------------------------------------------------------
+# CSP: set globally via Tomcat ResponseHeaderFilter (NO RewriteValve)
+# ----------------------------------------------------------
 RUN set -eux; \
-    mkdir -p /opt/tomcat/conf/Catalina/localhost; \
-    printf '%s\n' "Header set Content-Security-Policy \"default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://eclipse-birt.github.io; font-src 'self' data:; connect-src 'self'; frame-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests\"" \
-      > /opt/tomcat/conf/Catalina/localhost/rewrite.config; \
-    sed -i 's/\r$//' /opt/tomcat/conf/Catalina/localhost/rewrite.config; \
-    sed -i '/^[[:space:]]*$/d' /opt/tomcat/conf/Catalina/localhost/rewrite.config; \
-    echo "=== rewrite.config (numbered) ==="; \
-    nl -ba /opt/tomcat/conf/Catalina/localhost/rewrite.config; \
-    lines=$(wc -l < /opt/tomcat/conf/Catalina/localhost/rewrite.config); \
-    if [ "$lines" -ne 1 ]; then echo "rewrite.config must have exactly 1 line, found $lines" >&2; exit 1; fi
+    CSP="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://eclipse-birt.github.io; font-src 'self' data:; connect-src 'self'; frame-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests"; \
+    WEBXML="/opt/tomcat/conf/web.xml"; \
+    # remove any previous CSP filter block (idempotent cleanup)
+    perl -0777 -i -pe 's|\s*<filter>\s*<filter-name>CSPResponseHeaderFilter</filter-name>.*?</filter>\s*||smg' "$WEBXML"; \
+    perl -0777 -i -pe 's|\s*<filter-mapping>\s*<filter-name>CSPResponseHeaderFilter</filter-name>.*?</filter-mapping>\s*||smg' "$WEBXML"; \
+    # insert filter + mapping before </web-app>
+    perl -0777 -i -pe "s|</web-app>|  <filter>\\n    <filter-name>CSPResponseHeaderFilter</filter-name>\\n    <filter-class>org.apache.catalina.filters.ResponseHeaderFilter</filter-class>\\n    <init-param>\\n      <param-name>headerName</param-name>\\n      <param-value>Content-Security-Policy</param-value>\\n    </init-param>\\n    <init-param>\\n      <param-name>headerValue</param-name>\\n      <param-value>\$ENV{CSP}</param-value>\\n    </init-param>\\n  </filter>\\n\\n  <filter-mapping>\\n    <filter-name>CSPResponseHeaderFilter</filter-name>\\n    <url-pattern>/*</url-pattern>\\n  </filter-mapping>\\n</web-app>|smg" "$WEBXML"; \
+    # show proof in build logs
+    echo "=== injected CSP filter in conf/web.xml ==="; \
+    grep -n "CSPResponseHeaderFilter" -n "$WEBXML" || true; \
+    grep -n "Content-Security-Policy" -n "$WEBXML" || true
 
 RUN rm ${TOMCAT_HOME}/conf/logging.properties
 
-# Modify BIRT viewer settings for reports path issues
-# 1) Set it in WEB-INF/web.xml (robust whitespace-insensitive)
 RUN perl -0777 -i -pe 's|(\<param-name\>\s*BIRT_VIEWER_WORKING_FOLDER\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1/opt/tomcat/webapps/birt/\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml || true
-# 2) Also set it explicitly in WEB-INF/web-viewer.xml (newer packs read from here)
 RUN perl -0777 -i -pe 's|(\<param-name\>\s*BIRT_VIEWER_WORKING_FOLDER\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1/opt/tomcat/webapps/birt/\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true
-# Relax working folder access (some Tomcat 9.0.11x + BIRT combos require it)
 RUN perl -0777 -i -pe 's|(\<param-name\>\s*WORKING_FOLDER_ACCESS_ONLY\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1false\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml || true
 RUN perl -0777 -i -pe 's|(\<param-name\>\s*WORKING_FOLDER_ACCESS_ONLY\s*\<\/param-name\>\s*\<param-value\>).*?(\<\/param-value\>)|\1false\2|smg' ${TOMCAT_HOME}/webapps/birt/WEB-INF/web-viewer.xml || true
 
-# Start
 CMD ["/opt/tomcat/bin/catalina.sh", "run"]
-
-# Port
 EXPOSE 8080
