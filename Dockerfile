@@ -1,3 +1,49 @@
+# --- build stage: tiny filter that sets an arbitrary response header (Tomcat 9 / javax.*) ---
+FROM eclipse-temurin:17-jdk AS cspfilter-build
+WORKDIR /src
+
+ADD https://repo1.maven.org/maven2/javax/servlet/javax.servlet-api/4.0.1/javax.servlet-api-4.0.1.jar /tmp/servlet-api.jar
+
+RUN mkdir -p org/apache/catalina/filters && cat > org/apache/catalina/filters/ResponseHeaderFilter.java <<'EOF'
+package org.apache.catalina.filters;
+
+import javax.servlet.*;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
+public class ResponseHeaderFilter implements Filter {
+    private String headerName;
+    private String headerValue;
+
+    @Override
+    public void init(FilterConfig filterConfig) {
+        headerName = filterConfig.getInitParameter("headerName");
+        headerValue = filterConfig.getInitParameter("headerValue");
+        if (headerName == null || headerName.isEmpty()) headerName = "Content-Security-Policy";
+        if (headerValue == null) headerValue = "";
+    }
+
+    @Override
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        if (response instanceof HttpServletResponse) {
+            ((HttpServletResponse) response).setHeader(headerName, headerValue);
+        }
+        chain.doFilter(request, response);
+    }
+
+    @Override
+    public void destroy() {}
+}
+EOF
+
+RUN javac -cp /tmp/servlet-api.jar org/apache/catalina/filters/ResponseHeaderFilter.java \
+ && jar cf response-header-filter.jar org/apache/catalina/filters/ResponseHeaderFilter.class
+
+
+# --------------------------------------------------------------------
+# main image
+# --------------------------------------------------------------------
 ARG UBUNTU_VERSION=24.04
 FROM ubuntu:${UBUNTU_VERSION}
 
@@ -25,6 +71,9 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get update \
 RUN wget "https://archive.apache.org/dist/tomcat/tomcat-${TOMCAT_MAJOR}/v${TOMCAT_VERSION}/bin/apache-tomcat-${TOMCAT_VERSION}.tar.gz" -P ${TOMCAT_HOME}
 RUN tar xzvf ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz -C ${TOMCAT_HOME} --strip-components=1
 RUN rm ${TOMCAT_HOME}/apache-tomcat-${TOMCAT_VERSION}.tar.gz
+
+# Tomcat does NOT provide this class; we add our own jar to satisfy the configured filter.
+COPY --from=cspfilter-build /src/response-header-filter.jar /opt/tomcat/lib/response-header-filter.jar
 
 RUN grep -rl --include \*.xml allow . | xargs sed -i 's/allow/deny/g'
 
@@ -68,7 +117,7 @@ RUN update-ca-certificates
 # CSP: set globally via Tomcat ResponseHeaderFilter (NO RewriteValve)
 # ----------------------------------------------------------
 RUN set -eux; \
-    CSP="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://eclipse-birt.github.io; font-src 'self' data:; connect-src 'self'; frame-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests"; \
+    export CSP="default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://eclipse-birt.github.io; font-src 'self' data:; connect-src 'self'; frame-src 'self'; worker-src 'self' blob:; upgrade-insecure-requests"; \
     WEBXML="/opt/tomcat/conf/web.xml"; \
     # remove any previous CSP filter block (idempotent cleanup)
     perl -0777 -i -pe 's|\s*<filter>\s*<filter-name>CSPResponseHeaderFilter</filter-name>.*?</filter>\s*||smg' "$WEBXML"; \
