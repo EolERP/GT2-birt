@@ -118,21 +118,38 @@ docker build -t "$IMAGE_NAME" "$REPO_ROOT"
 log "Starting container '$CONTAINER_NAME' (port $HOST_PORT -> 8080)"
 docker run -d --name "$CONTAINER_NAME" -p "$HOST_PORT:8080" "$IMAGE_NAME" >/dev/null
 
-# Wait until ready (Tomcat started)
+# Wait until ready (HTTP-based): poll BIRT root; accept 200/302/303/401/403 as ready
 wait_ready() {
   local start_ts
   start_ts=$(date +%s)
   local deadline=$((start_ts + TIMEOUT_SEC))
+  local url="${BASE_URL}/birt/"
   while (( $(date +%s) <= deadline )); do
-    if docker logs "$CONTAINER_NAME" 2>&1 | grep -q "Server startup in"; then
-      return 0
-    fi
+    local code
+    code=$(curl -sS -o /dev/null -w "%{http_code}" --max-time 5 "$url" || true)
+    case "$code" in
+      200|302|303|401|403)
+        return 0 ;;
+    esac
     sleep 2
   done
   return 1
 }
-log "Waiting for service readiness (timeout ${TIMEOUT_SEC}s)"
-wait_ready || { err "Service did not become ready in ${TIMEOUT_SEC}s"; exit 1; }
+log "Waiting for service readiness (HTTP polling, timeout ${TIMEOUT_SEC}s)"
+if ! wait_ready; then
+  err "Service did not become ready in ${TIMEOUT_SEC}s (HTTP)"
+  if command -v docker >/dev/null 2>&1; then
+    warn "Docker logs (last 300 lines):"
+    docker logs --tail 300 "$CONTAINER_NAME" 2>&1 | sed 's/^/[docker] /' >&2 || true
+    warn "Container processes (head):"
+    docker exec "$CONTAINER_NAME" sh -lc 'ps aux | head' 2>&1 | sed 's/^/[ps] /' >&2 || true
+    warn "Listening TCP sockets (head):"
+    docker exec "$CONTAINER_NAME" sh -lc 'command -v ss >/dev/null 2>&1 && ss -lntp | head || true' 2>&1 | sed 's/^/[ss] /' >&2 || true
+  fi
+  warn "curl -v ${BASE_URL}/birt/ (best-effort):"
+  curl -v --max-time 10 "${BASE_URL}/birt/" >/dev/null 2>&1 || true
+  exit 1
+fi
 
 # Check logs for fatal errors during startup
 if docker logs "$CONTAINER_NAME" 2>&1 | grep -Eqi 'fatal|fatalerror'; then
@@ -227,6 +244,101 @@ else
 fi
 
 # ==========================================================
+# CRX-11 (HARD FAIL): Content-Security-Policy must be present and contain required directives
+# Check on production-like Credix PDF endpoint and also on /birt/ root
+# ==========================================================
+
+csp_requirements=(
+  "default-src 'self'"
+  "object-src 'none'"
+  "frame-ancestors 'self'"
+  "script-src 'self' 'unsafe-inline' 'unsafe-eval'"
+  "style-src 'self' 'unsafe-inline'"
+  "img-src 'self'"
+  "font-src 'self'"
+  "connect-src 'self'"
+  "base-uri 'self'"
+  "form-action 'self'"
+  "upgrade-insecure-requests"
+)
+
+check_csp() {
+  local url="$1"
+  local headers_file="$2"
+  : > "$headers_file"
+  if ! curl -fsSL -D "$headers_file" -o /dev/null "$url"; then
+    err "CRX-11 FAILED: curl failed for $url"
+    sed -n '1,80p' "$headers_file" | sed 's/^/[headers] /' >&2 || true
+    FAILED=1
+    exit 1
+  fi
+  local csp
+  csp=$(grep -i '^Content-Security-Policy:' "$headers_file" | head -n1 | cut -d':' -f2- | tr -d '\r' | sed -e 's/^ *//')
+  if [[ -z "$csp" ]]; then
+    err "CRX-11 FAILED: Content-Security-Policy header missing for $url"
+    sed -n '1,80p' "$headers_file" | sed 's/^/[headers] /' >&2 || true
+    # Extra Tomcat rewrite diagnostics
+    if command -v docker >/dev/null 2>&1; then
+      warn "Listing /opt/tomcat/conf/Catalina/localhost/ inside container:"
+      docker exec "$CONTAINER_NAME" sh -lc 'ls -la /opt/tomcat/conf/Catalina/localhost/ || true' | sed 's/^/[ls] /' >&2 || true
+      warn "rewrite.config contents (if present):"
+      docker exec "$CONTAINER_NAME" sh -lc 'cat /opt/tomcat/conf/Catalina/localhost/rewrite.config 2>/dev/null || true' | sed 's/^/[rewrite] /' >&2 || true
+    fi
+    FAILED=1
+    exit 1
+  fi
+  for req in "${csp_requirements[@]}"; do
+    if ! echo "$csp" | grep -Fqi -- "$req"; then
+      err "CRX-11 FAILED: CSP missing required directive fragment: $req"
+      warn "Observed CSP: $csp"
+      sed -n '1,80p' "$headers_file" | sed 's/^/[headers] /' >&2 || true
+      # Extra Tomcat rewrite diagnostics
+      if command -v docker >/dev/null 2>&1; then
+        warn "Check RewriteValve presence in server.xml:"
+        docker exec "$CONTAINER_NAME" sh -lc 'grep -n "RewriteValve" /opt/tomcat/conf/server.xml || true' | sed 's/^/[grep] /' >&2 || true
+        warn "Listing /opt/tomcat/conf/Catalina/localhost/ inside container:"
+        docker exec "$CONTAINER_NAME" sh -lc 'ls -la /opt/tomcat/conf/Catalina/localhost/ || true' | sed 's/^/[ls] /' >&2 || true
+        warn "rewrite.config first 120 lines (if present):"
+        docker exec "$CONTAINER_NAME" sh -lc 'sed -n "1,120p" /opt/tomcat/conf/Catalina/localhost/rewrite.config 2>/dev/null || true' | sed 's/^/[rewrite] /' >&2 || true
+      fi
+      FAILED=1
+      exit 1
+    fi
+  done
+  log "CRX-11 OK: CSP header present and matches required directives"
+}
+
+log "CRX-11 CSP check URL (PDF endpoint): $CREDIX_URL"
+check_csp "$CREDIX_URL" "$TMP_DIR/csp_pdf_headers.txt"
+
+BIRT_ROOT_URL="${BASE_URL}/birt/"
+log "CRX-11 CSP check URL (/birt/): $BIRT_ROOT_URL (best-effort)"
+# Best-effort: if CSP header missing on /birt/, do not fail the pipeline; if present, validate directives
+check_csp_optional() {
+  local url="$1"; local headers_file="$2"
+  : > "$headers_file"
+  if ! curl -fsSL -D "$headers_file" -o /dev/null "$url"; then
+    warn "CRX-11 (/birt/) best-effort: curl failed for $url"
+    return 0
+  fi
+  local csp
+  csp=$(grep -i '^Content-Security-Policy:' "$headers_file" | head -n1 | cut -d':' -f2- | tr -d '\r' | sed -e 's/^ *//')
+  if [[ -z "$csp" ]]; then
+    warn "CRX-11 (/birt/) best-effort: CSP header missing for $url"
+    return 0
+  fi
+  for req in "${csp_requirements[@]}"; do
+    if ! echo "$csp" | grep -Fqi -- "$req"; then
+      warn "CRX-11 (/birt/) best-effort: CSP missing directive fragment: $req"
+      warn "Observed CSP: $csp"
+      return 0
+    fi
+  done
+  log "CRX-11 OK: CSP header present and matches required directives"
+}
+check_csp_optional "$BIRT_ROOT_URL" "$TMP_DIR/csp_birt_headers.txt"
+
+# ==========================================================
 # 1) FAST version check (BEST-EFFORT): /birt/run (HTML)
 #    This MUST NOT fail the build. Ever.
 # ==========================================================
@@ -283,6 +395,15 @@ log "Credix request URL: $CREDIX_URL"
 # Download PDF (hard fail)
 if ! curl -fsSL -D "$OUT_DIR/credix_headers.txt" "$CREDIX_URL" -o "$OUT_DIR/credix_report.pdf"; then
   err "curl download failed for Credix report"
+  # Explicit diagnostics for deployment issues
+  if command -v docker >/dev/null 2>&1; then
+    warn "Docker logs (last 200 lines):"
+    docker logs --tail 200 "$CONTAINER_NAME" 2>&1 | sed 's/^/[docker] /' >&2 || true
+    warn "Grep for BIRT context startup failures:"
+    docker logs "$CONTAINER_NAME" 2>&1 | grep -E "Context \[/birt\] startup failed|ClassNotFoundException" | sed 's/^/[grep] /' >&2 || true
+    # Best-effort: show first lines of rewrite.config if present
+    docker exec "$CONTAINER_NAME" sh -lc 'sed -n "1,5p" /opt/tomcat/conf/Catalina/localhost/rewrite.config 2>/dev/null || true' | sed 's/^/[rewrite head] /' >&2 || true
+  fi
   FAILED=1
   exit 1
 fi
