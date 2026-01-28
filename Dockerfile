@@ -1,6 +1,6 @@
 ARG UBUNTU_VERSION=24.04
 
-# --- build stage: tiny filter that sets an arbitrary response header (Tomcat 9 / javax.*) ---
+# --- build stage: tiny filters (Tomcat 9 / javax.*) ---
 FROM eclipse-temurin:17-jdk AS cspfilter-build
 WORKDIR /src
 
@@ -39,8 +39,95 @@ public class ResponseHeaderFilter implements Filter {
 }
 EOF
 
-RUN javac -cp /tmp/servlet-api.jar org/apache/catalina/filters/ResponseHeaderFilter.java \
- && jar cf response-header-filter.jar org/apache/catalina/filters/ResponseHeaderFilter.class
+# RequestGuardFilter: validates xml_file param for /birt/frameset and /birt/run
+RUN cat > org/apache/catalina/filters/RequestGuardFilter.java <<'EOF'
+package org.apache.catalina.filters;
+
+import javax.servlet.*;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
+public class RequestGuardFilter implements Filter {
+    private static final int MAX_LEN = 2000;
+
+    @Override
+    public void init(FilterConfig filterConfig) {}
+
+    @Override
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
+            throws IOException, ServletException {
+        if (!(req instanceof HttpServletRequest) || !(res instanceof HttpServletResponse)) {
+            chain.doFilter(req, res);
+            return;
+        }
+        HttpServletRequest request = (HttpServletRequest) req;
+        HttpServletResponse response = (HttpServletResponse) res;
+
+        String xml = request.getParameter("xml_file");
+        if (xml == null || xml.isEmpty()) {
+            chain.doFilter(req, res);
+            return;
+        }
+
+        String decoded = safeDecode(xml);
+        if (decoded == null) {
+            reject(response, "decoding failed");
+            return;
+        }
+        if (decoded.contains("%25")) {
+            String d2 = safeDecode(decoded);
+            if (d2 != null) decoded = d2; else {
+                reject(response, "decoding failed (double-encoding)");
+                return;
+            }
+        }
+
+        if (decoded.length() > MAX_LEN) {
+            reject(response, "value too long");
+            return;
+        }
+
+        try {
+            URL u = new URL(decoded);
+            String proto = u.getProtocol();
+            if (!("http".equalsIgnoreCase(proto) || "https".equalsIgnoreCase(proto))) {
+                reject(response, "unsupported URL scheme");
+                return;
+            }
+        } catch (Exception e) {
+            reject(response, "not a valid URL after decoding");
+            return;
+        }
+
+        chain.doFilter(req, res);
+    }
+
+    private static String safeDecode(String s) {
+        try {
+            return URLDecoder.decode(s, StandardCharsets.UTF_8.name());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static void reject(HttpServletResponse response, String reason) throws IOException {
+        boolean debug = "1".equals(System.getenv().getOrDefault("SHOW_DEBUG", "0"));
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        response.setContentType("text/plain; charset=utf-8");
+        String msg = debug ? ("Invalid xml_file parameter: " + reason) : "Invalid request. Input rejected.";
+        byte[] bytes = msg.getBytes(StandardCharsets.UTF_8);
+        response.setContentLength(bytes.length);
+        response.getOutputStream().write(bytes);
+    }
+}
+EOF
+
+RUN javac -cp /tmp/servlet-api.jar org/apache/catalina/filters/ResponseHeaderFilter.java org/apache/catalina/filters/RequestGuardFilter.java \
+ && jar cf response-header-filter.jar org/apache/catalina/filters/*.class
 
 
 # --------------------------------------------------------------------
@@ -57,6 +144,7 @@ ARG BIRT_DROP=R-R1-4.13.0-202303022006
 ARG BIRT_RUNTIME_DATE=202503120947
 
 ENV TOMCAT_HOME=/opt/tomcat
+ENV SHOW_DEBUG=0
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -84,6 +172,19 @@ RUN mv "${TOMCAT_HOME}/webapps/birt-runtime/WebViewerExample" "${TOMCAT_HOME}/we
 RUN cp ${TOMCAT_HOME}/webapps/birt-runtime/ReportEngine/addons/org.eclipse.datatools.enablement.oda.xml_*.jar ${TOMCAT_HOME}/webapps/birt/WEB-INF/lib/
 RUN rm ${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.zip
 RUN rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime
+
+# ----------------------------------------------------------
+# Inject RequestGuardFilter into BIRT web.xml (idempotent)
+# ----------------------------------------------------------
+RUN set -eux; \
+    BWXML="${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml"; \
+    # remove any previous RequestGuardFilter block (idempotent cleanup)
+    perl -0777 -i -pe 's|\s*<filter>\s*<filter-name>RequestGuardFilter</filter-name>.*?</filter>\s*||smg' "$BWXML"; \
+    perl -0777 -i -pe 's|\s*<filter-mapping>\s*<filter-name>RequestGuardFilter</filter-name>.*?</filter-mapping>\s*||smg' "$BWXML"; \
+    # insert filter + 2 mappings before </web-app>
+    perl -0777 -i -pe "s|</web-app>|  <filter>\n    <filter-name>RequestGuardFilter</filter-name>\n    <filter-class>org.apache.catalina.filters.RequestGuardFilter</filter-class>\n  </filter>\n\n  <filter-mapping>\n    <filter-name>RequestGuardFilter</filter-name>\n    <url-pattern>/frameset</url-pattern>\n  </filter-mapping>\n  <filter-mapping>\n    <filter-name>RequestGuardFilter</filter-name>\n    <url-pattern>/run</url-pattern>\n  </filter-mapping>\n</web-app>|smg" "$BWXML"; \
+    echo "=== injected RequestGuardFilter in BIRT web.xml ==="; \
+    grep -n "RequestGuardFilter" -n "$BWXML" || true
 
 # ----------------------------------------------------------
 # Tomcat conf into /etc/tomcat + patch server.xml (Secure cookies)
