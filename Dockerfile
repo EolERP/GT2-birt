@@ -126,7 +126,185 @@ public class RequestGuardFilter implements Filter {
 }
 EOF
 
-RUN javac -cp /tmp/servlet-api.jar org/apache/catalina/filters/ResponseHeaderFilter.java org/apache/catalina/filters/RequestGuardFilter.java \
+# BirtResponseSanitizerFilter: wraps response to sanitize verbose BIRT errors when not in debug mode
+RUN cat > org/apache/catalina/filters/BirtResponseSanitizerFilter.java <<'EOF'
+package org.apache.catalina.filters;
+
+import javax.servlet.*;
+import javax.servlet.http.*;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+
+public class BirtResponseSanitizerFilter implements Filter {
+    private static final byte[] PDF_MAGIC = "%PDF-".getBytes(StandardCharsets.US_ASCII);
+    private static final String GENERIC = "Invalid request. Input rejected.";
+
+    @Override
+    public void init(FilterConfig filterConfig) {}
+
+    @Override
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
+            throws IOException, ServletException {
+        if (!(req instanceof HttpServletRequest) || !(res instanceof HttpServletResponse)) {
+            chain.doFilter(req, res);
+            return;
+        }
+        HttpServletResponse raw = (HttpServletResponse) res;
+        BufferingResponseWrapper wrapper = new BufferingResponseWrapper(raw);
+        chain.doFilter(req, wrapper);
+
+        // If committed (despite our buffering), do nothing
+        if (raw.isCommitted()) return;
+
+        boolean debug = "1".equals(System.getenv().getOrDefault("SHOW_DEBUG", "0"));
+        byte[] body = wrapper.getBody();
+        String ct = raw.getContentType();
+        int status = raw.getStatus();
+
+        if (debug) {
+            // Pass-through original captured body
+            writeBody(raw, body, ct);
+            return;
+        }
+
+        // Do not sanitize valid PDFs
+        if (isPdf(ct, body)) {
+            writeBody(raw, body, ct);
+            return;
+        }
+
+        // Only sanitize text-like responses
+        boolean textLike = isTextLike(ct, body);
+        if (!textLike) {
+            writeBody(raw, body, ct);
+            return;
+        }
+
+        // Leak detection heuristics
+        String s = new String(body, StandardCharsets.UTF_8);
+        String sl = s.toLowerCase();
+        boolean leak = s.contains("Exception")
+                || sl.contains("stacktrace")
+                || s.contains("\nat ")
+                || sl.contains("org.eclipse.birt")
+                || sl.contains("java.lang.")
+                || sl.contains("javax.servlet")
+                || sl.contains("<html");
+
+        if (leak) {
+            int outStatus = (status >= 500) ? status : 400;
+            raw.resetBuffer();
+            raw.setStatus(outStatus);
+            raw.setHeader("Cache-Control", "no-store");
+            raw.setContentType("text/plain; charset=utf-8");
+            byte[] msg = GENERIC.getBytes(StandardCharsets.UTF_8);
+            raw.setContentLength(msg.length);
+            raw.getOutputStream().write(msg);
+        } else {
+            writeBody(raw, body, ct);
+        }
+    }
+
+    @Override
+    public void destroy() {}
+
+    private static boolean isPdf(String ct, byte[] body) {
+        if (ct != null && ct.toLowerCase().startsWith("application/pdf")) {
+            if (body != null && body.length >= 5) {
+                for (int i = 0; i < PDF_MAGIC.length; i++) {
+                    if (body[i] != PDF_MAGIC[i]) return false;
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isTextLike(String ct, byte[] body) {
+        if (ct != null) {
+            String l = ct.toLowerCase();
+            if (l.startsWith("text/") || l.contains("html")) return true;
+        }
+        // If no content-type, heuristically decide based on content
+        if (body == null || body.length == 0) return false;
+        byte b0 = body[0];
+        if (b0 == '<') return true;
+        // Basic printable ASCII ratio check (best-effort)
+        int printable = 0;
+        int n = Math.min(body.length, 200);
+        for (int i = 0; i < n; i++) {
+            int c = body[i] & 0xff;
+            if (c == 9 || c == 10 || c == 13 || (c >= 32 && c <= 126)) printable++;
+        }
+        return printable >= n * 0.6;
+    }
+
+    private static void writeBody(HttpServletResponse res, byte[] body, String ct) throws IOException {
+        if (ct != null && !ct.isEmpty()) {
+            res.setContentType(ct);
+        }
+        if (body != null && body.length > 0) {
+            res.setContentLength(body.length);
+            res.getOutputStream().write(body);
+        } else {
+            res.setContentLength(0);
+        }
+    }
+
+    private static class BufferingResponseWrapper extends HttpServletResponseWrapper {
+        private final ByteArrayOutputStream buffer = new ByteArrayOutputStream(4096);
+        private ServletOutputStream outputStream;
+        private PrintWriter writer;
+
+        BufferingResponseWrapper(HttpServletResponse response) {
+            super(response);
+        }
+
+        @Override
+        public ServletOutputStream getOutputStream() {
+            if (writer != null) throw new IllegalStateException("getWriter() already called");
+            if (outputStream == null) {
+                outputStream = new ServletOutputStream() {
+                    @Override public boolean isReady() { return true; }
+                    @Override public void setWriteListener(WriteListener writeListener) {}
+                    @Override public void write(int b) { buffer.write(b); }
+                    @Override public void write(byte[] b, int off, int len) { buffer.write(b, off, len); }
+                    @Override public void flush() {}
+                };
+            }
+            return outputStream;
+        }
+
+        @Override
+        public PrintWriter getWriter() {
+            if (outputStream != null) throw new IllegalStateException("getOutputStream() already called");
+            if (writer == null) {
+                writer = new PrintWriter(new OutputStreamWriter(buffer, StandardCharsets.UTF_8));
+            }
+            return writer;
+        }
+
+        @Override
+        public void flushBuffer() {
+            // do not commit underlying response early
+            if (writer != null) writer.flush();
+        }
+
+        @Override
+        public void reset() { buffer.reset(); }
+
+        @Override
+        public void resetBuffer() { buffer.reset(); }
+
+        byte[] getBody() throws IOException {
+            if (writer != null) writer.flush();
+            return buffer.toByteArray();
+        }
+    }
+}
+EOF
+
+RUN javac -cp /tmp/servlet-api.jar org/apache/catalina/filters/ResponseHeaderFilter.java org/apache/catalina/filters/RequestGuardFilter.java org/apache/catalina/filters/BirtResponseSanitizerFilter.java \
  && jar cf response-header-filter.jar org/apache/catalina/filters/*.class
 
 
@@ -174,17 +352,19 @@ RUN rm ${TOMCAT_HOME}/webapps/birt-runtime-${BIRT_VERSION}-${BIRT_RUNTIME_DATE}.
 RUN rm -f -r ${TOMCAT_HOME}/webapps/birt-runtime
 
 # ----------------------------------------------------------
-# Inject RequestGuardFilter into BIRT web.xml (idempotent)
+# Inject RequestGuardFilter and BirtResponseSanitizerFilter into BIRT web.xml (idempotent)
 # ----------------------------------------------------------
 RUN set -eux; \
     BWXML="${TOMCAT_HOME}/webapps/birt/WEB-INF/web.xml"; \
-    # remove any previous RequestGuardFilter block (idempotent cleanup)
+    # cleanup any previous blocks (idempotent)
     perl -0777 -i -pe 's|\s*<filter>\s*<filter-name>RequestGuardFilter</filter-name>.*?</filter>\s*||smg' "$BWXML"; \
     perl -0777 -i -pe 's|\s*<filter-mapping>\s*<filter-name>RequestGuardFilter</filter-name>.*?</filter-mapping>\s*||smg' "$BWXML"; \
-    # insert filter + 2 mappings before </web-app>
-    perl -0777 -i -pe "s|</web-app>|  <filter>\n    <filter-name>RequestGuardFilter</filter-name>\n    <filter-class>org.apache.catalina.filters.RequestGuardFilter</filter-class>\n  </filter>\n\n  <filter-mapping>\n    <filter-name>RequestGuardFilter</filter-name>\n    <url-pattern>/frameset</url-pattern>\n  </filter-mapping>\n  <filter-mapping>\n    <filter-name>RequestGuardFilter</filter-name>\n    <url-pattern>/run</url-pattern>\n  </filter-mapping>\n</web-app>|smg" "$BWXML"; \
-    echo "=== injected RequestGuardFilter in BIRT web.xml ==="; \
-    grep -n "RequestGuardFilter" -n "$BWXML" || true
+    perl -0777 -i -pe 's|\s*<filter>\s*<filter-name>BirtResponseSanitizerFilter</filter-name>.*?</filter>\s*||smg' "$BWXML"; \
+    perl -0777 -i -pe 's|\s*<filter-mapping>\s*<filter-name>BirtResponseSanitizerFilter</filter-name>.*?</filter-mapping>\s*||smg' "$BWXML"; \
+    # insert filters + mappings before </web-app> (sanitizer first to wrap output early)
+    perl -0777 -i -pe "s|</web-app>|  <filter>\n    <filter-name>BirtResponseSanitizerFilter</filter-name>\n    <filter-class>org.apache.catalina.filters.BirtResponseSanitizerFilter</filter-class>\n  </filter>\n  <filter>\n    <filter-name>RequestGuardFilter</filter-name>\n    <filter-class>org.apache.catalina.filters.RequestGuardFilter</filter-class>\n  </filter>\n\n  <filter-mapping>\n    <filter-name>BirtResponseSanitizerFilter</filter-name>\n    <url-pattern>/frameset</url-pattern>\n  </filter-mapping>\n  <filter-mapping>\n    <filter-name>BirtResponseSanitizerFilter</filter-name>\n    <url-pattern>/run</url-pattern>\n  </filter-mapping>\n  <filter-mapping>\n    <filter-name>RequestGuardFilter</filter-name>\n    <url-pattern>/frameset</url-pattern>\n  </filter-mapping>\n  <filter-mapping>\n    <filter-name>RequestGuardFilter</filter-name>\n    <url-pattern>/run</url-pattern>\n  </filter-mapping>\n</web-app>|smg" "$BWXML"; \
+    echo "=== injected Sanitizer + RequestGuard filters in BIRT web.xml ==="; \
+    grep -n "BirtResponseSanitizerFilter\|RequestGuardFilter" -n "$BWXML" || true
 
 # ----------------------------------------------------------
 # Tomcat conf into /etc/tomcat + patch server.xml (Secure cookies)

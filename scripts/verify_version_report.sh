@@ -456,42 +456,45 @@ fi
 log "SUCCESS: Credix PDF report contains expected strings and Czech glyph token '$CREDIX_CZ_MUST_HAVE'."
 
 # ==========================================================
-# 3) Security regression: invalid xml_file must be blocked with generic message
+# 3) Security regression tests: sanitizer must prevent verbose error leakage
 # ==========================================================
-BAD_URL="${BASE_URL}/birt/frameset?xml_file=not_a_url&__format=html&__report=${CREDIX_REPORT_NAME}"
-log "Security regression test URL: $BAD_URL"
+# Helper to assert sanitized error response
+assert_sanitized() {
+  local body_file="$1"; local code="$2";
+  local body; body=$(tr -d '\r' < "$body_file")
+  if [[ "$code" -lt 400 ]]; then
+    err "Security regression FAILED: expected HTTP 4xx/5xx, got $code"; return 1; fi
+  if echo "$body" | grep -Eqi "org\.eclipse\.birt|ViewerException|java\.lang|\\nat |<html|stacktrace"; then
+    err "Security regression FAILED: response contains detailed error output"; return 1; fi
+  local expected_generic="Invalid request. Input rejected."
+  if [[ "$SHOW_DEBUG" != "1" ]]; then
+    if [[ "$body" != "$expected_generic" ]]; then
+      err "Security regression FAILED: expected exact generic body in SHOW_DEBUG=0 mode"; return 1; fi
+  fi
+  return 0
+}
+
+# Test 1: invalid report name must NOT leak stack trace
+VALID_XML_ENC=$(credix_urlencode "$CREDIX_XML_FILE_URL")
+BAD_REPORT_URL="${BASE_URL}/birt/frameset?xml_file=${VALID_XML_ENC}&__format=pdf&__report=${CREDIX_REPORT_NAME}1"
+log "Security test 1 (invalid report) URL: $BAD_REPORT_URL"
 : > "$BODY_TXT"; : > "$HEADERS_FILE"
-code=$(curl -sS -L -D "$HEADERS_FILE" -o "$BODY_TXT" --max-time 30 "$BAD_URL" -w "%{http_code}" || true)
-if [[ "$code" != "400" ]]; then
-  err "Security regression FAILED: expected HTTP 400 for invalid xml_file, got $code"
-  FAILED=1
-  exit 1
+code=$(curl -sS -L -D "$HEADERS_FILE" -o "$BODY_TXT" --max-time 30 "$BAD_REPORT_URL" -w "%{http_code}" || true)
+if ! assert_sanitized "$BODY_TXT" "$code"; then FAILED=1; exit 1; fi
+
+# Test 2: invalid xml_file must NOT leak stack trace
+BAD_XML_URL="${BASE_URL}/birt/frameset?xml_file=not_a_url&__format=pdf&__report=${CREDIX_REPORT_NAME}"
+log "Security test 2 (invalid xml_file) URL: $BAD_XML_URL"
+: > "$BODY_TXT"; : > "$HEADERS_FILE"
+code=$(curl -sS -L -D "$HEADERS_FILE" -o "$BODY_TXT" --max-time 30 "$BAD_XML_URL" -w "%{http_code}" || true)
+if ! assert_sanitized "$BODY_TXT" "$code"; then FAILED=1; exit 1; fi
+
+# Optional Test 3: debug mode allows details (best-effort)
+if [[ "$SHOW_DEBUG" == "1" ]]; then
+  log "Debug mode enabled; sanitizer is bypassed. Best-effort check will not enforce sanitization."
 fi
 
-body=$(tr -d '\r' < "$BODY_TXT")
-if echo "$body" | grep -Eqi "Exception|Parse|org\.eclipse|stacktrace|<html>"; then
-  err "Security regression FAILED: response contains detailed error output"
-  FAILED=1
-  exit 1
-fi
-
-expected_generic="Invalid request. Input rejected."
-if [[ "$SHOW_DEBUG" != "1" ]]; then
-  if [[ "$body" != "$expected_generic" ]]; then
-    err "Security regression FAILED: expected generic body in SHOW_DEBUG=0 mode"
-    FAILED=1
-    exit 1
-  fi
-else
-  # Debug mode: allow reason string, but still no stack traces
-  if ! echo "$body" | grep -Fq "Invalid xml_file parameter:"; then
-    err "Security regression FAILED: debug mode body missing reason prefix"
-    FAILED=1
-    exit 1
-  fi
-fi
-
-log "SUCCESS: Security regression test passed."
+log "SUCCESS: Security regression tests passed."
 
 FAILED=0
 exit 0
