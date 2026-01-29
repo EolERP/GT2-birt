@@ -7,6 +7,7 @@ CONTAINER_NAME=${CONTAINER_NAME:-birt-e2e-test}
 HOST_PORT=${HOST_PORT:-8080}
 BASE_URL=${BASE_URL:-http://localhost:${HOST_PORT}}
 TIMEOUT_SEC=${TIMEOUT_SEC:-240}
+SHOW_DEBUG=${SHOW_DEBUG:-0}
 
 # Version check inputs (best-effort)
 REPORT_FILE=${REPORT_FILE:-version.rptdesign}
@@ -51,25 +52,29 @@ err() { echo "[verify][ERROR] $*" >&2; }
 cleanup() {
   local code=$?
   if [[ $FAILED -ne 0 ]]; then
-    warn "Collecting diagnostics before cleanup..."
-    if [[ -s "$HEADERS_FILE" ]]; then
-      warn "Response headers (first 80 lines):"
-      sed -n '1,80p' "$HEADERS_FILE" | sed 's/^/[headers] /' >&2
-    fi
-    if [[ -s "$BODY_HTML" ]]; then
-      warn "Response body (first 2000 chars HTML):"
-      head -c 2000 "$BODY_HTML" | sed 's/^/[body] /' >&2 || true
-    elif [[ -s "$BODY_TXT" ]]; then
-      warn "Response text (first 2000 chars):"
-      head -c 2000 "$BODY_TXT" | sed 's/^/[text] /' >&2 || true
-    fi
-    if [[ -s "$COOKIE_HDRS" ]]; then
-      warn "Cookie check headers (first 80 lines):"
-      sed -n '1,80p' "$COOKIE_HDRS" | sed 's/^/[cookie] /' >&2 || true
-    fi
-    if command -v docker >/dev/null 2>&1; then
-      warn "Docker logs (last 200 lines):"
-      docker logs --tail 200 "$CONTAINER_NAME" 2>&1 | sed 's/^/[docker] /' >&2 || true
+    if [[ "$SHOW_DEBUG" == "1" ]]; then
+      warn "Collecting diagnostics before cleanup..."
+      if [[ -s "$HEADERS_FILE" ]]; then
+        warn "Response headers (first 80 lines):"
+        sed -n '1,80p' "$HEADERS_FILE" | sed 's/^/[headers] /' >&2
+      fi
+      if [[ -s "$BODY_HTML" ]]; then
+        warn "Response body (first 2000 chars HTML):"
+        head -c 2000 "$BODY_HTML" | sed 's/^/[body] /' >&2 || true
+      elif [[ -s "$BODY_TXT" ]]; then
+        warn "Response text (first 2000 chars):"
+        head -c 2000 "$BODY_TXT" | sed 's/^/[text] /' >&2 || true
+      fi
+      if [[ -s "$COOKIE_HDRS" ]]; then
+        warn "Cookie check headers (first 80 lines):"
+        sed -n '1,80p' "$COOKIE_HDRS" | sed 's/^/[cookie] /' >&2 || true
+      fi
+      if command -v docker >/dev/null 2>&1; then
+        warn "Docker logs (last 200 lines):"
+        docker logs --tail 200 "$CONTAINER_NAME" 2>&1 | sed 's/^/[docker] /' >&2 || true
+      fi
+    else
+      warn "Verification failed. Set SHOW_DEBUG=1 for full diagnostics."
     fi
   fi
   if command -v docker >/dev/null 2>&1; then
@@ -121,7 +126,7 @@ docker build -t "$IMAGE_NAME" "$REPO_ROOT"
 
 # Run container
 log "Starting container '$CONTAINER_NAME' (port $HOST_PORT -> 8080)"
-docker run -d --name "$CONTAINER_NAME" -p "$HOST_PORT:8080" "$IMAGE_NAME" >/dev/null
+docker run -d --name "$CONTAINER_NAME" -e SHOW_DEBUG="$SHOW_DEBUG" -p "$HOST_PORT:8080" "$IMAGE_NAME" >/dev/null
 
 # Wait until ready (HTTP-based): poll BIRT root; accept 200/302/303/401/403 as ready
 wait_ready() {
@@ -449,6 +454,47 @@ if ! grep -Fq -- "$CREDIX_CZ_MUST_HAVE" "$OUT_DIR/credix_report.txt"; then
 fi
 
 log "SUCCESS: Credix PDF report contains expected strings and Czech glyph token '$CREDIX_CZ_MUST_HAVE'."
+
+# ==========================================================
+# 3) Security regression tests: sanitizer must prevent verbose error leakage
+# ==========================================================
+# Helper to assert sanitized error response
+assert_sanitized() {
+  local body_file="$1"; local code="$2";
+  local body; body=$(tr -d '\r' < "$body_file")
+  if [[ "$code" -lt 400 ]]; then
+    err "Security regression FAILED: expected HTTP 4xx/5xx, got $code"; return 1; fi
+  if echo "$body" | grep -Eqi "org\.eclipse\.birt|ViewerException|java\.lang|\\nat |<html|stacktrace"; then
+    err "Security regression FAILED: response contains detailed error output"; return 1; fi
+  local expected_generic="Invalid request. Input rejected."
+  if [[ "$SHOW_DEBUG" != "1" ]]; then
+    if [[ "$body" != "$expected_generic" ]]; then
+      err "Security regression FAILED: expected exact generic body in SHOW_DEBUG=0 mode"; return 1; fi
+  fi
+  return 0
+}
+
+# Test 1: invalid report name must NOT leak stack trace
+VALID_XML_ENC=$(credix_urlencode "$CREDIX_XML_FILE_URL")
+BAD_REPORT_URL="${BASE_URL}/birt/frameset?xml_file=${VALID_XML_ENC}&__format=pdf&__report=${CREDIX_REPORT_NAME}1"
+log "Security test 1 (invalid report) URL: $BAD_REPORT_URL"
+: > "$BODY_TXT"; : > "$HEADERS_FILE"
+code=$(curl -sS -L -D "$HEADERS_FILE" -o "$BODY_TXT" --max-time 30 "$BAD_REPORT_URL" -w "%{http_code}" || true)
+if ! assert_sanitized "$BODY_TXT" "$code"; then FAILED=1; exit 1; fi
+
+# Test 2: invalid xml_file must NOT leak stack trace
+BAD_XML_URL="${BASE_URL}/birt/frameset?xml_file=not_a_url&__format=pdf&__report=${CREDIX_REPORT_NAME}"
+log "Security test 2 (invalid xml_file) URL: $BAD_XML_URL"
+: > "$BODY_TXT"; : > "$HEADERS_FILE"
+code=$(curl -sS -L -D "$HEADERS_FILE" -o "$BODY_TXT" --max-time 30 "$BAD_XML_URL" -w "%{http_code}" || true)
+if ! assert_sanitized "$BODY_TXT" "$code"; then FAILED=1; exit 1; fi
+
+# Optional Test 3: debug mode allows details (best-effort)
+if [[ "$SHOW_DEBUG" == "1" ]]; then
+  log "Debug mode enabled; sanitizer is bypassed. Best-effort check will not enforce sanitization."
+fi
+
+log "SUCCESS: Security regression tests passed."
 
 FAILED=0
 exit 0
